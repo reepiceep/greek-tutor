@@ -12,6 +12,7 @@ import {
 import {
   adjAgreeQuestion, adjParseQuestion, adjTranslateQuestion, adjUseQuestion, distinctForms, translatable,
 } from './declensionQuestions'
+import { caseUseQuestion, caseUseTranslateQuestion, phraseParseQuestion, phraseSlots, phraseTranslateQuestion } from './caseQuestions'
 import { caseUses, elidedForms } from './prepositions'
 import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
@@ -75,6 +76,26 @@ function vocabArea(ch: Chapter) {
 }
 
 const SPECS: Record<number, TestSpec> = {
+  7: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'Noun forms', count: 8, covers: 'parsing genitive, dative and other endings' },
+      { name: 'Phrases', count: 6, covers: 'article + noun: “of the lord,” “to the sons”' },
+      { name: 'Verses', count: 6, covers: 'what the case is doing in the New Testament' },
+    ],
+    build: (ch) => {
+      const cs = ch.cases!
+      const forms = take(cs.nouns.flatMap(({ paradigm: p }) => distinctForms(p).map((f) => ({ p, f }))), 8)
+      const phrases = take(phraseSlots(ch).flatMap((s) => [phraseTranslateQuestion, phraseParseQuestion].map((f) => ({ s, f }))), 6)
+      const verses = take(cs.uses.flatMap((u) => [caseUseQuestion, caseUseTranslateQuestion].map((f) => ({ u, f }))), 6)
+      return [
+        ...vocabArea(ch),
+        ...tag('Noun forms', forms.map(({ p, f }) => adjParseQuestion(ch, p, f))),
+        ...tag('Phrases', phrases.map(({ s, f }) => f(ch, s))),
+        ...tag('Verses', verses.map(({ u, f }) => f(ch, u))),
+      ]
+    },
+  },
   8: {
     areas: [
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
@@ -355,6 +376,9 @@ const SPECS: Record<number, TestSpec> = {
 
 /** The test layout for a chapter, if one has been written. */
 export const testAreas = (chapter: number): TestArea[] => SPECS[chapter]?.areas ?? []
+
+/** Chapters added with vocabulary only (chapter 6) have no test yet. */
+export const hasTest = (chapter: number) => chapter in SPECS
 
 /** A 30-question mixed test sampled at random (not weakest-first: this measures, it doesn't drill). */
 export function buildChapterTest(ch: Chapter): ChoiceQuestion[] {

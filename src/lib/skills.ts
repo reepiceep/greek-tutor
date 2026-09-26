@@ -7,6 +7,10 @@ import {
   adjAgreeItemId, adjAgreeQuestion, adjParseItemId, adjParseQuestion, adjTranslateQuestion, adjUseItemId, adjUseQuestion, distinctForms,
   translatable,
 } from './declensionQuestions'
+import {
+  CASES_USE, caseUseQuestion, caseUseTranslateQuestion, phraseEnglish, phraseGreek, casePhraseItemId, phraseParseQuestion, phraseSlots,
+  phraseTranslateQuestion,
+} from './caseQuestions'
 import { demonstrativeItemId, demonstrativeTranslateQuestion, demonstrativeUseQuestion } from './demonstrativeQuestions'
 import {
   encliticAccentQuestion, encliticFormQuestion, encliticRuleQuestion, predicateSubjectQuestion, predicateTranslateQuestion,
@@ -34,6 +38,7 @@ import {
   presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion,
 } from './presentQuestions'
+import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
 import {
@@ -239,6 +244,7 @@ export function chapterSkills(ch: Chapter): Skill[] {
         id: partsItemId(n, pp, part), name: `${pp.form}: ${part}`, make: () => verbPartQuestion(ch, pp, part),
       }))),
     },
+    ...casesSkills(ch),
     ...presentSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
@@ -316,4 +322,33 @@ function presentSkills(ch: Chapter): Skill[] {
     ]),
   }
   return [forms, extra, verses]
+}
+
+/** Chapter 7: noun endings, article + noun phrases, and the case in verses. */
+function casesSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const cs = ch.cases
+  if (!cs) return []
+  return [
+    {
+      label: 'Cases: parsing nouns', view: 'cases',
+      items: cs.nouns.flatMap(({ paradigm: p }) => distinctForms(p).map((form) => ({
+        id: adjParseItemId(n, p, form), name: `${form} (${p.lemma})`, make: () => adjParseQuestion(ch, p, form),
+      }))),
+    },
+    {
+      label: 'Cases: phrases', view: 'cases',
+      items: phraseSlots(ch).flatMap((s) => [
+        { id: casePhraseItemId(n, s, 'translate'), name: `${phraseGreek(s.noun, s.case, s.number)} = “${phraseEnglish(s.noun, s.case, s.number)}”`, make: () => phraseTranslateQuestion(ch, s) },
+        { id: casePhraseItemId(n, s, 'parse'), name: `${phraseGreek(s.noun, s.case, s.number)}: case and number`, make: () => phraseParseQuestion(ch, s) },
+      ]),
+    },
+    {
+      label: 'Cases: in verses', view: 'cases',
+      items: cs.uses.flatMap((u) => [
+        { id: usageItemId(n, CASES_USE.prefix, u, 'use'), name: `${u.word} in ${u.ref} (case and use)`, make: () => caseUseQuestion(ch, u) },
+        { id: usageItemId(n, CASES_USE.prefix, u, 'translate'), name: `${u.word} in ${u.ref} (translate)`, make: () => caseUseTranslateQuestion(ch, u) },
+      ]),
+    },
+  ]
 }

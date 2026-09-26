@@ -11,6 +11,36 @@ export interface Recording {
 const B = 'https://greek.billmounce.com/'
 
 export const RECORDINGS: Record<string, Recording> = {
+  // Chapter 6
+  'ἀγάπη': { mounce: B + 'chpt06/words/agaph.mp3', modern: B + 'chpt06/modern/agaph.mp3' },
+  'ἄλλος': { mounce: B + 'chpt06/words/allos.mp3', modern: B + 'chpt06/modern/allos.mp3' },
+  'αὐτός': { mounce: B + 'chpt06/words/autos.mp3', modern: B + 'chpt06/modern/autos.mp3' },
+  'βασιλεία': { mounce: B + 'chpt06/words/basile.mp3', modern: B + 'chpt06/modern/basile.mp3' },
+  'δέ': { mounce: B + 'chpt06/words/de.mp3', modern: B + 'chpt06/modern/de.mp3' },
+  'ἐν': { mounce: B + 'chpt06/words/en.mp3', modern: B + 'chpt06/modern/en.mp3' },
+  'ἔργον': { mounce: B + 'chpt06/words/ergon.mp3', modern: B + 'chpt06/modern/ergon.mp3' },
+  'καιρός': { mounce: B + 'chpt06/words/kairos.mp3', modern: B + 'chpt06/modern/kairos.mp3' },
+  'νῦν': { mounce: B + 'chpt06/words/nun.mp3', modern: B + 'chpt06/modern/nun.mp3' },
+  'ὁ': { mounce: B + 'chpt06/words/ho.mp3', modern: B + 'chpt06/modern/ho.mp3' },
+  'ὥρα': { mounce: B + 'chpt06/words/hwra.mp3', modern: B + 'chpt06/modern/hwra.mp3' },
+  'ὅτι': { mounce: B + 'chpt06/words/hoti.mp3', modern: B + 'chpt06/modern/hoti.mp3' },
+  'οὐ': { mounce: B + 'chpt06/words/ou.mp3', modern: B + 'chpt06/modern/ou.mp3' },
+  // Chapter 7
+  'ἀρχή': { mounce: B + 'chpt07/words/arch.mp3', modern: B + 'chpt07/modern/arch.mp3' },
+  'γάρ': { mounce: B + 'chpt07/words/gar.mp3', modern: B + 'chpt07/modern/gar.mp3' },
+  'εἶπεν': { mounce: B + 'chpt07/words/eipen.mp3', modern: B + 'chpt07/modern/eipen.mp3' },
+  'εἰς': { mounce: B + 'chpt07/words/eis.mp3', modern: B + 'chpt07/modern/eis.mp3' },
+  'ἐξουσία': { mounce: B + 'chpt07/words/exousi.mp3', modern: B + 'chpt07/modern/exousi.mp3' },
+  'εὐαγγέλιον': { mounce: B + 'chpt07/words/euagge.mp3', modern: B + 'chpt07/modern/euagge.mp3' },
+  'Ἰησοῦς': { mounce: B + 'chpt07/words/ihsous.mp3', modern: B + 'chpt07/modern/ihsous.mp3' },
+  'κύριος': { mounce: B + 'chpt07/words/kurios.mp3', modern: B + 'chpt07/modern/kurios.mp3' },
+  'μή': { mounce: B + 'chpt07/words/mh.mp3', modern: B + 'chpt07/modern/mh.mp3' },
+  'οὐρανός': { mounce: B + 'chpt07/words/ourano.mp3', modern: B + 'chpt07/modern/ourano.mp3' },
+  'οὗτος': { mounce: B + 'chpt07/words/houtos.mp3', modern: B + 'chpt07/modern/houtos.mp3' },
+  'σύ': { mounce: B + 'chpt07/words/su.mp3', modern: B + 'chpt07/modern/su.mp3' },
+  'υἱός': { mounce: B + 'chpt07/words/huios.mp3', modern: B + 'chpt07/modern/huios.mp3' },
+  'ὥστε': { mounce: B + 'chpt07/words/hwste.mp3', modern: B + 'chpt07/modern/hwste.mp3' },
+  'ἁμαρτία': { mounce: B + 'chpt07/words/hamart.mp3', modern: B + 'chpt07/modern/hamart.mp3' },
   // Chapter 8
   'ἀλλά': { mounce: B + 'chpt08/words/alla.mp3', modern: B + 'chpt08/modern/alla.mp3' },
   'ἀπό': { mounce: B + 'chpt08/words/apo.mp3', modern: B + 'chpt08/modern/apo.mp3' },

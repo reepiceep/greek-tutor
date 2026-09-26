@@ -12,5 +12,6 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   verbs: { nav: 'Verbs', title: 'Introduction to verbs', description: 'Person, number, tense and aspect, voice, mood; the parts of a verb', glyph: 'ω' },
   present: { nav: 'Present tense', title: 'Present active indicative', description: 'λύω and its endings: form, parse and translate, in charts and in verses', glyph: 'ω' },
   contract: { nav: 'Contract verbs', title: 'Contract verbs', description: 'ἀγαπάω, ποιέω, πληρόω: the contraction rules, forms, and verses', glyph: 'ῶ' },
+  cases: { nav: 'Genitive & dative', title: 'Genitive and dative', description: 'The endings, and what each case does in a sentence', glyph: 'γ' },
   declension: { nav: '3rd declension', title: 'Third declension', description: 'Square of Stops, stems, parsing, πᾶς, τίς vs τις', glyph: 'σ' },
 }

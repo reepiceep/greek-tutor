@@ -393,6 +393,24 @@ export interface VerbIntroSection {
   parts: VerbPartsItem[]
 }
 
+// --- Genitive and dative (chapter 7) ---
+
+/** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
+export type CaseFunction = 'subject' | 'object' | 'possession' | 'indirect' | 'place' | 'means'
+
+/** A first or second declension noun with English for its phrases ("the lord" / "the lords"). */
+export interface CaseNoun {
+  paradigm: DeclensionParadigm
+  /** English singular and plural, without the article. A noun with no plural (Ἰησοῦς) has one entry. */
+  english: [string, string?]
+}
+
+export interface CasesSection {
+  nouns: CaseNoun[]
+  /** Verse words to classify by case and function, and translate. */
+  uses: UseItem<CaseFunction>[]
+}
+
 // --- Present active indicative (chapter 16) ---
 
 export type PersonSlot = '1s' | '2s' | '3s' | '1p' | '2p' | '3p'
@@ -437,7 +455,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'cases'
 
 export interface Chapter {
   number: number
@@ -455,6 +473,7 @@ export interface Chapter {
   relative?: RelativeSection
   verbIntro?: VerbIntroSection
   present?: PresentSection
+  cases?: CasesSection
   phrases?: PrepPhrase[]
   elisions?: ElisionItem[]
   spatial?: SpatialUse[]

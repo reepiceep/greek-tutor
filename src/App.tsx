@@ -8,8 +8,10 @@ import { Autos } from './components/Autos'
 import { Demonstratives } from './components/Demonstratives'
 import { RelativePronoun } from './components/RelativePronoun'
 import { VerbIntro } from './components/VerbIntro'
+import { Cases } from './components/Cases'
 import { PresentTense } from './components/PresentTense'
 import { ChapterTest } from './components/ChapterTest'
+import { hasTest } from './lib/chapterTest'
 import { Dashboard } from './components/Dashboard'
 import { Flashcards } from './components/Flashcards'
 import { ParadigmDrill } from './components/ParadigmDrill'
@@ -36,6 +38,8 @@ export default function App() {
   // A topic view from another chapter isn't available here; fall back to home.
   const unavailable = ((Object.keys(TOPIC_META) as View[]).includes(chosen) && !topics.includes(chosen as TopicView))
     || (!chapter.vocab.length && (chosen === 'flashcards' || chosen === 'quiz'))
+    || (chosen === 'review' && chapter.number < 8)
+    || (chosen === 'test' && !hasTest(chapter.number))
   const view: View = unavailable ? 'home' : chosen
 
   const now = useNow()
@@ -46,8 +50,9 @@ export default function App() {
     // Chapters without vocabulary (15, introduction to verbs) have no flashcards or vocab quiz.
     ...(chapter.vocab.length ? [{ view: 'flashcards' as View, label: 'Flashcards' }, { view: 'quiz' as View, label: 'Vocab quiz' }] : []),
     ...topics.map((t) => ({ view: t, label: TOPIC_META[t].nav })),
-    { view: 'review', label: 'All prepositions' },
-    { view: 'test', label: 'Test' },
+    // Most prepositions arrive in chapter 8; before that, the review would quiz words not yet taught.
+    ...(chapter.number >= 8 ? [{ view: 'review' as View, label: 'All prepositions' }] : []),
+    ...(hasTest(chapter.number) ? [{ view: 'test' as View, label: 'Test' }] : []),
   ]
 
   return (
@@ -97,6 +102,7 @@ export default function App() {
         {view === 'demonstratives' && <Demonstratives chapter={chapter} />}
         {view === 'relative' && <RelativePronoun chapter={chapter} />}
         {view === 'verbs' && <VerbIntro chapter={chapter} />}
+        {view === 'cases' && <Cases chapter={chapter} />}
         {(view === 'present' || view === 'contract') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}
         {view === 'test' && <ChapterTest chapter={chapter} />}

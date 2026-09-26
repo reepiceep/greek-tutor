@@ -367,3 +367,31 @@ it('flashcards can span a chapter range, and each card counts toward its own cha
   fireEvent.click(screen.getByText('This chapter'))
   expect(screen.queryByText(/cards a round/)).toBeNull()
 })
+
+it('chapter 7: genitive and dative charts, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(7)
+  expect(screen.getByText(/15 new words/)).toBeTruthy()
+  expect(screen.queryByText('All prepositions', { selector: 'nav button' })).toBeNull()
+  nav('Genitive & dative')
+  expect(document.querySelector('.article-table')!.textContent).toContain('τοῦ')
+  expect(document.querySelectorAll('.adj-table')).toHaveLength(8)
+  for (const t of ['Parse nouns', 'Phrases', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
+it('chapter 6: vocabulary only, with flashcards and no test', () => {
+  render(<App />)
+  pickChapter(6)
+  expect(screen.queryByText('Test', { selector: 'nav button' })).toBeNull()
+  expect(screen.queryByText('Take the test')).toBeNull()
+  nav('Flashcards')
+  expect(screen.getByText(/13 words/)).toBeTruthy()
+  fireEvent.click(document.querySelector('.flashcard')!)
+  fireEvent.click(screen.getByText('Got it', { exact: false, selector: 'button' }))
+  expect(screen.getByText(/1 known/)).toBeTruthy()
+})

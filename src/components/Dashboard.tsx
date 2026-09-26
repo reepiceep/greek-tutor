@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { View } from '../App'
 import type { Chapter } from '../data/types'
-import { formatTime } from '../lib/chapterTest'
+import { formatTime, hasTest } from '../lib/chapterTest'
 import {
   type ItemStats, currentStreak, exportProgress, importProgress, learnedFraction, resetProgress, updateSettings, useProgress,
 } from '../lib/progress'
@@ -41,7 +41,9 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
     ...(chapter.topics ?? []).map((t): Card => ({
       view: t, glyph: TOPIC_META[t].glyph, title: TOPIC_META[t].title, description: TOPIC_META[t].description, greekTitle: true,
     })),
-    { view: 'review', glyph: 'Π', title: 'All prepositions', description: 'Review every preposition from chapters 6–14' },
+    ...(chapter.number >= 8
+      ? [{ view: 'review' as View, glyph: 'Π', title: 'All prepositions', description: 'Review every preposition from chapters 6–14' }]
+      : []),
   ]
 
   return (
@@ -59,7 +61,7 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
       <div className="dash-grid">
         <div className="dash-main">
           <TodayCard chapter={chapter} go={go} />
-          <div className={`readiness ${latest?.ready ? 'good' : ''}`}>
+          {hasTest(chapter.number) && <div className={`readiness ${latest?.ready ? 'good' : ''}`}>
             {latest ? (
               <>
                 <div className="readiness-head">
@@ -83,7 +85,7 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
                 <button className="primary" onClick={() => go('test')}>Take the test</button>
               </div>
             )}
-          </div>
+          </div>}
 
           <h3>Practice</h3>
           <div className="modes">

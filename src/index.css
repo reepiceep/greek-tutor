@@ -356,6 +356,7 @@ header nav .badge {
 .reference td.none { color: var(--border); }
 .reference .reveal { padding: 2px 10px; font-size: 0.85rem; color: var(--muted); }
 .reference caption { caption-side: top; text-align: left; font-weight: 600; padding: 18px 8px 6px; }
+.reference tr.focus th, .reference tr.focus td { background: var(--accent-soft); }
 .small { font-size: 0.85rem; }
 .sentence { font-size: 1.5rem; line-height: 1.6; margin: 0; }
 .sentence mark { background: var(--accent-soft); color: inherit; border-bottom: 2px solid var(--accent); padding: 0 2px; border-radius: 3px; }
@@ -475,6 +476,8 @@ header nav .badge {
 .lesson-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; margin: 8px 0; }
 .adj-tables { display: grid; gap: 8px; }
 .adj-table h3 { margin-top: 12px; }
+.noun-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 20px; }
+.noun-grid .adj-table h3 { font-size: 1rem; }
 .paradigm tr.group-start th, .paradigm tr.group-start td { border-top: 2px solid var(--border); }
 .paradigm td.right input { border-color: var(--good); background: var(--good-soft); }
 .paradigm td.wrong input { border-color: var(--bad); background: var(--bad-soft); }

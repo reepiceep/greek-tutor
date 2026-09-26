@@ -1,4 +1,5 @@
 import type { Case, Chapter, PrepPhrase, VocabWord } from '../data/types'
+import { PREPOSITIONS } from '../data/prepositions'
 import { shuffle } from './progress'
 
 export const CASE_ABBR: Record<Case, string> = { genitive: 'gen', dative: 'dat', accusative: 'acc' }
@@ -37,11 +38,14 @@ export function findUse(ch: Chapter, prep: string, c: Case): CaseUse {
  * A use sharing any accepted meaning with the right one is never offered (ἐπί + acc "on, to" vs πρός "to").
  */
 export function meaningDistractors(ch: Chapter, use: CaseUse, n: number): CaseUse[] {
-  const others = caseUses(ch).filter((u) => !u.accept.some((a) => use.accept.includes(a)))
+  const unlike = (u: CaseUse) => !u.accept.some((a) => use.accept.includes(a))
+  const others = caseUses(ch).filter(unlike)
   const same = shuffle(others.filter((u) => u.word === use.word))
   const rest = shuffle(others.filter((u) => u.word !== use.word))
+  // A chapter with few prepositions (chapter 7 has only ἐν and εἰς) borrows meanings from the others.
+  const borrowed = shuffle(caseUses({ ...ch, vocab: PREPOSITIONS }).filter((u) => unlike(u) && u.word.id !== use.word.id))
   const seen = new Set<string>()
-  return [...same, ...rest].filter((u) => !seen.has(u.gloss) && seen.add(u.gloss)).slice(0, n)
+  return [...same, ...rest, ...borrowed].filter((u) => !seen.has(u.gloss) && seen.add(u.gloss)).slice(0, n)
 }
 
 /** The parts of a phrase or sentence item needed to build its translation options. */
