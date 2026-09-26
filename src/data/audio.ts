@@ -5,12 +5,41 @@
 
 export interface Recording {
   mounce: string
-  modern: string
+  /** Missing for a few words; the Erasmian recording plays instead. */
+  modern?: string
 }
 
 const B = 'https://greek.billmounce.com/'
 
 export const RECORDINGS: Record<string, Recording> = {
+  // Chapter 4
+  'ἄγγελος': { mounce: B + 'chpt04/words/aggelo.mp3', modern: B + 'chpt04/modern/aggelo.mp3' },
+  'ἀμήν': { mounce: B + 'chpt04/words/amhn.mp3', modern: B + 'chpt04/modern/amhn.mp3' },
+  'ἄνθρωπος': { mounce: B + 'chpt04/words/anqrwp.mp3', modern: B + 'chpt04/modern/anqrwp.mp3' },
+  'ἀπόστολος': { mounce: B + 'chpt04/words/aposto.mp3', modern: B + 'chpt04/modern/aposto.mp3' },
+  'Γαλιλαία': { mounce: B + 'chpt04/words/galila.mp3', modern: B + 'chpt04/modern/galila.mp3' },
+  'γραφή': { mounce: B + 'chpt04/words/grafh.mp3', modern: B + 'chpt04/modern/grafh.mp3' },
+  'δόξα': { mounce: B + 'chpt04/words/doxa.mp3', modern: B + 'chpt04/modern/doxa.mp3' },
+  'ἐγώ': { mounce: B + 'chpt04/words/egw.mp3', modern: B + 'chpt04/modern/egw.mp3' },
+  'ἔσχατος': { mounce: B + 'chpt04/words/escato.mp3', modern: B + 'chpt04/modern/escato.mp3' },
+  'ζωή': { mounce: B + 'chpt04/words/zwh.mp3', modern: B + 'chpt04/modern/zwh.mp3' },
+  'θεός': { mounce: B + 'chpt04/words/qeos.mp3', modern: B + 'chpt04/modern/qeos.mp3' },
+  'καί': { mounce: B + 'chpt04/words/kai.mp3', modern: B + 'chpt04/modern/kai.mp3' },
+  'καρδία': { mounce: B + 'chpt04/words/kardia.mp3', modern: B + 'chpt04/modern/kardia.mp3' },
+  'κόσμος': { mounce: B + 'chpt04/words/kosmos.mp3', modern: B + 'chpt04/modern/kosmos.mp3' },
+  'λόγος': { mounce: B + 'chpt04/words/logos.mp3', modern: B + 'chpt04/modern/logos.mp3' },
+  'πνεῦμα': { mounce: B + 'chpt04/words/pneuma.mp3', modern: B + 'chpt04/modern/pneuma.mp3' },
+  'προφήτης': { mounce: B + 'chpt04/words/profht.mp3', modern: B + 'chpt04/modern/profht.mp3' },
+  'σάββατον': { mounce: B + 'chpt04/words/sabbat.mp3', modern: B + 'chpt04/modern/sabbat.mp3' },
+  'φωνή': { mounce: B + 'chpt04/words/fwnh.mp3', modern: B + 'chpt04/modern/fwnh.mp3' },
+  'Χριστός': { mounce: B + 'chpt04/words/cristo.mp3', modern: B + 'chpt04/modern/cristo.mp3' },
+  'Ἀβραάμ': { mounce: B + 'chpt04/words/abraam.mp3', modern: B + 'chpt04/modern/abraam.mp3' },
+  'Δαυίδ': { mounce: B + 'chpt04/words/dauid.mp3', modern: B + 'chpt04/modern/dauid.mp3' },
+  'Παῦλος': { mounce: B + 'chpt04/words/paulos.mp3', modern: B + 'chpt04/modern/paulos.mp3' },
+  'Πέτρος': { mounce: B + 'chpt04/words/petros.mp3', modern: B + 'chpt04/modern/petros.mp3' },
+  'Πιλᾶτος': { mounce: B + 'chpt04/words/pilato.mp3', modern: B + 'chpt04/modern/pilato.mp3' },
+  // Σίμων has no modern-Greek recording on Mounce's page (chpt04/modern/simwn.mp3 is 403), so it plays the Erasmian one.
+  'Σίμων': { mounce: B + 'chpt04/words/simwn.mp3' },
   // Chapter 6
   'ἀγάπη': { mounce: B + 'chpt06/words/agaph.mp3', modern: B + 'chpt06/modern/agaph.mp3' },
   'ἄλλος': { mounce: B + 'chpt06/words/allos.mp3', modern: B + 'chpt06/modern/allos.mp3' },

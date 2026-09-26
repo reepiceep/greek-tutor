@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { playWord } from './audio'
+import { playWord, recordingFor } from './audio'
 
 /** A stand-in for HTMLAudioElement that lets each test decide what happens after play(). */
 class FakeAudio extends EventTarget {
@@ -66,7 +66,16 @@ describe('playWord', () => {
     await expect(first).resolves.toBeUndefined()
   })
 
+  it('plays the Erasmian recording when a word has no modern one', async () => {
+    FakeAudio.behaviour = 'play-then-end'
+    expect(recordingFor('Σίμων')!.modern).toBeUndefined()
+    const done = playWord('Σίμων', 'modern')
+    expect(FakeAudio.last.src).toMatch(/chpt04\/words\/simwn\.mp3$/)
+    await vi.runAllTimersAsync()
+    await expect(done).resolves.toBeUndefined()
+  })
+
   it('rejects straight away for a word with no recording', async () => {
-    await expect(playWord('λόγος', 'mounce')).rejects.toThrow('No recording')
+    await expect(playWord('ξξξ', 'mounce')).rejects.toThrow('No recording')
   })
 })

@@ -3,7 +3,7 @@ import { displayForm } from '../lib/items'
 import { CHAPTERS } from './chapters'
 
 // Indeclinable nouns have no genitive ending to list.
-const INDECLINABLE = new Set(['Ἰερουσαλήμ'])
+const INDECLINABLE = new Set(['Ἰερουσαλήμ', 'Ἀβραάμ', 'Δαυίδ'])
 
 describe('noun lexical forms', () => {
   it('every noun lists nominative, genitive and article, as in Mounce (θάνατος, -ου, ὁ)', () => {

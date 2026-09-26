@@ -2,7 +2,7 @@
 
 *“…so that you may know the certainty of the things you have been taught.”* (Luke 1:4). Theophilus, “friend of God,” is the reader Luke wrote his Gospel and Acts for.
 
-A study app for Mounce, *Basics of Biblical Greek* (4th ed.). Covers chapter 6 (vocabulary only: flashcards and vocab quiz), chapter 7 (genitive and dative), chapter 8 (prepositions and εἰμί), chapter 9 (adjectives), chapter 10 (third declension), chapter 11 (first and second person pronouns), chapter 12 (αὐτός), chapter 13 (demonstratives), chapter 14 (relative pronoun), chapter 15 (introduction to verbs), chapter 16 (present active indicative) and chapter 17 (contract verbs); pick the chapter at the top of the page. Light (Manuscript) and dark (Aegean) themes: use the button next to the chapter picker.
+A study app for Mounce, *Basics of Biblical Greek* (4th ed.). Covers chapters 4 and 6 (vocabulary only: flashcards and vocab quiz), chapter 7 (genitive and dative), chapter 8 (prepositions and εἰμί), chapter 9 (adjectives), chapter 10 (third declension), chapter 11 (first and second person pronouns), chapter 12 (αὐτός), chapter 13 (demonstratives), chapter 14 (relative pronoun), chapter 15 (introduction to verbs), chapter 16 (present active indicative) and chapter 17 (contract verbs); pick the chapter at the top of the page. Light (Manuscript) and dark (Aegean) themes: use the button next to the chapter picker.
 
 ```sh
 npm install

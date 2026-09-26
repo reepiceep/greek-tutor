@@ -21,7 +21,7 @@ export function playWord(lemma: string, style: Pronunciation): Promise<void> {
   const rec = recordingFor(lemma)
   if (!rec) return Promise.reject(new Error(`No recording for ${lemma}`))
   player?.pause()
-  const audio = new Audio(rec[style])
+  const audio = new Audio(rec[style] ?? rec.mounce)
   player = audio
   return new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
