@@ -347,6 +347,25 @@ it('chapter 17: contract verbs lesson, contracted chart, and every quiz tab work
   }
 })
 
+it('chapter 18: middle/passive lesson, λύομαι chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(18)
+  nav('Middle/passive')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λυόμεθα')
+  expect(screen.queryByText('Contractions', { selector: '.seg button' })).toBeNull()
+  tab('Fill the chart')
+  expect(screen.getByText('lu/omai')).toBeTruthy()
+  tab('δύναμαι')
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('δύνασαι')
+  for (const t of ['Parse & translate', 'Endings', 'Active or passive?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('flashcards can span a chapter range, and each card counts toward its own chapter', () => {
   localStorage.clear()
   render(<App />)

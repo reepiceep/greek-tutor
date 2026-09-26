@@ -428,12 +428,22 @@ export interface PresentVerb {
    */
   stem: string
   contract?: ContractVowel
-  /** English: base form and 3rd singular ("hear", "hears"). */
+  /**
+   * Chapter 18: the verb is drilled in the present middle/passive. 'passive' is an active verb in the passive,
+   * translated with `pp` ("I am loosed"); 'middle' is a middle-only verb (ἔρχομαι), translated actively ("I come").
+   * Absent for the present active.
+   */
+  voice?: 'passive' | 'middle'
+  /** English past participle for the passive ("loosed"). */
+  pp?: string
+  /** δύναμαι: the endings μαι, σαι, ται... go straight onto the stem, with no connecting vowel. */
+  athematic?: boolean
+  /** English: base form and 3rd singular ("hear", "hears"); for a passive verb, its active meaning. */
   en: string
   en3: string
 }
 
-/** A present active indicative verb in a verse. */
+/** A present indicative verb in a verse (active, or middle/passive in chapter 18). */
 export interface PresentVerse {
   id: string
   ref: string
@@ -455,7 +465,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'cases'
 
 export interface Chapter {
   number: number

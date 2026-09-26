@@ -17,7 +17,7 @@ import { caseUses, elidedForms } from './prepositions'
 import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
-  presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion,
+  presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -367,6 +367,29 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Contractions', [
           ...take(contractionPairs(), 3).map(({ c, vowel }) => contractionQuestion(ch, c, vowel)),
           ...types.map(({ v, s }) => contractTypeQuestion(ch, v, s)),
+        ]),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  18: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'Middle/passive forms', count: 10, covers: 'parsing, translating and choosing forms, including middle-only verbs and δύναμαι' },
+      { name: 'Endings & voice', count: 5, covers: 'ομαι, ῃ, εται, ομεθα, εσθε, ονται, and telling active from middle/passive' },
+      { name: 'Verses', count: 5, covers: 'middle/passive verbs in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 10)
+      const endings = take(SLOTS.flatMap((s) => [endingPersonQuestion, endingFormQuestion].map((f) => ({ s, f }))), 2)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 5)
+      return [
+        ...vocabArea(ch),
+        ...tag('Middle/passive forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Endings & voice', [
+          ...endings.map(({ s, f }) => f(ch, s)),
+          ...take(voicePairs(ch), 3).map(({ v, slot, voice }) => voiceQuestion(ch, v, slot, voice)),
         ]),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]

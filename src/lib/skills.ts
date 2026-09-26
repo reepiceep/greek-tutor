@@ -33,10 +33,10 @@ import {
   relativeAntecedentQuestion, relativeCaseQuestion, relativeFormId, relativeFormQuestion, relativeItemId, relativeTranslateQuestion,
 } from './relativeQuestions'
 import {
-  CONTRACTIONS, ENDINGS, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId, contractTypeQuestion, contractionItemId, contractionPairs,
-  contractionQuestion, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
-  presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
-  verseParseQuestion,
+  CONTRACTIONS, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId, contractTypeQuestion, contractionItemId, contractionPairs,
+  contractionQuestion, inVoice, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
+  plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
+  verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
@@ -280,13 +280,15 @@ export function weakestItems(skills: Skill[], items: Record<string, ItemStats>, 
     .slice(0, n)
 }
 
-/** Chapter 16 (present tense) and 17 (contract verbs) share their form and verse drills; each adds its own extra. */
+/** Chapters 16 (present tense), 17 (contract verbs) and 18 (middle/passive) share their form and verse drills; each adds its own extras. */
 function presentSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const pres = ch.present
   if (!pres) return []
-  const contract = pres.verbs.some((v) => v.contract)
-  const [topic, view]: [string, View] = contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
+  const middle = pres.verbs.some((v) => v.voice)
+  const contract = !middle && pres.verbs.some((v) => v.contract)
+  const [topic, view]: [string, View] = middle ? ['Middle/passive', 'middle'] : contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
+  const endings = plainEndingsOf(pres.verbs[0])
   const forms: Skill = {
     label: `${topic}: forms`, view,
     items: pres.verbs.flatMap((v) => SLOTS.flatMap((s) => [
@@ -310,10 +312,17 @@ function presentSkills(ch: Chapter): Skill[] {
     : {
         label: `${topic}: endings`, view,
         items: SLOTS.flatMap((s) => [
-          { id: endingItemId(n, s, 'person'), name: `-${ENDINGS[s]} = ${PRONOUN[s]}`, make: () => endingPersonQuestion(ch, s) },
-          { id: endingItemId(n, s, 'ending'), name: `${PRONOUN[s]} → -${ENDINGS[s]}`, make: () => endingFormQuestion(ch, s) },
+          { id: endingItemId(n, s, 'person'), name: `-${endings[s]} = ${PRONOUN[s]}`, make: () => endingPersonQuestion(ch, s) },
+          { id: endingItemId(n, s, 'ending'), name: `${PRONOUN[s]} → -${endings[s]}`, make: () => endingFormQuestion(ch, s) },
         ]),
       }
+  const voice: Skill = {
+    label: `${topic}: active or passive`, view,
+    items: voicePairs(ch).map(({ v, slot, voice }) => ({
+      id: voiceItemId(n, v, slot, voice), name: `${presentDisplay(inVoice(v, voice), slot)}: ${voice === 'mp' ? 'middle/passive' : 'active'} ${SLOT_LABEL[slot]}`,
+      make: () => voiceQuestion(ch, v, slot, voice),
+    })),
+  }
   const verses: Skill = {
     label: `${topic}: in verses`, view,
     items: pres.verses.flatMap((v) => [
@@ -321,7 +330,7 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
   }
-  return [forms, extra, verses]
+  return [forms, extra, ...(middle ? [voice] : []), verses]
 }
 
 /** Chapter 7: noun endings, article + noun phrases, and the case in verses. */

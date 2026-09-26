@@ -220,4 +220,15 @@ export const RECORDINGS: Record<string, Recording> = {
   'ποιέω': { mounce: B + 'chpt17/words/poiew.mp3', modern: B + 'chpt17/modern/poiew.mp3' },
   'τηρέω': { mounce: B + 'chpt17/words/threw.mp3', modern: B + 'chpt17/modern/threw.mp3' },
   'ζητέω': { mounce: B + 'chpt17/words/zhtew.mp3', modern: B + 'chpt17/modern/zhtew.mp3' },
+  // Chapter 18
+  'ἀποκρίνομαι': { mounce: B + 'chpt18/words/apokri.mp3', modern: B + 'chpt18/modern/apokri.mp3' },
+  'δεῖ': { mounce: B + 'chpt18/words/dei.mp3', modern: B + 'chpt18/modern/dei.mp3' },
+  'δύναμαι': { mounce: B + 'chpt18/words/dunama.mp3', modern: B + 'chpt18/modern/dunama.mp3' },
+  'ἔρχομαι': { mounce: B + 'chpt18/words/ercoma.mp3', modern: B + 'chpt18/modern/ercoma.mp3' },
+  'πορεύομαι': { mounce: B + 'chpt18/words/poreuo.mp3', modern: B + 'chpt18/modern/poreuo.mp3' },
+  'νύξ': { mounce: B + 'chpt18/words/nux.mp3', modern: B + 'chpt18/modern/nux.mp3' },
+  'ὅστις': { mounce: B + 'chpt18/words/hostis.mp3', modern: B + 'chpt18/modern/hostis.mp3' },
+  'συνάγω': { mounce: B + 'chpt18/words/sunagw.mp3', modern: B + 'chpt18/modern/sunagw.mp3' },
+  'τόπος': { mounce: B + 'chpt18/words/topos.mp3', modern: B + 'chpt18/modern/topos.mp3' },
+  'ὡς': { mounce: B + 'chpt18/words/hws.mp3', modern: B + 'chpt18/modern/hws.mp3' },
 }

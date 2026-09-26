@@ -2,31 +2,40 @@ import { useState } from 'react'
 import type { Chapter, PersonSlot, PresentVerb } from '../data/types'
 import { pickWeakest, shuffle } from '../lib/progress'
 import {
-  CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
+  ACTIVE_VOWELS, CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, MP_ENDINGS, MP_PRIMARY, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
   contractTypeQuestion, contractionItemId, contractionPairs, contractionQuestion, endingFormQuestion, endingItemId, endingPersonQuestion,
-  presentDisplay, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
-  presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion,
+  inVoice, presentDisplay, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
+  presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { ChartDrill } from './ParadigmDrill'
 
-type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'contractions' | 'verses'
+type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'contractions' | 'verses'
 
-const TABS: { tab: Tab; label: string; contract?: boolean }[] = [
+/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive. */
+type Mode = 'active' | 'contract' | 'middle'
+
+const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
   { tab: 'chart', label: 'Fill the chart' },
   { tab: 'forms', label: 'Parse & translate' },
-  { tab: 'endings', label: 'Endings', contract: false },
-  { tab: 'contractions', label: 'Contractions', contract: true },
+  { tab: 'endings', label: 'Endings', modes: ['active', 'middle'] },
+  { tab: 'voice', label: 'Active or passive?', modes: ['middle'] },
+  { tab: 'contractions', label: 'Contractions', modes: ['contract'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
-const isContract = (ch: Chapter) => !!ch.present?.verbs.some((v) => v.contract)
+const modeOf = (ch: Chapter): Mode => {
+  const verbs = ch.present?.verbs ?? []
+  return verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+}
 
-/** The present active indicative: chapter 16 (λύω) and chapter 17 (contract verbs). */
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative' }
+
+/** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
-  const contract = isContract(chapter)
+  const mode = modeOf(chapter)
   const [tab, setTab] = useState<Tab>('lesson')
   const [round, setRound] = useState(0)
   const restart = () => setRound((r) => r + 1)
@@ -35,17 +44,18 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
   return (
     <section>
       <div className="toolbar">
-        <h2>{contract ? 'Contract verbs' : 'Present active indicative'}</h2>
+        <h2>{HEADINGS[mode]}</h2>
         <div className="seg">
-          {TABS.filter((t) => t.contract === undefined || t.contract === contract).map((t) => (
+          {TABS.filter((t) => !t.modes || t.modes.includes(mode)).map((t) => (
             <button key={t.tab} className={tab === t.tab ? 'on' : ''} onClick={() => { setTab(t.tab); restart() }}>{t.label}</button>
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (contract ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'voice' && <Voice key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'contractions' && <Contractions key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} />}
     </section>
@@ -105,7 +115,7 @@ function PresentLesson({ chapter }: { chapter: Chapter }) {
 
 function ContractLesson({ chapter }: { chapter: Chapter }) {
   const models = CONTRACT_VOWELS.map((c) => chapter.present?.verbs.find((v) => v.contract === c)).filter((v) => !!v)
-  const vowels = Object.keys(CONTRACTIONS.ε)
+  const vowels = ACTIVE_VOWELS
   return (
     <>
       <Lesson title="How contract verbs work">
@@ -164,10 +174,80 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
   )
 }
 
+function MiddleLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const luo = verbs[0]
+  const middles = verbs.filter((v) => v.voice === 'middle' && !v.athematic)
+  const dynamai = verbs.find((v) => v.athematic)
+  const contracts = CONTRACT_VOWELS.map((c) => verbs.find((v) => v.contract === c)).filter((v) => !!v)
+  if (!luo) return null
+  return (
+    <>
+      <Lesson title="The middle and passive voices">
+        <p>
+          In the <strong>active</strong> the subject does the action (<span className="greek">λύω</span>, “I loose”). In the{' '}
+          <strong>passive</strong> the subject receives it (<span className="greek">λύομαι</span>, “I am loosed”). The{' '}
+          <strong>middle</strong> is between the two: the subject acts, but with some stake in the action. In the present the middle and
+          passive have the <strong>same forms</strong>, so we call them middle/passive and let context decide.
+        </p>
+        <ul>
+          <li>The form is built as before: <strong>present stem + connecting vowel + personal ending</strong>. Only the endings are new: <span className="greek">μαι, σαι, ται, μεθα, σθε, νται</span>.</li>
+          <li>With the connecting vowel they become <span className="greek">ομαι, ῃ, εται, ομεθα, εσθε, ονται</span>. In the 2nd singular the σ drops out and <span className="greek">ε + αι</span> contracts to <span className="greek">ῃ</span>.</li>
+          <li>Watch the iota subscript: <span className="greek">λύει</span> is active, “he looses”; <span className="greek">λύῃ</span> is middle/passive, “you are loosed.”</li>
+          <li>The accent moves forward in the 1st plural, because <span className="greek">-ομεθα</span> is three syllables: <span className="greek">λύομαι</span> but <span className="greek">λυόμεθα</span>.</li>
+          <li>
+            <strong>Middle-only verbs</strong> have no active forms, so their lexical form ends in <span className="greek">-ομαι</span>. Translate them actively:{' '}
+            {middles.map((v, i) => <span key={v.id}>{i > 0 && ', '}<span className="greek">{v.lemma}</span> “I {v.en}”</span>)}. (Older grammars call them “deponent.”)
+          </li>
+          {dynamai && (
+            <li>
+              <span className="greek">{dynamai.lemma}</span>, “I can, am able,” has no connecting vowel, so you see the bare endings:{' '}
+              <span className="greek">{SLOTS.map((s) => presentDisplay(dynamai, s)).join(', ')}</span>. It is usually followed by an infinitive: <span className="greek">οὐ δύναμαι ποιεῖν</span>, “I cannot do.”
+            </li>
+          )}
+          <li>Contract verbs contract as in chapter 17: <span className="greek">ἀγαπα + εται → ἀγαπᾶται</span>, <span className="greek">καλε + εται → καλεῖται</span>. Note <span className="greek">ἀγαπᾷ</span>: active “he loves” or middle/passive “you are loved.”</li>
+          <li><span className="greek">δεῖ</span>, “it is necessary,” is only ever 3rd singular: <span className="greek">ἡμᾶς δεῖ ἐργάζεσθαι</span>, “we must work” (John 9:4).</li>
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th>Ending</th><th>+ vowel</th><th className="greek">λύομαι</th><th /><th className="muted">Active</th></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek">-{MP_PRIMARY[s]}</td>
+              <td className="greek">-{MP_ENDINGS[s]}</td>
+              <td className="greek">{presentDisplay(luo, s)}</td>
+              <td className="muted">{presentEnglish(luo, s)}</td>
+              <td className="greek muted">{presentDisplay(inVoice(luo, 'active'), s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {contracts.length > 0 && (
+        <table className="reference endings-table">
+          <caption>Contract verbs in the middle/passive</caption>
+          <thead><tr><th />{contracts.map((v) => <th key={v.id} className="greek">{v.lemma}</th>)}</tr></thead>
+          <tbody>
+            {SLOTS.map((s) => (
+              <tr key={s}>
+                <th>{SLOT_LABEL[s]} <span className="muted greek">+{MP_ENDINGS[s]}</span></th>
+                {contracts.map((v) => <td key={v.id}><span className="greek">{presentDisplay(v, s)}</span><div className="muted small">{presentEnglish(v, s)}</div></td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </>
+  )
+}
+
 interface QuizProps {
   chapter: Chapter
   onRestart: () => void
 }
+
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -183,7 +263,7 @@ function Chart({ chapter, onRestart }: QuizProps) {
         ))}
       </div>
       <ChartDrill key={`${verb.id}-${round}`} chapter={chapter} paradigm={presentParadigm(verb)} onRestart={onRestart}
-        example={isContract(chapter) ? ['poiw=', 'ποιῶ'] : ['lu/w', 'λύω']} />
+        example={EXAMPLES[modeOf(chapter)]} />
     </>
   )
 }
@@ -217,6 +297,22 @@ function Endings({ chapter, onRestart }: QuizProps) {
     return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
   })
   return <ChoiceQuiz questions={questions} onRestart={onRestart} layout="paradigm" />
+}
+
+/** λύει or λύῃ? The active next to the middle/passive, for the verbs that have both. */
+function Voice({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = voicePairs(chapter).map(({ v, slot, voice }) => ({
+      id: voiceItemId(chapter.number, v, slot, voice), make: () => voiceQuestion(chapter, v, slot, voice),
+    }))
+    return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">Active and middle/passive forms of the verbs that have both. The trap: <span className="greek">λύει</span> (he looses) and <span className="greek">λύῃ</span> (you are loosed).</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
 }
 
 function Verses({ chapter, onRestart }: QuizProps) {
