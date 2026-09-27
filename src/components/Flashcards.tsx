@@ -193,9 +193,10 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
 
       {card ? (
         <DrillLayout aside={<DeckPanel deck={deck} known={known} missed={missed} />}>
-          <p className="muted">
-            {known} known · {deck.length} to go
-            {multiChapter && <span className="review-tag"> · Ch {card.chapter}</span>}
+          {/* On wide screens the side panel has the counts; only the chapter tag stays here. */}
+          <p className="muted deck-status">
+            <span className="deck-count">{known} known · {deck.length} to go</span>
+            {multiChapter && <span className="review-tag"><span className="deck-count"> · </span>Ch {card.chapter}</span>}
           </p>
           <button key={turn} className={`flashcard ${flipped ? 'flipped' : ''}`} onClick={() => setFlipped((f) => !f)}>
             {!flipped ? (

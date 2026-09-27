@@ -259,6 +259,12 @@ nav button, .seg button { padding: 6px 12px; }
 .round-pip.done { background: var(--accent); }
 .round-pip.current { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--accent); }
 .side-block .progress-bar { margin-bottom: 10px; }
+.side-streak { margin: -8px 0 0; font-size: 0.85rem; font-weight: 600; color: var(--warn); animation: pop 0.35s ease-out; }
+/* Where the side panel shows, the drill's own count, chips and bar would only repeat it. */
+@media (min-width: 900px) {
+  .drill-main > .quiz-status, .drill-main > .progress-bar, .drill-main > .deck-status .deck-count { display: none; }
+  .drill-main > .deck-status:not(:has(.review-tag)) { display: none; }
+}
 .side-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; }
 .side-stats div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
 .side-stats dd { margin: 0; font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }

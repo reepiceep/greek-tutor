@@ -1,22 +1,48 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Chapter, VocabWord } from '../data/types'
 import { checkEnglish, checkGreek } from '../lib/greek'
 import { type Direction, displayForm, greekAnswersFor, vocabItemId } from '../lib/items'
-import { record, useProgress } from '../lib/progress'
+import { useProgress } from '../lib/progress'
 import { type Question, type Range, buildQuiz, chaptersIn, vocabPool } from '../lib/vocabQuiz'
 import { ChapterRange } from './ChapterRange'
-import { GreekInput } from './GreekInput'
+import { ChoiceQuiz, type ChoiceQuestion } from './ChoiceQuiz'
 import { WordDetails } from './WordDetails'
 import { AudioButton } from './AudioButton'
-import { Celebration } from './Celebration'
-import { DrillLayout, KeyHelp, MissedList, RoundProgress } from './SidePanel'
 
 type Format = 'choice' | 'typed'
 
-interface Answer {
-  q: Question
-  correct: boolean
-  given: string
+interface Settings {
+  format: Format
+  multiChapter: boolean
+  /** Every word in the chosen chapters: a typed Greek answer may match another word with the same meaning. */
+  pool: VocabWord[]
+  requireAccents: boolean
+}
+
+/** One vocabulary question in the shared quiz's form, multiple choice or typed. */
+function toQuestion(q: Question, s: Settings): ChoiceQuestion {
+  const g2e = q.dir === 'g2e'
+  return {
+    id: vocabItemId(q.chapter, q.word, q.dir),
+    prompt: (
+      <>
+        {s.multiChapter && <p className="review-tag">Ch {q.chapter}</p>}
+        {g2e
+          ? <span className="word-head"><span className="greek big">{displayForm(q.word)}</span><AudioButton key={`${q.chapter}-${q.word.id}`} lemma={q.word.lemma} autoPlay /></span>
+          : <span className="big">{q.word.gloss}</span>}
+      </>
+    ),
+    options: s.format === 'choice' ? q.options.map((o) => ({ key: o.id, label: g2e ? o.gloss : displayForm(o), greek: !g2e })) : [],
+    answer: q.word.id,
+    explain: <WordDetails word={q.word} autoPlay={!g2e} />,
+    review: <><span className="greek">{displayForm(q.word)}</span> — {q.word.gloss}</>,
+    typed: s.format === 'typed'
+      ? {
+          greek: !g2e,
+          check: (input) => (g2e ? checkEnglish(input, q.word.accept) : checkGreek(input, greekAnswersFor(q.word, s.pool), s.requireAccents)),
+        }
+      : undefined,
+  }
 }
 
 export function VocabQuiz({ chapter }: { chapter: Chapter }) {
@@ -25,20 +51,16 @@ export function VocabQuiz({ chapter }: { chapter: Chapter }) {
   const [format, setFormat] = useState<Format>('choice')
   const [length, setLength] = useState(10)
   const [range, setRange] = useState<Range>([chapter.number, chapter.number])
-  const [questions, setQuestions] = useState<Question[] | null>(null)
-  const [poolVocab, setPoolVocab] = useState<VocabWord[]>([])
+  const [questions, setQuestions] = useState<ChoiceQuestion[] | null>(null)
+  const [round, setRound] = useState(0)
   const inRange = chaptersIn(range)
-  const multiChapter = range[0] !== range[1]
-  const [answers, setAnswers] = useState<Answer[]>([])
-  const [input, setInput] = useState('')
-  const [pending, setPending] = useState<Answer | null>(null)
 
   const start = () => {
-    setQuestions(buildQuiz(inRange, dir, length))
-    setPoolVocab(vocabPool(inRange).map((e) => e.word))
-    setAnswers([])
-    setInput('')
-    setPending(null)
+    const s: Settings = {
+      format, multiChapter: range[0] !== range[1], pool: vocabPool(inRange).map((e) => e.word), requireAccents: settings.requireAccents,
+    }
+    setQuestions(buildQuiz(inRange, dir, length).map((q) => toQuestion(q, s)))
+    setRound((r) => r + 1)
   }
 
   if (!questions) {
@@ -78,156 +100,11 @@ export function VocabQuiz({ chapter }: { chapter: Chapter }) {
     )
   }
 
-  const index = answers.length
-  const q = questions[index]
-
-  if (!q) {
-    const score = answers.filter((a) => a.correct).length
-    const missed = answers.filter((a) => !a.correct)
-    return (
-      <section>
-        <h2>Vocabulary quiz</h2>
-        <div className="done">
-          {score === answers.length && answers.length > 0 && <><Celebration /><h3 className="perfect">Perfect round!</h3></>}
-          <div className="score">{score} / {answers.length}</div>
-          {missed.length > 0 && (
-            <>
-              <p>Review these:</p>
-              <ul className="word-list">
-                {missed.map((a) => (
-                  <li key={a.q.word.id}>
-                    <span className="greek">{displayForm(a.q.word)}</span> — {a.q.word.gloss}
-                    {a.given && <span className="muted"> (you: {a.given})</span>}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <div className="actions">
-            <button onClick={() => setQuestions(null)}>Change settings</button>
-            <button className="primary" onClick={start}>New quiz</button>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  const submit = (given: string, correct: boolean) => {
-    if (!pending) setPending({ q, given, correct })
-  }
-
-  const submitTyped = () => {
-    if (!input.trim()) return
-    const ok = q.dir === 'g2e'
-      ? checkEnglish(input, q.word.accept)
-      : checkGreek(input, greekAnswersFor(q.word, poolVocab), settings.requireAccents)
-    submit(input.trim(), ok)
-  }
-
-  // Results are recorded on moving on, so "I was right" can overrule the checker first.
-  const next = (overruled = false) => {
-    if (!pending) return
-    const answer = overruled ? { ...pending, correct: true } : pending
-    record(vocabItemId(q.chapter, q.word, q.dir), answer.correct)
-    setAnswers((a) => [...a, answer])
-    setPending(null)
-    setInput('')
-  }
-
-  const label = (w: VocabWord) => (q.dir === 'g2e' ? w.gloss : displayForm(w))
-  const rightCount = answers.filter((a) => a.correct).length
-  const aside = (
-    <>
-      <RoundProgress
-        marks={questions.map((_, i) => (i < answers.length ? (answers[i].correct ? 'right' : 'wrong') : 'todo'))}
-        current={index}
-        stats={[[rightCount, 'right'], [answers.length - rightCount, 'missed'], [questions.length - answers.length, 'left']]} />
-      <MissedList items={answers.flatMap((a, i) => (a.correct ? [] : [{
-        key: `${i}-${a.q.word.id}`, node: <><span className="greek">{displayForm(a.q.word)}</span> — {a.q.word.gloss}</>,
-      }]))} />
-      <KeyHelp keys={format === 'choice'
-        ? [[[`1–${q.options.length}`], 'pick an answer'], [['Enter'], 'next question']]
-        : [[['Enter'], 'check, then next question']]} />
-    </>
-  )
-
   return (
     <section>
-      <QuizKeys
-        onNumber={format === 'choice' && !pending
-          ? (i) => { const o = q.options[i]; if (o) submit(label(o), o === q.word) }
-          : undefined}
-        onEnter={pending ? () => next() : undefined} />
-      <div className="toolbar">
-        <h2>Vocabulary quiz</h2>
-        <span className="muted">Question {index + 1} of {questions.length}</span>
-      </div>
-      <DrillLayout aside={aside}>
-        <div className="progress-bar"><div style={{ width: `${(index / questions.length) * 100}%` }} /></div>
-
-        <div className="prompt">
-          {multiChapter && <p className="review-tag">Ch {q.chapter}</p>}
-          {q.dir === 'g2e'
-            ? <span className="word-head"><span className="greek big">{displayForm(q.word)}</span><AudioButton key={index} lemma={q.word.lemma} autoPlay /></span>
-            : <span className="big">{q.word.gloss}</span>}
-        </div>
-
-        {format === 'choice' ? (
-          <div className="options">
-            {q.options.map((o, i) => {
-              const state = pending && (o === q.word ? 'right' : pending.given === label(o) ? 'wrong' : '')
-              return (
-                <button key={o.id} className={`option ${q.dir === 'e2g' ? 'greek' : ''} ${state || ''}`}
-                  disabled={!!pending} onClick={() => submit(label(o), o === q.word)}>
-                  <kbd>{i + 1}</kbd> {label(o)}
-                </button>
-              )
-            })}
-          </div>
-        ) : q.dir === 'e2g' ? (
-          <GreekInput value={input} onChange={setInput} onSubmit={submitTyped} disabled={!!pending} autoFocus key={index} />
-        ) : (
-          <input className="text-answer" value={input} autoFocus key={index} disabled={!!pending}
-            placeholder="English meaning…" onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !pending) { e.preventDefault(); submitTyped() } }} />
-        )}
-
-        {format === 'typed' && !pending && (
-          <div className="actions"><button className="primary" onClick={submitTyped}>Check</button></div>
-        )}
-
-        {pending && (
-          <div className={`feedback ${pending.correct ? 'good' : 'bad'}`}>
-            <strong>{pending.correct ? 'Correct' : 'Not quite'}</strong>
-            <WordDetails word={q.word} autoPlay={q.dir === 'e2g'} />
-            <div className="actions">
-              {!pending.correct && format === 'typed' && (
-                <button onClick={() => next(true)}>I was right</button>
-              )}
-              <button className="primary" onClick={() => next()}>Next <kbd>Enter</kbd></button>
-            </div>
-          </div>
-        )}
-      </DrillLayout>
+      <div className="toolbar"><h2>Vocabulary quiz</h2></div>
+      <ChoiceQuiz key={round} questions={questions} onRestart={start}
+        doneActions={<button onClick={() => setQuestions(null)}>Change settings</button>} />
     </section>
   )
-}
-
-/** Number keys pick a multiple-choice option; Enter moves on after feedback. */
-function QuizKeys({ onNumber, onEnter }: { onNumber?: (i: number) => void; onEnter?: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      // The Enter that submitted an answer (already handled by the input) must not also skip its feedback.
-      if (e.defaultPrevented) return
-      if (e.key === 'Enter' && onEnter) {
-        e.preventDefault()
-        onEnter()
-      } else if (onNumber && /^[1-9]$/.test(e.key)) {
-        onNumber(Number(e.key) - 1)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onNumber, onEnter])
-  return null
 }

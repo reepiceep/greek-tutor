@@ -24,7 +24,7 @@ it('renders every view without crashing', () => {
   expect(screen.getByText(/20 to go/)).toBeTruthy()
   nav('Vocab quiz')
   fireEvent.click(screen.getByText('Start'))
-  expect(screen.getByText(/Question 1 of 10/)).toBeTruthy()
+  expect(screen.getByText(/^1 of 10$/)).toBeTruthy()
   nav('εἰμί')
   tab('Identify forms')
   for (const t of ['Subject & predicate', 'Enclitics']) {
@@ -947,4 +947,36 @@ it('a screen whose code fails to load offers a reload', async () => {
   } finally {
     console.error = quiet
   }
+})
+
+it('vocab quiz, typed: a wrong answer can be overruled, and the results list what you typed', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(8)
+  nav('Vocab quiz')
+  fireEvent.click(screen.getByText('Typing'))
+  fireEvent.click(screen.getByText('10'))
+  fireEvent.click(screen.getByText('Start'))
+  const answer = (text: string) => {
+    fireEvent.change(document.querySelector('.text-answer')!, { target: { value: text } })
+    fireEvent.keyDown(document.querySelector('.text-answer')!, { key: 'Enter' })
+  }
+  // Nothing typed: nothing is checked.
+  answer('   ')
+  expect(document.querySelector('.feedback')).toBeNull()
+  answer('zzz')
+  expect(screen.getByText('Not quite')).toBeTruthy()
+  fireEvent.click(screen.getByText('I was right'))
+  expect(screen.getByText(/^2 of 10$/)).toBeTruthy()
+  answer('qqq')
+  fireEvent.click(screen.getByText('Next', { exact: false, selector: 'button' }))
+  for (let i = 2; i < 10; i++) {
+    answer('xyz')
+    fireEvent.click(screen.getByText('Next', { exact: false, selector: 'button' }))
+  }
+  // The overruled one counts as right; the rest are listed with what was typed.
+  expect(document.querySelector('.score')!.textContent).toBe('1 / 10')
+  expect(screen.getByText('(you: qqq)', { exact: false })).toBeTruthy()
+  fireEvent.click(screen.getByText('Change settings'))
+  expect(screen.getByText('Start')).toBeTruthy()
 })
