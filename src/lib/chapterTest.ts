@@ -22,6 +22,9 @@ import {
 } from './participleQuestions'
 import { participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
+  infinitiveBuildQuestion, infinitivePairs, infinitiveParseQuestion, infinitiveTranslateQuestion, infinitiveUseQuestion, infinitiveVerseParseQuestion,
+} from './infinitiveQuestions'
+import {
   moodPairs, moodQuestion, subjUseQuestion,
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
@@ -684,6 +687,29 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Indicative or subjunctive', take(moodPairs(ch), 6).map(({ v, slot, mood }) => moodQuestion(ch, v, slot, mood))),
         ...tag('Why subjunctive', withUse.slice(0, 6).map((v) => subjUseQuestion(ch, v))),
         ...tag('Verses', take(rest.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 6).map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  32: {
+    areas: [
+      { name: 'Vocabulary', count: 2, covers: 'δίκαιος and μέλλω, both directions' },
+      { name: 'Infinitive forms', count: 10, covers: 'parsing infinitives, and choosing the form for a tense and voice' },
+      { name: 'Uses', count: 8, covers: 'complementary, purpose, result, time, cause, substantival' },
+      { name: 'Translation', count: 6, covers: 'translating infinitives in the New Testament' },
+      { name: 'Parsing in verses', count: 4, covers: 'the tense and voice of infinitives in the New Testament' },
+    ],
+    build: (ch) => {
+      const pairs = infinitivePairs(ch)
+      const items = shuffle(ch.infinitives!.items)
+      return [
+        ...vocabArea(ch),
+        ...tag('Infinitive forms', [
+          ...take(pairs, 6).map(({ v, kind }) => infinitiveParseQuestion(ch, v, kind)),
+          ...take(pairs, 4).map(({ v, kind }) => infinitiveBuildQuestion(ch, v, kind)),
+        ]),
+        ...tag('Uses', items.slice(0, 8).map((it) => infinitiveUseQuestion(ch, it))),
+        ...tag('Translation', items.slice(8, 14).map((it) => infinitiveTranslateQuestion(ch, it))),
+        ...tag('Parsing in verses', items.slice(14, 18).map((it) => infinitiveVerseParseQuestion(ch, it))),
       ]
     },
   },

@@ -49,6 +49,10 @@ import {
 } from './participleQuestions'
 import { participleUseId, participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
+  KIND_LABEL, infinitive, infinitiveBuildQuestion, infinitiveItemId, infinitivePairs, infinitiveParseQuestion, infinitiveTranslateQuestion,
+  infinitiveUseId, infinitiveUseQuestion, infinitiveVerseParseId, infinitiveVerseParseQuestion,
+} from './infinitiveQuestions'
+import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
 } from './verbIntroQuestions'
@@ -271,6 +275,7 @@ function buildSkills(ch: Chapter): Skill[] {
     ...presentSkills(ch),
     ...participleSkills(ch),
     ...participleUseSkills(ch),
+    ...infinitiveSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
   // one card per case; track that here so it shows on the dashboard and in the daily review.
@@ -346,6 +351,34 @@ function participleSkills(ch: Chapter): Skill[] {
           ? [{ id: participleVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => participleVerseTranslateQuestion(ch, v) }]
           : []),
       ]),
+    },
+  ]
+}
+
+/** Chapter 32: infinitive forms both ways, their uses, translation and parsing in verses. */
+function infinitiveSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const items = ch.infinitives?.items ?? []
+  const view: View = 'infinitive'
+  return [
+    {
+      label: 'Infinitive: forms', view,
+      items: infinitivePairs(ch).flatMap(({ v, kind }) => [
+        { id: infinitiveItemId(n, v, kind, 'parse'), name: `${infinitive(v, kind)} = ${KIND_LABEL[kind]}`, make: () => infinitiveParseQuestion(ch, v, kind) },
+        { id: infinitiveItemId(n, v, kind, 'build'), name: `${KIND_LABEL[kind]} of ${v.lemma} → ${infinitive(v, kind)}`, make: () => infinitiveBuildQuestion(ch, v, kind) },
+      ]),
+    },
+    {
+      label: 'Infinitive: uses', view,
+      items: items.map((it) => ({ id: infinitiveUseId(n, it, 'use'), name: `${it.word} (${it.ref}): ${it.use}`, make: () => infinitiveUseQuestion(ch, it) })),
+    },
+    {
+      label: 'Infinitive: translation', view,
+      items: items.map((it) => ({ id: infinitiveUseId(n, it, 'translate'), name: `${it.word} = “${it.english}”`, make: () => infinitiveTranslateQuestion(ch, it) })),
+    },
+    {
+      label: 'Infinitive: in verses', view,
+      items: items.map((it) => ({ id: infinitiveVerseParseId(n, it), name: `${it.word} (${it.ref}): parse`, make: () => infinitiveVerseParseQuestion(ch, it) })),
     },
   ]
 }

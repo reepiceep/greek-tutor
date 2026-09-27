@@ -6,15 +6,14 @@ import {
 } from '../lib/presentQuestions'
 import { chapterSkills } from '../lib/skills'
 import { chapter31 as ch } from './chapter31'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 
 const pr = ch.present!
 const chart = (id: string) => SLOTS.map((s) => presentDisplay(presentVerb(ch, id), s))
 
 describe('chapter 31 data', () => {
-  it('is the latest chapter, with its 2 vocabulary words, each with audio', () => {
-    expect(LATEST_CHAPTER).toBe(31)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with its 2 vocabulary words, each with audio', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(2)
     for (const w of ch.vocab) expect(recordingFor(w.lemma), w.lemma).toBeTruthy()
   })

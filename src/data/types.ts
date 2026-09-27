@@ -489,6 +489,49 @@ export type ParticipleUse = 'adverbial' | 'attributive' | 'substantival'
 /** A verse with one participle to classify, translate and parse. */
 export type ParticipleUseItem = UseItem<ParticipleUse> & ParsedParticiple
 
+// --- Infinitives (chapter 32) ---
+
+export type InfinitiveKind = 'pres-act' | 'pres-mp' | 'aor-act' | 'aor-mid' | 'aor-pass' | 'perf-act' | 'perf-mp'
+
+/**
+ * A verb whose infinitives are generated from its stems: present λύ (λύειν, λύεσθαι), first aorist λύσ (λῦσαι,
+ * λύσασθαι) or second aorist λαβ (λαβεῖν, γενέσθαι), aorist passive λυθ (λυθῆναι), perfect λελυκ and λελυ.
+ */
+export interface InfinitiveVerb {
+  id: string
+  lemma: string
+  /** "loose": the infinitive is “to loose”; the passive “to be loosed” uses `pp`. */
+  en: string
+  pp?: string
+  /** Middle-only (ἔρχομαι, γίνομαι): middle forms, active meaning. */
+  middleOnly?: boolean
+  /** The present stem with its accent (λύ), or for a contract verb the stem without its vowel (ποι) and `contract`. */
+  present?: string
+  contract?: 'α' | 'ε' | 'ο'
+  /** First aorist stem with its σ and accent (λύσ, σπείρ), or a second aorist stem, unaccented, with `second`. */
+  aorist?: string
+  second?: boolean
+  passive?: string
+  perfect?: string
+  perfectMp?: string
+  /** A long α, ι or υ before the aorist's -σαι, which takes a circumflex (λῦσαι). */
+  long?: boolean
+  /** The infinitives to drill. */
+  kinds: InfinitiveKind[]
+  /** Forms the rules don't give (εἶναι, ζῆν, δύνασθαι). */
+  irregular?: Partial<Record<InfinitiveKind, string>>
+}
+
+export type InfinitiveUse = 'complementary' | 'purpose' | 'result' | 'time' | 'cause' | 'substantival'
+
+/** A verse with one infinitive to classify, translate and parse. */
+export type InfinitiveItem = UseItem<InfinitiveUse> & { lemma: string; kind: InfinitiveKind }
+
+export interface InfinitiveSection {
+  verbs: InfinitiveVerb[]
+  items: InfinitiveItem[]
+}
+
 // --- Genitive and dative (chapter 7) ---
 
 /** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
@@ -639,7 +682,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -659,6 +702,7 @@ export interface Chapter {
   participleIntro?: ParticipleIntroSection
   participles?: ParticipleSection
   participleUses?: ParticipleUseItem[]
+  infinitives?: InfinitiveSection
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

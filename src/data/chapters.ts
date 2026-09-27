@@ -25,10 +25,11 @@ import { chapter28 } from './chapter28'
 import { chapter29 } from './chapter29'
 import { chapter30 } from './chapter30'
 import { chapter31 } from './chapter31'
+import { chapter32 } from './chapter32'
 import type { Chapter } from './types'
 
 /** Every chapter built so far, in order. */
-export const CHAPTERS: Chapter[] = [chapter04, chapter06, chapter07, chapter08, chapter09, chapter10, chapter11, chapter12, chapter13, chapter14, chapter15, chapter16, chapter17, chapter18, chapter19, chapter20, chapter21, chapter22, chapter23, chapter24, chapter25, chapter26, chapter27, chapter28, chapter29, chapter30, chapter31]
+export const CHAPTERS: Chapter[] = [chapter04, chapter06, chapter07, chapter08, chapter09, chapter10, chapter11, chapter12, chapter13, chapter14, chapter15, chapter16, chapter17, chapter18, chapter19, chapter20, chapter21, chapter22, chapter23, chapter24, chapter25, chapter26, chapter27, chapter28, chapter29, chapter30, chapter31, chapter32]
 
 export const LATEST_CHAPTER = CHAPTERS.at(-1)!.number
 

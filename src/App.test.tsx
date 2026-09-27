@@ -637,6 +637,23 @@ it('chapter 31: subjunctive lesson, chart, every quiz tab, and the test', () => 
   expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
 })
 
+it('chapter 32: infinitive lesson, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(32)
+  nav('Infinitive')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λυθῆναι')
+  for (const t of ['Parse', 'Build the form', 'How is it used?', 'Translate', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)
