@@ -490,6 +490,25 @@ it('chapter 25: perfect lesson, reduplicated chart, and every quiz tab works', (
   }
 })
 
+it('chapter 26: participle lesson, four drills, and test work without vocabulary', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(26)
+  expect(screen.queryByText('Flashcards', { selector: 'nav button' })).toBeNull()
+  expect(screen.getByText(/Not started yet: begin with the lesson/)).toBeTruthy()
+  nav('Participles')
+  expect(screen.getByText(/verbal adjective/, { selector: 'summary' })).toBeTruthy()
+  for (const area of ['English participles', 'Verbal and adjectival', 'Agreement', 'Word structure']) {
+    tab(area)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

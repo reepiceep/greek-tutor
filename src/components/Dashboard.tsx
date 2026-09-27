@@ -53,7 +53,7 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
         <p className="eyebrow">Chapter {chapter.number}</p>
         <h2 className="greek">{chapter.title}</h2>
         <p className="muted">
-          {started ? <>{learnedPct}% of this chapter learned</> : <>Not started yet: begin with the flashcards</>}
+          {started ? <>{learnedPct}% of this chapter learned</> : <>{chapter.vocab.length ? 'Not started yet: begin with the flashcards' : 'Not started yet: begin with the lesson'}</>}
           {' · '}{chapter.vocab.length ? `${chapter.vocab.length} words · ` : 'no new vocabulary · '}{skills.length} skills
         </p>
       </div>

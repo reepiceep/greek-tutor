@@ -8,6 +8,7 @@ import { Autos } from './components/Autos'
 import { Demonstratives } from './components/Demonstratives'
 import { RelativePronoun } from './components/RelativePronoun'
 import { VerbIntro } from './components/VerbIntro'
+import { ParticipleIntro } from './components/ParticipleIntro'
 import { Cases } from './components/Cases'
 import { PresentTense } from './components/PresentTense'
 import { ChapterTest } from './components/ChapterTest'
@@ -47,7 +48,7 @@ export default function App() {
   const nav: { view: View; label: string; badge?: number }[] = [
     { view: 'home', label: 'Home' },
     { view: 'today', label: 'Today', badge: dueNow },
-    // Chapters without vocabulary (15, introduction to verbs) have no flashcards or vocab quiz.
+    // Chapters without vocabulary have no flashcards or vocab quiz.
     ...(chapter.vocab.length ? [{ view: 'flashcards' as View, label: 'Flashcards' }, { view: 'quiz' as View, label: 'Vocab quiz' }] : []),
     ...topics.map((t) => ({ view: t, label: TOPIC_META[t].nav })),
     // Most prepositions arrive in chapter 8; before that, the review would quiz words not yet taught.
@@ -102,6 +103,7 @@ export default function App() {
         {view === 'demonstratives' && <Demonstratives chapter={chapter} />}
         {view === 'relative' && <RelativePronoun chapter={chapter} />}
         {view === 'verbs' && <VerbIntro chapter={chapter} />}
+        {view === 'participles' && <ParticipleIntro chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
         {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}

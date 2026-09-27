@@ -15,6 +15,7 @@ import {
 import { caseUseQuestion, caseUseTranslateQuestion, phraseParseQuestion, phraseSlots, phraseTranslateQuestion } from './caseQuestions'
 import { caseUses, elidedForms } from './prepositions'
 import { shuffle, type AreaScore, type TestResult } from './progress'
+import { PARTICIPLE_AREAS, participleQuestion } from './participleIntroQuestions'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
@@ -567,6 +568,11 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },
+  },
+  26: {
+    areas: PARTICIPLE_AREAS.map((area) => ({ name: area.label, count: area.testCount, covers: area.label.toLowerCase() })),
+    build: (ch) => PARTICIPLE_AREAS.flatMap((area) => tag(area.label,
+      take(ch.participleIntro![area.key], area.testCount).map((item) => participleQuestion(ch, area.key, item)))),
   },
 }
 

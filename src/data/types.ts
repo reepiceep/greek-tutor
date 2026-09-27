@@ -393,6 +393,22 @@ export interface VerbIntroSection {
   parts: VerbPartsItem[]
 }
 
+/** Chapter 26 introduces participle grammar before the full paradigms in chapter 27. */
+export interface ParticipleIntroItem {
+  id: string
+  prompt: string
+  options: [string, string, string, string]
+  answer: string
+  explain: string
+}
+
+export interface ParticipleIntroSection {
+  english: ParticipleIntroItem[]
+  properties: ParticipleIntroItem[]
+  agreement: ParticipleIntroItem[]
+  structure: ParticipleIntroItem[]
+}
+
 // --- Genitive and dative (chapter 7) ---
 
 /** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
@@ -533,7 +549,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -550,6 +566,7 @@ export interface Chapter {
   demonstratives?: DemonstrativeSection
   relative?: RelativeSection
   verbIntro?: VerbIntroSection
+  participleIntro?: ParticipleIntroSection
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

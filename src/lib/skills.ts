@@ -42,6 +42,7 @@ import {
 import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
+import { PARTICIPLE_AREAS, participleItemId, participleQuestion } from './participleIntroQuestions'
 import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
@@ -245,6 +246,12 @@ export function chapterSkills(ch: Chapter): Skill[] {
         id: partsItemId(n, pp, part), name: `${pp.form}: ${part}`, make: () => verbPartQuestion(ch, pp, part),
       }))),
     },
+    ...PARTICIPLE_AREAS.map((area): Skill => ({
+      label: `Participles: ${area.label}`, view: 'participles',
+      items: (ch.participleIntro?.[area.key] ?? []).map((item) => ({
+        id: participleItemId(n, area.key, item), name: item.prompt, make: () => participleQuestion(ch, area.key, item),
+      })),
+    })),
     ...casesSkills(ch),
     ...presentSkills(ch),
   ]
