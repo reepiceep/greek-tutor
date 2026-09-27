@@ -38,11 +38,34 @@ export function ParadigmDrill({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
+      {(mode === 'chart' || mode === 'identify') && <EimiLesson />}
       {mode === 'chart' && <ChartDrill key={key} chapter={chapter} paradigm={paradigm} onRestart={restart} />}
       {mode === 'identify' && <IdentifyDrill key={key} chapter={chapter} paradigm={paradigm} onRestart={restart} />}
       {mode === 'predicate' && <PredicateDrill key={key} chapter={chapter} onRestart={restart} />}
       {mode === 'enclitics' && <EncliticDrill key={key} chapter={chapter} onRestart={restart} />}
     </section>
+  )
+}
+
+// --- The present of εἰμί ---------------------------------------------------------------
+
+function EimiLesson() {
+  return (
+    <Lesson title="The present of εἰμί" firstVisitOpen={false}>
+      <ul>
+        <li>
+          The ending tells you the subject: <span className="greek">εἰμί</span> “I am,” <span className="greek">ἐσμέν</span> “we
+          are.” A verb agrees with its subject in person and number.
+        </li>
+        <li>
+          <span className="greek">ἐστί(ν)</span> and <span className="greek">εἰσί(ν)</span> end in a <strong>movable ν</strong>. It was
+          added before a vowel to avoid a pause between two vowels (<span className="greek">εἰσὶν αὐτοί</span>), like English “a”
+          becoming “an.” In Koine it often appears before consonants and at the end of a clause too, so learn both spellings. For
+          the plural, <span className="greek">εἰσίν</span> is what you will meet.
+        </li>
+        <li><span className="greek">ἦν</span> is the past: “he/she/it was.”</li>
+      </ul>
+    </Lesson>
   )
 }
 

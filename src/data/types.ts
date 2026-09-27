@@ -76,6 +76,37 @@ export interface PrepSentence {
   avoid?: string[]
 }
 
+/** What a prepositional phrase does: modifies a verb (adverbial), describes a noun (adjectival) or stands as a noun. */
+export type PrepPhraseUse = 'adverbial' | 'adjectival' | 'substantival'
+
+/** A verse to take apart the way the workbook asks: the preposition's object, what the phrase modifies, the whole sentence. */
+export interface PrepReading {
+  id: string
+  ref: string
+  /** Greek text (SBLGNT), possibly an excerpt of the verse. */
+  text: string
+  /** The prepositional phrase, exactly as it appears in `text`. */
+  phrase: string
+  /** VocabWord id of the preposition. */
+  prep: string
+  case: Case
+  /** The object's head word, exactly as it appears in `phrase`. */
+  object: string
+  use: PrepPhraseUse
+  /** The word the phrase modifies, as it appears in `text`; absent when the phrase stands as a noun. */
+  modifies?: string
+  /** Other words from `text`, offered as wrong answers. */
+  decoys: string[]
+  /** Glosses for words not yet learned. */
+  help?: string
+  translation: string
+  /** Wrong translations of the whole sentence. */
+  wrong: string[]
+  note?: string
+  /** For a sentence with a ἵνα clause: the main verb, and the verbs inside the dependent clauses. */
+  main?: { verb: string; dependent: string[] }
+}
+
 /** How a preposition's final letters change before the next word. */
 export interface ElisionItem {
   id: string
@@ -801,6 +832,9 @@ export interface Chapter {
   elisions?: ElisionItem[]
   spatial?: SpatialUse[]
   sentences?: PrepSentence[]
+  prepReadings?: PrepReading[]
+  /** The chapter's new nouns, to parse and pair with a preposition that could take each form (chapter 8). */
+  nouns?: DeclensionParadigm[]
   predicates?: PredicateItem[]
   enclitics?: EncliticItem[]
 }

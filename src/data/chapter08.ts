@@ -1,4 +1,5 @@
 import { ENCLITICS, PREDICATES } from './chapter08Eimi'
+import { CH8_NOUNS, PREP_READINGS } from './chapter08Readings'
 import { PREPOSITIONS, SENTENCES, preposition } from './prepositions'
 import type { Chapter } from './types'
 
@@ -99,6 +100,8 @@ export const chapter08: Chapter = {
     { prep: 'hypo', case: 'accusative', shape: 'under', gloss: 'under' },
   ],
   sentences: SENTENCES.filter((s) => CH8_PREPS.includes(s.prep)),
+  prepReadings: PREP_READINGS,
+  nouns: CH8_NOUNS,
   predicates: PREDICATES,
   enclitics: ENCLITICS,
 }

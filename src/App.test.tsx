@@ -33,7 +33,8 @@ it('renders every view without crashing', () => {
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
   }
   nav('Prepositions')
-  for (const t of ['Meaning & case', 'Phrases', 'Sentences', 'Elision']) {
+  expect(screen.getByText('How Greek prepositions work')).toBeTruthy()
+  for (const t of ['Meaning & case', 'Phrases', 'Sentences', 'Read verses', 'Noun forms', 'Elision']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
   }
@@ -48,7 +49,7 @@ it('opens every tab of the all-prepositions review at each range', () => {
   nav('All prepositions')
   for (const range of ['8', '14']) {
     fireEvent.click(screen.getByText(range, { selector: '.range button' }))
-    for (const t of ['Meaning & case', 'Phrases', 'Sentences', 'Elision']) {
+    for (const t of ['Meaning & case', 'Phrases', 'Sentences', 'Read verses', 'Elision']) {
       tab(t)
       expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     }
@@ -67,6 +68,15 @@ it('answering a choice question shows feedback and records progress', () => {
   fireEvent.click(document.querySelector('.option')!)
   expect(document.querySelector('.feedback')).toBeTruthy()
   expect(localStorage.getItem('greek-tutor:v1')).toContain('ch8:')
+})
+
+it('takes a verse apart in order: object, what the phrase modifies, then the whole sentence', () => {
+  render(<App />)
+  pickChapter(8)
+  nav('Prepositions')
+  tab('Read verses')
+  expect(screen.getByText(/What is the object of/)).toBeTruthy()
+  expect(document.querySelector('.sentence mark')).toBeTruthy()
 })
 
 it('takes a whole chapter test and shows the result on the dashboard', () => {

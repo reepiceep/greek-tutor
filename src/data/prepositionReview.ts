@@ -20,5 +20,6 @@ export function prepositionReview(through: number): Chapter {
     elisions: known([...(chapter08.elisions ?? []), ...LATER_ELISIONS]),
     spatial: known([...(chapter08.spatial ?? []), ...LATER_SPATIAL]),
     sentences: known(SENTENCES),
+    prepReadings: known(chapter08.prepReadings ?? []),
   }
 }

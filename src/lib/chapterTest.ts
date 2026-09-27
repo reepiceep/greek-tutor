@@ -1,4 +1,5 @@
 import type { ChoiceQuestion, ChoiceResult } from '../components/ChoiceQuiz'
+import { readingModifiesQuestion, readingTranslateQuestion } from './prepReadingQuestions'
 import { chapter08 } from '../data/chapter08'
 import { chapter09 } from '../data/chapter09'
 import { chapter10 } from '../data/chapter10'
@@ -119,7 +120,7 @@ const SPECS: Record<number, TestSpec> = {
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
       { name: 'εἰμί', count: 6, covers: 'forms, subject & predicate, enclitics' },
       { name: 'Prepositions', count: 7, covers: 'meanings, cases and the diagram' },
-      { name: 'Phrases', count: 4, covers: 'translating preposition phrases' },
+      { name: 'Phrases', count: 4, covers: 'translating preposition phrases, and what they modify in verses' },
       { name: 'Elision', count: 3, covers: 'ἀπ᾽, ἀφ᾽, ἐξ and friends' },
     ],
     build: (ch) => {
@@ -139,7 +140,10 @@ const SPECS: Record<number, TestSpec> = {
           ...uses.map((u, i) => (i % 2 ? prepCaseQuestion(ch, u) : prepMeaningQuestion(ch, u))),
           ...take(ch.spatial ?? [], 2).map((s) => spatialQuestion(ch, s)),
         ]),
-        ...tag('Phrases', take(ch.phrases ?? [], 4).map((p) => phraseQuestion(ch, p))),
+        ...tag('Phrases', [
+          ...take(ch.phrases ?? [], 2).map((p) => phraseQuestion(ch, p)),
+          ...take(ch.prepReadings ?? [], 2).map((r) => either(readingModifiesQuestion, readingTranslateQuestion)(ch, r)),
+        ]),
         ...tag('Elision', [
           ...take(ch.elisions ?? [], 2).map((e) => elisionQuestion(ch, e)),
           ...(elided ? [elidedFormQuestion(ch, elided.form, elided.word)] : []),

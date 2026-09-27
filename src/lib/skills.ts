@@ -41,6 +41,7 @@ import {
   tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion, whichVerbItemId, whichVerbPairs, whichVerbQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
+import { nounPrepForms, nounPrepItemId, nounPrepQuestion, readingItemId, readingQuestion, readingSkills } from './prepReadingQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
 import { PARTICIPLE_AREAS, participleItemId, participleQuestion } from './participleIntroQuestions'
@@ -156,6 +157,19 @@ function buildSkills(ch: Chapter): Skill[] {
     {
       label: 'Prepositions: sentences', view: 'prepositions',
       items: (ch.sentences ?? []).map((st) => ({ id: sentenceItemId(n, st), name: `${st.phrase} (${st.ref})`, make: () => sentenceQuestion(ch, st) })),
+    },
+    {
+      label: 'Prepositions: reading verses', view: 'prepositions',
+      items: (ch.prepReadings ?? []).flatMap((r) => readingSkills(r).map((skill) => ({
+        id: readingItemId(n, r, skill), name: `${r.ref}: ${skill === 'main' ? 'main verb' : skill}`, make: () => readingQuestion(ch, r, skill),
+      }))),
+    },
+    {
+      label: 'Prepositions: noun forms', view: 'prepositions',
+      items: [
+        ...parseItems(ch.nouns ?? []),
+        ...nounPrepForms(ch).map(({ p: np, form }) => ({ id: nounPrepItemId(n, np, form), name: `${form}: which preposition?`, make: () => nounPrepQuestion(ch, np, form) })),
+      ],
     },
     {
       label: 'Prepositions: diagram', view: 'prepositions',

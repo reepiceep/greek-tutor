@@ -11,14 +11,20 @@ import {
 } from '../lib/questions'
 import { SpatialIcon } from './SpatialIcon'
 import { PrepositionGames } from './PrepositionGames'
+import { Lesson } from './Lesson'
+import { DeclensionTable } from './DeclensionTable'
+import { adjParseItemId, adjParseQuestion, distinctForms } from '../lib/declensionQuestions'
+import { nounPrepForms, nounPrepItemId, nounPrepQuestion, readingItemId, readingQuestion, readingSkills } from '../lib/prepReadingQuestions'
 
-type Tab = 'reference' | 'cases' | 'phrases' | 'sentences' | 'diagram' | 'elision' | 'games'
+type Tab = 'reference' | 'cases' | 'phrases' | 'sentences' | 'read' | 'nouns' | 'diagram' | 'elision' | 'games'
 
 const TABS: { tab: Tab; label: string; available: (ch: Chapter) => boolean }[] = [
   { tab: 'reference', label: 'Reference', available: () => true },
   { tab: 'cases', label: 'Meaning & case', available: () => true },
   { tab: 'phrases', label: 'Phrases', available: (ch) => !!ch.phrases?.length },
   { tab: 'sentences', label: 'Sentences', available: (ch) => !!ch.sentences?.length },
+  { tab: 'read', label: 'Read verses', available: (ch) => !!ch.prepReadings?.length },
+  { tab: 'nouns', label: 'Noun forms', available: (ch) => !!ch.nouns?.length },
   { tab: 'diagram', label: 'Diagram', available: (ch) => !!ch.spatial?.length },
   { tab: 'elision', label: 'Elision', available: (ch) => !!ch.elisions?.length },
   { tab: 'games', label: 'Games', available: () => true },
@@ -50,14 +56,59 @@ export function PrepositionDrills({ chapter, title = 'Prepositions', header }: P
         </div>
       </div>
       {header}
+      <HowTheyWork />
       {tab === 'reference' && <Reference key={key} chapter={chapter} />}
       {tab === 'cases' && <CaseQuiz key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'phrases' && <Phrases key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'sentences' && <Sentences key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'read' && <ReadVerses key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'nouns' && <NounForms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'diagram' && <Diagram key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'elision' && <Elision key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'games' && <PrepositionGames key={key} chapter={chapter} />}
     </section>
+  )
+}
+
+// --- Lesson --------------------------------------------------------------------------
+
+/** How Greek prepositions work, from Mounce ch. 8 (with Merkle & Plummer ch. 8 on phrase uses). */
+function HowTheyWork() {
+  return (
+    <Lesson title="How Greek prepositions work">
+      <ul>
+        <li>
+          <strong>The case of the object decides the meaning.</strong> <span className="greek">διὰ τοῦ ὄχλου</span> is “through the
+          crowd,” but <span className="greek">διὰ τὸν θάνατον</span> is “on account of death.” Learn each preposition with its case:
+          “<span className="greek">διά</span> with the genitive means ‘through.’”
+        </li>
+        <li>
+          <strong>Why is the object in that case?</strong> Say it in full: “<span className="greek">αὐτῷ</span> is dative because it
+          is the object of <span className="greek">ἐν</span>, which takes the dative.”
+        </li>
+        <li>
+          <strong>Don’t add the case’s key word.</strong> <span className="greek">ἀπὸ τῆς θαλάσσης</span> is “from the sea,” not
+          “from of the sea”; <span className="greek">ἐν τῷ οἴκῳ</span> is “in the house,” not “in to the house.”
+        </li>
+        <li>
+          <strong>Greek often leaves out the article.</strong> <span className="greek">ἐν ἀρχῇ</span> is “in the beginning.” Put
+          “the” back when English needs it.
+        </li>
+        <li>
+          <strong>Find the word the phrase modifies.</strong> Usually it is the verb, telling where, when, how or why
+          (<em>adverbial</em>). With an article in front, the phrase can describe a noun
+          (<em>adjectival</em>: <span className="greek">τὴν δόξαν τὴν παρὰ τοῦ θεοῦ</span>, “the glory that comes from God”) or
+          stand as a noun itself (<span className="greek">τὰ ἐν τῷ κόσμῳ</span>, “the things in the world”).
+        </li>
+        <li>
+          <strong>A compound verb often repeats its preposition:</strong> <span className="greek">ἐξῆλθεν ἐξ αὐτοῦ</span>, “it
+          came out of him.” Translate it once; the repetition is style, not emphasis.
+        </li>
+        <li>
+          <strong>Glosses are a starting point.</strong> A preposition has a range of meanings, and context decides which fits.
+        </li>
+      </ul>
+    </Lesson>
   )
 }
 
@@ -156,6 +207,58 @@ function Sentences({ chapter, onRestart }: { chapter: Chapter; onRestart: () => 
     <>
       <p className="muted">Real New Testament sentences (SBLGNT). Choose the English for the highlighted phrase; the case of its object decides the meaning.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} />
+    </>
+  )
+}
+
+// --- Read verses -------------------------------------------------------------------
+
+/** A few verses, each taken apart in order: the object, what the phrase modifies, the main verb, the whole sentence. */
+function ReadVerses({ chapter, onRestart }: { chapter: Chapter; onRestart: () => void }) {
+  const [questions] = useState(() =>
+    pickWeakest(chapter.prepReadings ?? [], (r) => readingItemId(chapter.number, r, 'translate'), 4)
+      .flatMap((r) => readingSkills(r).map((skill) => readingQuestion(chapter, r, skill))),
+  )
+  return (
+    <>
+      <details className="rules">
+        <summary>How to take a verse apart</summary>
+        <ul>
+          <li>Mark off the prepositional phrase: the preposition, its object and anything that goes with the object.</li>
+          <li>Find the word it modifies. Most phrases go with a verb; one after an article describes a noun or acts as one.</li>
+          <li>
+            <span className="greek">ἵνα</span> (“in order that”) and <span className="greek">ὅτι</span> start a dependent clause. The main
+            subject and verb are never inside one.
+          </li>
+          <li>Translate the pieces, then put the sentence together.</li>
+        </ul>
+      </details>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} />
+    </>
+  )
+}
+
+// --- Noun forms ---------------------------------------------------------------------
+
+/** Parse the chapter's new nouns, and pick a preposition that could take each form as its object. */
+function NounForms({ chapter, onRestart }: { chapter: Chapter; onRestart: () => void }) {
+  const nouns = chapter.nouns ?? []
+  const [questions] = useState(() => {
+    const parse = nouns.flatMap((p) => distinctForms(p).map((form) => ({ id: adjParseItemId(chapter.number, p, form), make: () => adjParseQuestion(chapter, p, form) })))
+    const prep = nounPrepForms(chapter).map(({ p, form }) => ({ id: nounPrepItemId(chapter.number, p, form), make: () => nounPrepQuestion(chapter, p, form) }))
+    return shuffle([...pickWeakest(parse, (x) => x.id, 6), ...pickWeakest(prep, (x) => x.id, 4)]).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">
+        When you parse a noun, think of a preposition that could take the form as its object: <span className="greek">ἡμέρᾳ</span> is
+        dative, so <span className="greek">ἐν ἡμέρᾳ</span>, “in a day.”
+      </p>
+      <details className="rules">
+        <summary>The chapter’s nouns</summary>
+        <div className="adj-tables">{nouns.map((p) => <DeclensionTable key={p.id} p={p} />)}</div>
+      </details>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )
 }
