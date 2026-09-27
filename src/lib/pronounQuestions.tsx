@@ -12,9 +12,11 @@ interface PronounSlot {
 }
 
 const CASE_SHORT: Record<NounCase, string> = { nominative: 'nom', genitive: 'gen', dative: 'dat', accusative: 'acc' }
-const SLOTS: PronounSlot[] = ([1, 2] as const).flatMap((person) =>
+/** Every person/number/case slot. */
+export const PRONOUN_SLOTS: PronounSlot[] = ([1, 2] as const).flatMap((person) =>
   (['sg', 'pl'] as const).flatMap((number) => NOUN_CASES.map((c) => ({ person, number, case: c }))),
 )
+const SLOTS = PRONOUN_SLOTS
 const key = (s: PronounSlot) => `${s.person}-${s.number}-${s.case}`
 export const pronounSlotLabel = (s: PronounSlot) => `${s.person === 1 ? '1st' : '2nd'} person ${s.number} ${CASE_SHORT[s.case]}`
 const shared = (a: PronounSlot, b: PronounSlot) => Number(a.person === b.person) + Number(a.number === b.number) + Number(a.case === b.case)
@@ -35,7 +37,7 @@ const STEM_TIP = 'Remember: ἡμ- is “we/us,” ὑμ- is “you” (plural).
 export const pronounParseId = (ch: number, f: PronounForm) => `ch${ch}:pron-parse:${f.form}`
 export const pronounMeaningId = (ch: number, f: PronounForm) => `ch${ch}:pron-meaning:${f.form}`
 export const pronounEmphasisId = (ch: number, f: PronounForm) => `ch${ch}:pron-emphasis:${f.form}`
-export const pronounVerseId = (ch: number, v: PronounVerse, skill: 'who' | 'case') => `ch${ch}:pron-verse:${v.id}:${skill}`
+export const pronounVerseId = (ch: number, v: PronounVerse, skill: 'who' | 'case' | 'translate' | 'stress') => `ch${ch}:pron-verse:${v.id}:${skill}`
 
 function formExplain(f: PronounForm) {
   return (
@@ -136,5 +138,78 @@ export function pronounVerseCaseQuestion(ch: Chapter, v: PronounVerse): ChoiceQu
     answer: v.case,
     explain: verseExplain(v),
     review: <><span className="greek">{v.word}</span> ({v.ref}) is {v.case}</>,
+  }
+}
+
+/** The whole verse in English (only for verses with wrong translations written). */
+export function pronounVerseTranslateQuestion(ch: Chapter, v: PronounVerse): ChoiceQuestion {
+  return {
+    id: pronounVerseId(ch.number, v, 'translate'),
+    prompt: <>{verseHighlight(v)}<p className="muted">Translate the whole sentence.</p></>,
+    options: shuffle([v.translation, ...(v.wrong ?? []).slice(0, 3)]).map((t) => ({ key: t, label: t })),
+    answer: v.translation,
+    explain: verseExplain(v),
+    review: <><span className="greek">{v.text}</span> = “{v.translation}”</>,
+  }
+}
+
+const STRESS_OPTIONS = [
+  { key: 'emphasis', label: 'For emphasis or contrast: the verb already includes the subject' },
+  { key: 'required', label: 'A Greek verb always needs a subject pronoun written out' },
+  { key: 'object', label: 'It is the object of the verb' },
+  { key: 'possessive', label: 'It shows possession (“my,” “your”)' },
+]
+
+/** Why is a nominative pronoun there when the verb's ending already gives the subject? (Mounce 11.8; Merkle & Plummer 9.6) */
+export function pronounStressQuestion(ch: Chapter, v: PronounVerse): ChoiceQuestion {
+  return {
+    id: pronounVerseId(ch.number, v, 'stress'),
+    prompt: <>{verseHighlight(v)}<p className="muted">Why is the highlighted pronoun written out?</p></>,
+    options: STRESS_OPTIONS,
+    answer: 'emphasis',
+    explain: (
+      <>
+        <p>
+          A Greek verb’s ending already gives its subject, so a nominative pronoun is not needed. When it is written out, it usually adds
+          emphasis or sets one person against another. English shows it with stress, or with “myself,” “yourselves.”
+        </p>
+        {verseExplain(v)}
+      </>
+    ),
+    review: <><span className="greek">{v.word}</span> ({v.ref}): emphasis</>,
+  }
+}
+
+// --- English → Greek -------------------------------------------------------------------
+
+export type ProduceKind = 'english' | 'desc'
+
+export const pronounProduceId = (ch: number, s: PronounSlot, kind: ProduceKind) => `ch${ch}:pron-produce:${key(s)}:${kind}`
+
+
+/** The forms in a slot, the unemphatic one first (μου before ἐμοῦ); the only form where there is one. */
+export function slotForms(all: PronounForm[], s: PronounSlot): PronounForm[] {
+  return all.filter((f) => key(f) === key(s)).sort((a, b) => Number(a.emphatic ?? false) - Number(b.emphatic ?? false))
+}
+
+/** From English (“to you (pl)”) or a description (“1st person dative plural”) to the Greek form. */
+export function pronounProduceQuestion(ch: Chapter, all: PronounForm[], s: PronounSlot, kind: ProduceKind): ChoiceQuestion {
+  const [main, emphatic] = slotForms(all, s)
+  const wrong: string[] = []
+  for (const o of SLOTS.filter((x) => key(x) !== key(s)).sort(byCloseness(s))) {
+    const f = slotForms(all, o)[0].form
+    if (!wrong.includes(f)) wrong.push(f)
+    if (wrong.length === 3) break
+  }
+  const both = emphatic ? <><span className="greek">{main.form}</span> (emphatic <span className="greek">{emphatic.form}</span>)</> : <span className="greek">{main.form}</span>
+  return {
+    id: pronounProduceId(ch.number, s, kind),
+    prompt: kind === 'english'
+      ? <><span className="big">{main.english}</span><p className="muted">Which Greek form?</p></>
+      : <><span className="big">{pronounSlotLabel(s)}</span><p className="muted">Which form of the personal pronoun?</p></>,
+    options: shuffle([main.form, ...wrong]).map((f) => ({ key: f, label: f, greek: true })),
+    answer: main.form,
+    explain: <p>{pronounSlotLabel(s)}, “{main.english}”: {both}.{s.number === 'pl' && <> {STEM_TIP}</>}</p>,
+    review: <>{kind === 'english' ? `“${main.english}”` : pronounSlotLabel(s)} = {both}</>,
   }
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { buildChapterTest } from '../lib/chapterTest'
 import { adjParseQuestion, distinctForms, parsingsOf, slotLabel } from '../lib/declensionQuestions'
-import { pronounMeaningQuestion, pronounParseQuestion } from '../lib/pronounQuestions'
+import {
+  PRONOUN_SLOTS, pronounMeaningQuestion, pronounParseQuestion, pronounProduceQuestion, pronounStressQuestion, pronounVerseTranslateQuestion, slotForms,
+} from '../lib/pronounQuestions'
 import { chapter11 as ch } from './chapter11'
 
 const pr = ch.pronouns!
@@ -70,5 +72,40 @@ describe('chapter 11 data', () => {
       expect(new Set(qs.map((q) => q.id)).size).toBe(30)
       for (const q of qs) expect(q.options.map((o) => o.key)).toContain(q.answer)
     }
+  })
+})
+
+describe('chapter 11 additions', () => {
+  it('produce questions offer four distinct forms, never the same slot’s other form', () => {
+    for (const sl of PRONOUN_SLOTS) {
+      for (const kind of ['english', 'desc'] as const) {
+        const q = pronounProduceQuestion(ch, pr.forms, sl, kind)
+        const keys = q.options.map((o) => o.key)
+        expect(keys).toHaveLength(4)
+        expect(new Set(keys).size).toBe(4)
+        expect(keys).toContain(q.answer)
+        for (const f of slotForms(pr.forms, sl).slice(1)) expect(keys).not.toContain(f.form)
+      }
+    }
+  })
+
+  it('verses with translations have three distinct wrong ones; stressed pronouns are nominative', () => {
+    const long = pr.verses.filter((v) => v.wrong)
+    expect(long.length).toBeGreaterThanOrEqual(9)
+    for (const v of long) {
+      expect(new Set(v.wrong).size, v.id).toBe(3)
+      expect(v.wrong, v.id).not.toContain(v.translation)
+      expect(pronounVerseTranslateQuestion(ch, v).options.map((o) => o.key)).toContain(v.translation)
+    }
+    const stressed = pr.verses.filter((v) => v.stress)
+    expect(stressed.length).toBeGreaterThanOrEqual(6)
+    for (const v of stressed) {
+      expect(v.case, v.id).toBe('nominative')
+      expect(pronounStressQuestion(ch, v).answer).toBe('emphasis')
+    }
+  })
+
+  it('the new nouns have lexical forms matching the vocabulary', () => {
+    for (const p of pr.nouns) expect(ch.vocab.find((w) => w.lemma === p.lemma)?.lexical, p.lemma).toBe(p.lexical)
   })
 })

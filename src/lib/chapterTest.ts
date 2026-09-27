@@ -50,7 +50,8 @@ import {
   relativeAntecedentQuestion, relativeCaseQuestion, relativeFormQuestion, relativeTranslateQuestion,
 } from './relativeQuestions'
 import {
-  pronounMeaningQuestion, pronounParseQuestion, pronounVerseCaseQuestion, pronounVerseWhoQuestion,
+  PRONOUN_SLOTS, pronounMeaningQuestion, pronounParseQuestion, pronounProduceQuestion, pronounStressQuestion, pronounVerseCaseQuestion,
+  pronounVerseTranslateQuestion, pronounVerseWhoQuestion,
 } from './pronounQuestions'
 import {
   elidedFormQuestion, elisionQuestion, paradigmIdentifyQuestion, paradigmProduceQuestion, phraseQuestion, prepCaseQuestion,
@@ -236,9 +237,12 @@ const SPECS: Record<number, TestSpec> = {
     ],
     build: (ch) => {
       const pr = ch.pronouns!
-      const parseForms = take(pr.forms, 4)
-      const meaningForms = take(pr.forms.filter((f) => !parseForms.includes(f)), 4)
-      const verses = take(pr.verses, 6)
+      const parseForms = take(pr.forms, 3)
+      const meaningForms = take(pr.forms.filter((f) => !parseForms.includes(f)), 3)
+      const [slot1, slot2] = take(PRONOUN_SLOTS, 2)
+      const verses = take(pr.verses.filter((v) => !v.wrong), 4)
+      const [stressed] = take(pr.verses.filter((v) => v.stress), 1)
+      const [long] = take(pr.verses.filter((v) => v.wrong?.length), 1)
       const nouns = take(pr.nouns.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 3)
       const ch10 = chapter10
       return [
@@ -246,8 +250,14 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Pronoun forms', [
           ...parseForms.map((f) => pronounParseQuestion(ch, f)),
           ...meaningForms.map((f) => pronounMeaningQuestion(ch, pr.forms, f)),
+          pronounProduceQuestion(ch, pr.forms, slot1, 'english'),
+          pronounProduceQuestion(ch, pr.forms, slot2, 'desc'),
         ]),
-        ...tag('Pronouns in verses', verses.map((v, i) => (i < 4 ? pronounVerseWhoQuestion : pronounVerseCaseQuestion)(ch, v))),
+        ...tag('Pronouns in verses', [
+          ...verses.map((v, i) => (i < 2 ? pronounVerseWhoQuestion : pronounVerseCaseQuestion)(ch, v)),
+          pronounStressQuestion(ch, stressed),
+          pronounVerseTranslateQuestion(ch, long),
+        ]),
         ...tag('New nouns', nouns.map(({ p, f }) => adjParseQuestion(ch, p, f))),
         ...tag('Review', [
           ...take(ch10.thirdDeclension!.stops, 1).map((r) => ruleItemQuestion(ch10, 'stop', r)),

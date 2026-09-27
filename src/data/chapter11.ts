@@ -31,7 +31,7 @@ const FORMS: PronounForm[] = [
 
 const VERSES: PronounVerse[] = [
   {
-    id: 'matt-5-22a', ref: 'Matt 5:22', text: 'ἐγὼ δὲ λέγω ὑμῖν', word: 'ἐγὼ', person: 1, number: 'sg', case: 'nominative',
+    id: 'matt-5-22a', stress: true, ref: 'Matt 5:22', text: 'ἐγὼ δὲ λέγω ὑμῖν', word: 'ἐγὼ', person: 1, number: 'sg', case: 'nominative',
     translation: 'But I say to you', note: 'λέγω already means “I say,” so ἐγώ adds emphasis and contrast: “But I say to you.”',
   },
   { id: 'matt-5-22b', ref: 'Matt 5:22', text: 'ἐγὼ δὲ λέγω ὑμῖν', word: 'ὑμῖν', person: 2, number: 'pl', case: 'dative', translation: 'But I say to you' },
@@ -62,7 +62,7 @@ const VERSES: PronounVerse[] = [
     translation: 'believe also in me', help: 'πιστεύετε = believe',
   },
   {
-    id: 'john-15-16a', ref: 'John 15:16', text: 'οὐχ ὑμεῖς με ἐξελέξασθε,', word: 'ὑμεῖς', person: 2, number: 'pl', case: 'nominative',
+    id: 'john-15-16a', stress: true, ref: 'John 15:16', text: 'οὐχ ὑμεῖς με ἐξελέξασθε,', word: 'ὑμεῖς', person: 2, number: 'pl', case: 'nominative',
     translation: 'You did not choose me', help: 'ἐξελέξασθε = you chose',
     note: 'The verb already says “you chose”; ὑμεῖς is there for contrast with ἐγώ in the next clause.',
   },
@@ -75,7 +75,7 @@ const VERSES: PronounVerse[] = [
     translation: 'but I chose you', help: 'ἐξελεξάμην = I chose',
   },
   {
-    id: 'matt-16-15', ref: 'Matt 16:15', text: 'Ὑμεῖς δὲ τίνα με λέγετε εἶναι;', word: 'Ὑμεῖς', person: 2, number: 'pl', case: 'nominative',
+    id: 'matt-16-15', stress: true, ref: 'Matt 16:15', text: 'Ὑμεῖς δὲ τίνα με λέγετε εἶναι;', word: 'Ὑμεῖς', person: 2, number: 'pl', case: 'nominative',
     translation: 'But who do you say that I am?', help: 'λέγετε = you say · εἶναι = to be',
     note: 'Emphatic: “But you — who do you say I am?”',
   },
@@ -88,7 +88,7 @@ const VERSES: PronounVerse[] = [
     translation: 'Truly I say to you, today you will be with me', help: 'σήμερον = today · ἔσῃ = you will be',
   },
   {
-    id: '1john-4-19a', ref: '1 John 4:19', text: 'ἡμεῖς ἀγαπῶμεν, ὅτι αὐτὸς πρῶτος ἠγάπησεν ἡμᾶς.', word: 'ἡμεῖς', person: 1, number: 'pl', case: 'nominative',
+    id: '1john-4-19a', stress: true, ref: '1 John 4:19', text: 'ἡμεῖς ἀγαπῶμεν, ὅτι αὐτὸς πρῶτος ἠγάπησεν ἡμᾶς.', word: 'ἡμεῖς', person: 1, number: 'pl', case: 'nominative',
     translation: 'We love, because he first loved us', help: 'ἀγαπῶμεν = we love · ἠγάπησεν = he loved',
   },
   {
@@ -120,6 +120,103 @@ const VERSES: PronounVerse[] = [
     translation: 'My peace I give to you', help: 'εἰρήνη = peace · δίδωμι = I give',
     note: 'τὴν ἐμήν is the possessive adjective ἐμός (ch. 9) in the second attributive position.',
   },
+  // Longer verses from the workbook's and Merkle & Plummer's exercises, asked as whole-sentence translations too.
+  {
+    id: 'mark-1-8', ref: 'Mark 1:8', text: 'ἐγὼ ἐβάπτισα ὑμᾶς ὕδατι, αὐτὸς δὲ βαπτίσει ὑμᾶς ἐν πνεύματι ἁγίῳ.', word: 'ἐγὼ',
+    person: 1, number: 'sg', case: 'nominative', stress: true,
+    help: 'ἐβάπτισα I baptized · ὕδατι with water · αὐτός he · βαπτίσει will baptize',
+    translation: 'I baptized you with water, but he will baptize you with the Holy Spirit.',
+    wrong: [
+      'You baptized me with water, but he will baptize you with the Holy Spirit.',
+      'I baptized you with water, but you will baptize him with the Holy Spirit.',
+      'I baptized us with water, but he will baptize them with the Holy Spirit.',
+    ],
+    note: 'ἐβάπτισα already means “I baptized”; ἐγώ is added to set John against Jesus (αὐτός). English can show it with stress, or “I myself.”',
+  },
+  {
+    id: 'john-5-43', ref: 'John 5:43', text: 'ἐγὼ ἐλήλυθα ἐν τῷ ὀνόματι τοῦ πατρός μου καὶ οὐ λαμβάνετέ με·', word: 'μου',
+    person: 1, number: 'sg', case: 'genitive', help: 'ἐλήλυθα I have come · λαμβάνετε you receive',
+    translation: 'I have come in the name of my Father, and you do not receive me;',
+    wrong: [
+      'I have come in my name to the Father, and you do not receive him;',
+      'You have come in the name of my Father, and I do not receive you;',
+      'I have come in the name of your Father, and you do not receive us;',
+    ],
+    note: 'μου follows the noun it belongs to: τοῦ πατρός μου, “of my father.”',
+  },
+  {
+    id: 'matt-23-8', ref: 'Matt 23:8', text: 'εἷς γάρ ἐστιν ὑμῶν ὁ διδάσκαλος, πάντες δὲ ὑμεῖς ἀδελφοί ἐστε·', word: 'ὑμεῖς',
+    person: 2, number: 'pl', case: 'nominative', stress: true, help: 'διδάσκαλος teacher · ἀδελφοί brothers',
+    translation: 'For one is your teacher, and you are all brothers.',
+    wrong: [
+      'For one of us is the teacher, and we are all brothers.',
+      'For your teacher is one of them, and they are all brothers.',
+      'For one is our teacher, and you are all his brothers.',
+    ],
+    note: 'ἐστε already means “you are”; ὑμεῖς sets the disciples, all brothers, against the one teacher. εἷς (rough breathing) is “one.”',
+  },
+  {
+    id: 'mark-2-5', ref: 'Mark 2:5', text: 'Τέκνον, ἀφίενταί σου αἱ ἁμαρτίαι.', word: 'σου',
+    person: 2, number: 'sg', case: 'genitive', help: 'Τέκνον child · ἀφίενταί are forgiven',
+    translation: 'Child, your sins are forgiven.',
+    wrong: [
+      'Child, my sins are forgiven.',
+      'Child, you forgive their sins.',
+      'Child, the sins of you all are forgiven.',
+    ],
+    note: 'Here σου comes before its noun (αἱ ἁμαρτίαι), which is less usual. ἀφίενταί has a second accent because the enclitic σου follows.',
+  },
+  {
+    id: 'mark-10-28', ref: 'Mark 10:28', text: 'Ἰδοὺ ἡμεῖς ἀφήκαμεν πάντα καὶ ἠκολουθήκαμέν σοι.', word: 'ἡμεῖς',
+    person: 1, number: 'pl', case: 'nominative', stress: true, help: 'ἀφήκαμεν we left · ἠκολουθήκαμεν we have followed',
+    translation: 'Look, we have left everything and have followed you.',
+    wrong: [
+      'Look, you have left everything and have followed us.',
+      'Look, we have left everyone, and they have followed you.',
+      'Look, we have left you and followed everything.',
+    ],
+    note: 'ἀφήκαμεν already says “we”; Peter adds ἡμεῖς for emphasis: “we” (unlike the rich man). σοι is dative because ἀκολουθέω takes a dative object.',
+  },
+  {
+    id: 'john-20-17', ref: 'John 20:17', text: 'Ἀναβαίνω πρὸς τὸν πατέρα μου καὶ πατέρα ὑμῶν καὶ θεόν μου καὶ θεὸν ὑμῶν.', word: 'ὑμῶν',
+    person: 2, number: 'pl', case: 'genitive', help: 'Ἀναβαίνω I am going up',
+    translation: 'I am going up to my Father and your Father, to my God and your God.',
+    wrong: [
+      'I am going up to my Father and our Father, to my God and our God.',
+      'You are going up to your Father and my Father, to your God and my God.',
+      'I am going up to the Father of me and of them, to my God and theirs.',
+    ],
+    note: 'ὑμῶν (plural “your”) against μου (“my”): Jesus keeps the two apart.',
+  },
+  {
+    id: 'matt-5-23', ref: 'Matt 5:23', text: 'ὁ ἀδελφός σου ἔχει τι κατὰ σοῦ,', word: 'σοῦ',
+    person: 2, number: 'sg', case: 'genitive', help: 'ἔχει has · τι something',
+    translation: 'your brother has something against you,',
+    wrong: [
+      'my brother has something against you,',
+      'your brother has something against me,',
+      'you have something against your brother,',
+    ],
+    note: 'After a preposition the accented, emphatic σοῦ is normal. The first σου (enclitic) gives ἀδελφός a second accent.',
+  },
+  {
+    id: 'matt-10-38', ref: 'Matt 10:38', text: 'καὶ ἀκολουθεῖ ὀπίσω μου, οὐκ ἔστιν μου ἄξιος.', word: 'μου',
+    person: 1, number: 'sg', case: 'genitive', help: 'ἀκολουθεῖ follows · ὀπίσω after · ἄξιος worthy',
+    translation: 'and follows after me, he is not worthy of me.',
+    wrong: [
+      'and I follow after him, he is not worthy of me.',
+      'and follows after you, he is not worthy of you.',
+      'and follows after my worth, he is not me.',
+    ],
+    note: 'ὀπίσω (“after”) takes the genitive: ὀπίσω μου, “after me.” μου ἄξιος: “worthy of me.”',
+  },
+  {
+    id: 'john-20-28', ref: 'John 20:28', text: 'Ὁ κύριός μου καὶ ὁ θεός μου.', word: 'μου',
+    person: 1, number: 'sg', case: 'genitive',
+    translation: 'My Lord and my God!',
+    wrong: ['Your Lord and your God!', 'The Lord is mine and God is mine.', 'Our Lord and our God!'],
+    note: 'κύριός has two accents because the enclitic μου follows.',
+  },
 ]
 
 const PATER: DeclensionParadigm = {
@@ -135,6 +232,32 @@ const ANER: DeclensionParadigm = {
 const PISTIS: DeclensionParadigm = {
   id: 'pistis', lemma: 'πίστις', lexical: 'πίστις, πίστεως, ἡ', gloss: 'faith', pattern: 'noun',
   forms: { feminine: { sg: ['πίστις', 'πίστεως', 'πίστει', 'πίστιν'], pl: ['πίστεις', 'πίστεων', 'πίστεσι(ν)', 'πίστεις'] } },
+}
+
+const PHOS: DeclensionParadigm = {
+  id: 'phos', lemma: 'φῶς', lexical: 'φῶς, φωτός, τό', gloss: 'light', pattern: 'noun',
+  forms: { neuter: { sg: ['φῶς', 'φωτός', 'φωτί', 'φῶς'], pl: ['φῶτα', 'φώτων', 'φωσί(ν)', 'φῶτα'] } },
+}
+
+const ELPIS: DeclensionParadigm = {
+  id: 'elpis', lemma: 'ἐλπίς', lexical: 'ἐλπίς, -ίδος, ἡ', gloss: 'hope', pattern: 'noun',
+  forms: { feminine: { sg: ['ἐλπίς', 'ἐλπίδος', 'ἐλπίδι', 'ἐλπίδα'], pl: ['ἐλπίδες', 'ἐλπίδων', 'ἐλπίσι(ν)', 'ἐλπίδας'] } },
+}
+
+const HYDOR: DeclensionParadigm = {
+  id: 'hydor', lemma: 'ὕδωρ', lexical: 'ὕδωρ, ὕδατος, τό', gloss: 'water', pattern: 'noun',
+  forms: { neuter: { sg: ['ὕδωρ', 'ὕδατος', 'ὕδατι', 'ὕδωρ'], pl: ['ὕδατα', 'ὑδάτων', 'ὕδασι(ν)', 'ὕδατα'] } },
+}
+
+// Singular only: of the plural, only μητέρας occurs in the New Testament (Mounce 11.15).
+const METER: DeclensionParadigm = {
+  id: 'meter', lemma: 'μήτηρ', lexical: 'μήτηρ, μητρός, ἡ', gloss: 'mother', pattern: 'noun',
+  forms: { feminine: { sg: ['μήτηρ', 'μητρός', 'μητρί', 'μητέρα'] } },
+}
+
+const THELEMA: DeclensionParadigm = {
+  id: 'thelema', lemma: 'θέλημα', lexical: 'θέλημα, -ματος, τό', gloss: 'will', pattern: 'noun',
+  forms: { neuter: { sg: ['θέλημα', 'θελήματος', 'θελήματι', 'θέλημα'], pl: ['θελήματα', 'θελημάτων', 'θελήμασι(ν)', 'θελήματα'] } },
 }
 
 const CHARIS: DeclensionParadigm = {
@@ -171,5 +294,5 @@ export const chapter11: Chapter = {
     { id: 'hode', lemma: 'ὧδε', pos: 'adverb', gloss: 'here', accept: ['here'] },
   ],
   paradigms: [],
-  pronouns: { forms: FORMS, verses: VERSES, nouns: [PATER, ANER, PISTIS, CHARIS] },
+  pronouns: { forms: FORMS, verses: VERSES, nouns: [PATER, METER, ANER, PISTIS, CHARIS, ELPIS, PHOS, HYDOR, THELEMA] },
 }

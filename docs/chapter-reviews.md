@@ -9,6 +9,7 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
 | 8. Prepositions and εἰμί | 2026-09-27 | Gaps built (see below) |
 | 9. Adjectives | 2026-09-27 | Gaps built (see below) |
 | 10. Third declension | 2026-09-27 | Gaps built (see below) |
+| 11. First and second person pronouns | 2026-09-27 | Gaps built (see below) |
 
 ## Chapter 8: Prepositions and εἰμί
 
@@ -157,3 +158,49 @@ Details of what shipped (all 8 steps):
 - ἔθνος (-ους, ἔθνη) and βασιλεύς (-έως) → the chapters where Mounce introduces them.
 - Merkle & Plummer's ch. 14 vocabulary (αἷμα, πούς, ὕδωρ, φῶς, χείρ…) is spread over later Mounce chapters.
 - English → Greek sentences (practice D).
+
+## Chapter 11: First and second person personal pronouns
+
+**Sources:**
+- Mounce §11.1–11.15 (pronouns, then more third declension);
+- workbook Exercise 11 (parsing, warm-up α–η, translation 1–10, additional 11–20, English → Greek 1–10, summary);
+- Merkle & Plummer ch. 9 (personal and relative pronouns), first- and second-person parts only, at the user's request. Relative pronouns belong to the chapter 14 review, and αὐτός to chapter 12.
+
+**Already covered before the review:**
+- *Forms*: the ἐγώ/σύ/ἡμεῖς/ὑμεῖς chart with a lesson on the emphatic and enclitic forms, nominative pronouns for emphasis, and the possessive genitive.
+- *Parse*, *Meaning* (Greek → English), and emphatic vs. enclitic.
+- *In verses*: about 22 verse items asking who (person/number) and which case.
+- *New nouns*: πατήρ, ἀνήρ, πίστις, χάρις.
+
+**Built at the user's request (2026-09-27):** the Forms chart is now a **reference chart**. You can hide the Greek (both forms where there are two) or the English, reveal cells one at a time, and use Show all / Hide all, like the εἰμί reference.
+
+**Gaps found:**
+
+| # | Gap | Source |
+|---|---|---|
+| 1 | The paradigm is never written out from memory. | Merkle & Plummer practice A; Mounce §11.7 ("should still memorize this paradigm") |
+| 2 | No English → Greek: "to me," "our," "you (plural)" → the Greek form; or a description ("1st person dative plural") → the form. | Workbook English → Greek 1–10; Merkle & Plummer practice B |
+| 3 | Verses only ask who and which case; nothing translates the whole sentence, and the workbook's longer verses aren't there (Mk 1:8, Jn 5:43, Mt 23:8, Mk 2:5, Mt 11:27; Merkle & Plummer: Mt 5:23, Jn 20:17, Mt 10:38). | Workbook translation 1–10; Merkle & Plummer practice D |
+| 4 | Emphasis isn't drilled in context: a nominative pronoun the verb doesn't need usually marks emphasis or contrast (Mk 1:8 ἐγώ … αὐτός; English may add "myself," "himself"). | Mounce §11.8; Merkle & Plummer §9.6 |
+| 5 | Lesson points missing: a pronoun agrees with its antecedent in person and number but takes its case from its own job; the plurals differ only in the first letter (ἡμ-/ὑμ-); the genitive -ου and dative -ι echo the noun endings; μου/σου usually follow their noun; an enclitic can put an accent on the word before it (τὸ ὄνομά μου); parse person, case and number, not gender. | Mounce §11.3, §11.7–11.10; Merkle & Plummer §9.3, §9.5 |
+| 6 | More third declension: the charts lack φῶς, ἐλπίς, ὕδωρ and μήτηρ (the workbook parses ὕδατα, πίστιν, πίστεις, πατρός). Not explained: χάρις's accusative χάριν; the πίστις type (ε before vowel endings, all feminine); πατήρ's stem shifting η/ε/∅ with dative plural πατράσι; ὕδωρ's ρ/τ. | Mounce §11.11–11.15; Merkle & Plummer ch. 14 (set aside in the chapter 10 review) |
+
+**What was built (2026-09-27):**
+1. **Fill in the chart** from memory (typed), like the εἰμί chart.
+2. **English → Greek** drill: from an English gloss or a description (1st/2nd person, case, number) to the form.
+3. **Read verses:** add a whole-sentence translation step, plus the workbook's and Merkle & Plummer's longer verses.
+4. **Emphasis in context:** for verses with an unneeded nominative pronoun, ask why it is there (emphasis or contrast), with Mk 1:8 as the model.
+5. **Lesson updates** for gap 5.
+6. **More third-declension nouns:** charts and parsing for φῶς, ἐλπίς, ὕδωρ, μήτηρ, and a lesson on the χάρις, πίστις, πατήρ and ὕδωρ patterns.
+7. **Chapter 11 test** updated with the new drills.
+
+Details of what shipped (all 7 steps):
+- **Fill the chart tab:** 16 typed cells; either form counts where there are two (μου or ἐμοῦ). Results share progress with the description → Greek items.
+- **English → Greek tab:** from an English gloss or a description ("2nd person genitive plural"). The enclitic form is the answer, and the same slot's emphatic form is never offered as a wrong one.
+- **In verses tab:** 9 new verses (Mk 1:8, Jn 5:43, Mt 23:8, Mk 2:5, Mk 10:28, Jn 20:17, Mt 5:23, Mt 10:38, Jn 20:28) with whole-sentence translation. 7 verses flagged `stress` ask why the nominative pronoun is written out.
+- **New nouns tab:** adds μήτηρ (singular only), ἐλπίς, φῶς, ὕδωρ and θέλημα, with lesson lines on dental stems, the πίστις type, ὕδωρ and μήτηρ.
+- **Lessons:** antecedent vs. case, ending echoes and ἡμ-/ὑμ-, μου/σου after the noun with the enclitic accent, parsing by person.
+- **Skills:** "Pronouns: English → Greek"; the verse skill adds stress and translate items.
+- **Chapter 11 test:** forms 3 parse + 3 meaning + 2 produce; verses 4 who/case + 1 emphasis + 1 translation. Still 30 questions.
+
+**Left for later:** Merkle & Plummer §9.7–9.9 (relative pronouns) → chapter 14 review; intensive and identical αὐτός → chapter 12 review. The workbook summary's μή/οὐ questions and the subject inside a participial phrase belong to later chapters.

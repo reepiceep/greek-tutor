@@ -164,7 +164,16 @@ it('chapter 11: every pronoun tab works and the test runs', () => {
   pickChapter(11)
   nav('Pronouns')
   expect(document.querySelector('.pronoun-table')).toBeTruthy()
-  for (const t of ['Parse', 'Meaning', 'In verses', 'New nouns']) {
+  // The reference chart hides the Greek or the English, cell by cell.
+  fireEvent.click(screen.getByText('Greek', { selector: '.reference-tools button' }))
+  expect(document.querySelectorAll('.pronoun-table .reveal')).toHaveLength(16)
+  fireEvent.click(document.querySelector('.pronoun-table .reveal')!)
+  expect(document.querySelectorAll('.pronoun-table .revealed')).toHaveLength(1)
+  tab('Fill the chart')
+  expect(document.querySelectorAll('.pronoun-fill input')).toHaveLength(16)
+  fireEvent.click(screen.getByText('Check'))
+  expect(screen.getByText('0 / 16')).toBeTruthy()
+  for (const t of ['Parse', 'Meaning', 'English → Greek', 'In verses', 'New nouns']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

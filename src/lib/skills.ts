@@ -23,7 +23,8 @@ import { CASE_ABBR, caseUses, elidedForms, prepWord } from './prepositions'
 import { LEARNED_BOX, type ItemStats } from './progress'
 import {
   pronounEmphasisId, pronounEmphasisQuestion, pronounMeaningId, pronounMeaningQuestion, pronounParseId, pronounParseQuestion,
-  pronounVerseCaseQuestion, pronounVerseId, pronounVerseWhoQuestion,
+  pronounVerseCaseQuestion, pronounVerseId, pronounVerseWhoQuestion, PRONOUN_SLOTS, pronounProduceId, pronounProduceQuestion, pronounSlotLabel,
+  pronounStressQuestion, pronounVerseTranslateQuestion,
 } from './pronounQuestions'
 import {
   elidedFormQuestion, elisionQuestion, paradigmIdentifyQuestion, paradigmProduceQuestion, phraseQuestion, prepCaseQuestion,
@@ -278,7 +279,15 @@ function buildSkills(ch: Chapter): Skill[] {
       items: (pr?.verses ?? []).flatMap((v) => [
         { id: pronounVerseId(n, v, 'who'), name: `${v.word} in ${v.ref}: who?`, make: () => pronounVerseWhoQuestion(ch, v) },
         { id: pronounVerseId(n, v, 'case'), name: `${v.word} in ${v.ref}: case?`, make: () => pronounVerseCaseQuestion(ch, v) },
+        ...(v.stress ? [{ id: pronounVerseId(n, v, 'stress'), name: `${v.word} in ${v.ref}: why written?`, make: () => pronounStressQuestion(ch, v) }] : []),
+        ...(v.wrong?.length ? [{ id: pronounVerseId(n, v, 'translate'), name: `${v.ref}: translate`, make: () => pronounVerseTranslateQuestion(ch, v) }] : []),
       ]),
+    },
+    {
+      label: 'Pronouns: English → Greek', view: 'pronouns',
+      items: pr ? PRONOUN_SLOTS.flatMap((sl) => (['english', 'desc'] as const).map((kind) => ({
+        id: pronounProduceId(n, sl, kind), name: `${kind === 'desc' ? pronounSlotLabel(sl) : 'English'} → Greek`, make: () => pronounProduceQuestion(ch, pr.forms, sl, kind),
+      }))) : [],
     },
     { label: 'Pronouns: new nouns', view: 'pronouns', items: parseItems(pr?.nouns ?? []) },
     { label: 'αὐτός: parsing', view: 'autos', items: parseItems(au ? [au.paradigm, ...au.nouns] : []) },

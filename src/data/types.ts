@@ -349,6 +349,10 @@ export interface PronounVerse {
   number: GrammaticalNumber
   case: NounCase
   translation: string
+  /** Wrong translations of the whole text; when given, the verse is also asked as a translation. */
+  wrong?: string[]
+  /** A nominative pronoun the verb doesn't need: asked why it is there (emphasis or contrast). */
+  stress?: boolean
   help?: string
   note?: string
 }
