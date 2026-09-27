@@ -443,11 +443,15 @@ export interface PresentVerb {
    * Chapter 21: the imperfect, and `stem` is the augmented stem without an accent (ἐλυ, ἠκου, συνηγ); the accent is
    * worked out for each form.
    */
-  tense?: 'future' | 'imperfect'
+  tense?: 'future' | 'imperfect' | 'aorist'
   /** A compound verb's preposition as it appears before the augment (συν, ἐξ, περι): the accent can't go back past it. */
   prefix?: string
   /** English -ing form for the imperfect ("loosing"); empty for εἰμί ("I was"). */
   ing?: string
+  /** Chapter 22: English simple past for the aorist ("took"). `stem` is then the augmented second aorist stem (ἐλαβ). */
+  past?: string
+  /** Chapter 22: the imperfect, for telling it from the aorist (ἐλάμβανον, ἔλαβον). */
+  imperfect?: { stem: string; prefix?: string; contract?: ContractVowel; voice?: 'passive' | 'middle' }
   /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
   from?: string
   /** The present stem, for telling present from future (λύει, λύσει). Absent when the present is irregular (ζάω, εἰμί). */
@@ -503,7 +507,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'cases'
 
 export interface Chapter {
   number: number

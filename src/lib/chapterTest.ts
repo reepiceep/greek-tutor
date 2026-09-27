@@ -18,7 +18,7 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
-  augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
+  aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -465,6 +465,30 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Imperfect forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
         ...tag('The augment', take(pr.augments ?? [], 5).map((r) => augmentQuestion(ch, r))),
         ...tag('Present or imperfect', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  22: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'Aorist forms', count: 8, covers: 'parsing, translating and choosing second aorist forms' },
+      { name: 'Aorist stems', count: 5, covers: 'each verb’s aorist, and the lexical form of an aorist' },
+      { name: 'Imperfect or aorist', count: 3, covers: 'telling ἐλάμβανον from ἔλαβον' },
+      { name: 'Verses', count: 4, covers: 'second aorists in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 8)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
+      return [
+        ...vocabArea(ch),
+        ...tag('Aorist forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Aorist stems', [
+          ...take(pr.verbs, 2).map((v) => aoristFormQuestion(ch, v)),
+          ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 3).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
+        ]),
+        ...tag('Imperfect or aorist', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },

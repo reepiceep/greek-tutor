@@ -36,7 +36,7 @@ import {
   CONTRACTIONS, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId, contractTypeQuestion, contractionItemId, contractionPairs,
   contractionQuestion, inVoice, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
-  augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
+  aoristFormItemId, aoristFormQuestion, augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
@@ -286,12 +286,13 @@ function presentSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const pres = ch.present
   if (!pres) return []
-  const imperfect = pres.verbs.some((v) => v.tense === 'imperfect')
-  const future = !imperfect && pres.verbs.some((v) => v.tense)
+  const aorist = pres.verbs.some((v) => v.tense === 'aorist')
+  const imperfect = !aorist && pres.verbs.some((v) => v.tense === 'imperfect')
+  const future = !aorist && !imperfect && pres.verbs.some((v) => v.tense)
   const roots = pres.verbs.some((v) => v.liquid)
-  const middle = !imperfect && !future && pres.verbs.some((v) => v.voice)
-  const contract = !imperfect && !future && !middle && pres.verbs.some((v) => v.contract)
-  const [topic, view]: [string, View] = imperfect ? ['Imperfect', 'imperfect'] : roots ? ['Other futures', 'roots'] : future ? ['Future', 'future'] : middle ? ['Middle/passive', 'middle']
+  const middle = !aorist && !imperfect && !future && pres.verbs.some((v) => v.voice)
+  const contract = !aorist && !imperfect && !future && !middle && pres.verbs.some((v) => v.contract)
+  const [topic, view]: [string, View] = aorist ? ['Second aorist', 'aorist'] : imperfect ? ['Imperfect', 'imperfect'] : roots ? ['Other futures', 'roots'] : future ? ['Future', 'future'] : middle ? ['Middle/passive', 'middle']
     : contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
   const endings = plainEndingsOf(pres.verbs[0])
   const forms: Skill = {
@@ -341,6 +342,18 @@ function presentSkills(ch: Chapter): Skill[] {
       id: tenseItemId(n, v, slot, t), name: `${presentDisplay(inTense(v, t), slot)}: ${t} ${SLOT_LABEL[slot]}`, make: () => tenseQuestion(ch, v, slot, t),
     })),
   })
+  if (aorist) {
+    const stems: Skill = {
+      label: `${topic}: aorist stems`, view,
+      items: [
+        ...pres.verbs.map((v) => ({ id: aoristFormItemId(n, v), name: `${v.lemma} → ${presentDisplay(v, '1s')}`, make: () => aoristFormQuestion(ch, v) })),
+        ...pres.verbs.flatMap((v) => SLOTS.map((s) => ({
+          id: futureLexicalItemId(n, v, s), name: `${presentDisplay(v, s)}: from ${v.lemma}`, make: () => futureLexicalQuestion(ch, v, s),
+        }))),
+      ],
+    }
+    return [forms, stems, tenseSkill('imperfect or aorist'), verses]
+  }
   if (imperfect) {
     const augment: Skill = {
       label: `${topic}: the augment`, view,

@@ -103,7 +103,7 @@ export default function App() {
         {view === 'relative' && <RelativePronoun chapter={chapter} />}
         {view === 'verbs' && <VerbIntro chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
-        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect') && <PresentTense key={view} chapter={chapter} />}
+        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}
         {view === 'test' && <ChapterTest chapter={chapter} />}
       </main>

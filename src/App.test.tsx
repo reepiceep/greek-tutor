@@ -422,6 +422,23 @@ it('chapter 21: imperfect lesson, augmented chart, and every quiz tab works', ()
   }
 })
 
+it('chapter 22: second aorist lesson, aorist chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(22)
+  nav('Second aorist')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('ἐλάμβανον')
+  tab('Fill the chart')
+  expect(screen.getByText('e)/labon')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('ἐλάβομεν')
+  for (const t of ['Parse & translate', 'Aorist stems', 'Imperfect or aorist?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

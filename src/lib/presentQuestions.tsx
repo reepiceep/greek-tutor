@@ -129,19 +129,23 @@ function imperfectParts(v: PresentVerb, slot: PersonSlot): [string, string] {
   return [recessive(v.stem + base, earliest), nu ? '(ν)' : '']
 }
 
-export const voiceName = (v: PresentVerb) => (!v.voice ? 'active' : v.tense === 'future' ? 'middle' : 'middle/passive')
+/** The imperfect and the second aorist share the augment and the secondary endings. */
+const secondary = (v: PresentVerb) => v.tense === 'imperfect' || v.tense === 'aorist'
+
+/** The future and aorist have separate passives (chapters 23–24), so their middle/passive endings are simply middle. */
+export const voiceName = (v: PresentVerb) => (!v.voice ? 'active' : v.tense === 'future' || v.tense === 'aorist' ? 'middle' : 'middle/passive')
 export const tenseName = (v: PresentVerb) => v.tense ?? 'present'
 const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
 export const plainEndingsOf = (v: PresentVerb) =>
-  v.tense === 'imperfect' ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
+  secondary(v) ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
 const endingVowelOf = (v: PresentVerb) =>
-  v.tense === 'imperfect' ? (v.voice ? IMPF_MP_VOWEL : IMPF_VOWEL) : v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL
+  secondary(v) ? (v.voice ? IMPF_MP_VOWEL : IMPF_VOWEL) : v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL
 
 export const endingsOf = (v: PresentVerb) =>
   !v.contract ? plainEndingsOf(v)
-    : v.tense === 'imperfect' ? (v.voice ? CONTRACT_IMPF_MP : CONTRACT_IMPF)[v.contract]
+    : secondary(v) ? (v.voice ? CONTRACT_IMPF_MP : CONTRACT_IMPF)[v.contract]
       : (v.voice ? CONTRACT_MP_ENDINGS : CONTRACT_ENDINGS)[v.contract]
 
 const ACCENTS = /[\u0300\u0301\u0342]/g
@@ -163,7 +167,7 @@ function accentLastVowel(w: string) {
 function formParts(v: PresentVerb, slot: PersonSlot): [string, string] {
   const odd = v.irregular?.[slot]
   if (odd) return [odd, '']
-  if (v.tense === 'imperfect') return imperfectParts(v, slot)
+  if (secondary(v)) return imperfectParts(v, slot)
   const e = endingsOf(v)[slot]
   if (v.voice && !v.contract && slot === '1p') return v.athematic ? [accentLastVowel(v.stem), e] : [unaccented(v.stem), `ό${e.slice(1)}`]
   return [v.stem, e]
@@ -202,7 +206,8 @@ function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
 }
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.tense === 'imperfect' ? imperfectEnglish(v, slot)
+  v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.past}`
+    : v.tense === 'imperfect' ? imperfectEnglish(v, slot)
     : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.en}`
     : v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
 
@@ -652,12 +657,19 @@ export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonS
   }
 }
 
-export type TenseKey = 'present' | 'future' | 'imperfect'
-const tensesOf = (v: PresentVerb): TenseKey[] => ['present', v.tense ?? 'future']
+export type TenseKey = 'present' | 'future' | 'imperfect' | 'aorist'
+/** The two tenses a verb is contrasted in: present and future or imperfect, or imperfect and aorist. */
+const tensesOf = (v: PresentVerb): TenseKey[] => (v.tense === 'aorist' ? ['imperfect', 'aorist'] : ['present', v.tense ?? 'future'])
+const hasTense = (v: PresentVerb, t: TenseKey) => t === v.tense || (t === 'present' ? !!v.present : t === 'imperfect' && !!v.imperfect)
 
 /** The same verb in the present or the future. */
 export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
-  tense !== 'present' ? v : {
+  tense === v.tense ? v
+    : tense === 'imperfect' ? {
+      ...v, tense: 'imperfect', irregular: undefined, past: undefined,
+      stem: v.imperfect!.stem, prefix: v.imperfect!.prefix, contract: v.imperfect!.contract, voice: v.imperfect!.voice,
+    }
+    : tense !== 'present' ? v : {
     ...v, tense: undefined, from: undefined, irregular: undefined, liquid: undefined, change: undefined, prefix: undefined,
     stem: v.present!.stem, contract: v.present!.contract, voice: v.present!.voice,
   }
@@ -665,19 +677,44 @@ export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
 export const tenseItemId = (ch: number, v: PresentVerb, slot: PersonSlot, tense: TenseKey) => `ch${ch}:future-tense:${v.id}:${slot}:${tense}`
 
 export const askTense = (v: PresentVerb, slot: PersonSlot, tense: TenseKey) =>
-  !!v.present && oneParse((t) => inTense(v, t), tensesOf(v), slot, tense)
+  tensesOf(v).every((t) => hasTense(v, t)) && oneParse((t) => inTense(v, t), tensesOf(v), slot, tense)
 
 export const tensePairs = (ch: Chapter) =>
   verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => tensesOf(v).filter((tense) => askTense(v, slot, tense)).map((tense) => ({ v, slot, tense }))))
 
 /** λύει or λύσει? λύει or ἔλυε? */
 export function tenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, tense: TenseKey): ChoiceQuestion {
-  const [present, past] = tensesOf(v)
-  const other = tense === present ? past : present
+  const [first, second] = tensesOf(v)
+  const other = tense === first ? second : first
   return contrastQuestion(
     tenseItemId(ch.number, v, slot, tense),
     { key: tense, label: tense, v: inTense(v, tense) },
     { key: other, label: other, v: inTense(v, other) },
-    slot, `Present or ${past}, and which person?`,
+    slot, `${first[0].toUpperCase()}${first.slice(1)} or ${second}, and which person?`,
   )
+}
+
+// --- Second aorist (chapter 22) ---
+
+export const aoristFormItemId = (ch: number, v: PresentVerb) => `ch${ch}:aorist-form:${v.id}`
+
+/** λαμβάνω → ἔλαβον, among its imperfect (ἐλάμβανον) and other verbs' aorists: the stem has to be known. */
+export function aoristFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion {
+  const answer = presentDisplay(v, '1s')
+  const imperfect = v.imperfect ? [presentDisplay(inTense(v, 'imperfect'), '1s')] : []
+  const others = distinctLemmas(verbsOf(ch).filter((o) => o.lemma !== v.lemma)).map((o) => presentDisplay(o, '1s'))
+  const forms = [...new Set([answer, ...imperfect, ...others])].slice(0, 4)
+  return {
+    id: aoristFormItemId(ch.number, v),
+    prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Aorist, 1st singular?</p></>,
+    options: shuffle(forms).map((f) => ({ key: f, label: f, greek: true })),
+    answer,
+    explain: (
+      <>
+        {explainForm(v, '1s')}
+        {imperfect.length > 0 && <p className="muted">The imperfect, <span className="greek">{imperfect[0]}</span>, is built on the present stem.</p>}
+      </>
+    ),
+    review: <><span className="greek">{v.lemma} → {answer}</span></>,
+  }
 }
