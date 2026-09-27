@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Chapter, VocabWord } from '../data/types'
+import type { Chapter, PartOfSpeech, VocabWord } from '../data/types'
 import { type Direction, displayForm, prepItemId, vocabItemId } from '../lib/items'
 import { rankWeakest, record, updateSettings, useProgress } from '../lib/progress'
 import { type CaseUse, caseUses, firstLetterHint } from '../lib/prepositions'
@@ -9,7 +9,7 @@ import { WordDetails } from './WordDetails'
 import { AudioButton } from './AudioButton'
 import { Celebration } from './Celebration'
 import { ChapterRange } from './ChapterRange'
-import { type Range, chaptersIn, vocabPool } from '../lib/vocabQuiz'
+import { PARTS_OF_SPEECH, type Range, chaptersIn, countByPos, vocabPool } from '../lib/vocabQuiz'
 import { playWord, recordingFor } from '../lib/audio'
 
 interface Card {
@@ -33,10 +33,10 @@ function cardId(c: Card): string {
     : vocabItemId(c.chapter, c.word, c.dir)
 }
 
-/** Every card in the chosen chapters, the ones you know least first. */
-function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean): Card[] {
+/** Every card in the chosen chapters (of the chosen parts of speech, if any), the ones you know least first. */
+function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean, types: PartOfSpeech[] = []): Card[] {
   const uses = chapters.flatMap(caseUses)
-  const cards = vocabPool(chapters).flatMap(({ word, chapter }) => {
+  const cards = vocabPool(chapters, types).flatMap(({ word, chapter }) => {
     const dirs = choice === 'mixed' ? (['g2e', 'e2g'] as const) : [choice]
     const wordUses = split && word.pos === 'preposition' ? uses.filter((u) => u.word.id === word.id) : []
     return wordUses.length
@@ -71,22 +71,35 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
   const multiChapter = chapters.length > 1
   const split = !!settings.splitPrepositions
   const allUses = chapters.flatMap(caseUses)
-  const hasPrepositions = allUses.length > 0
-  const [deck, setDeck] = useState<Card[]>(() => buildDeck([chapter], 'g2e', split))
+  const counts = countByPos(chapters)
+  // A remembered filter only keeps the types these chapters have; none left means every word.
+  const types = (settings.flashcardTypes ?? []).filter((t) => counts[t])
+  const hasPrepositions = allUses.length > 0 && (!types.length || types.includes('preposition'))
+  const [deck, setDeck] = useState<Card[]>(() => buildDeck([chapter], 'g2e', split, types))
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState(0)
   const [missed, setMissed] = useState<{ key: string; greek: string; gloss: string }[]>([])
 
-  const restart = (c: DirChoice, splitCards = split, r = range) => {
+  const restart = (c: DirChoice, splitCards = split, r = range, t = settings.flashcardTypes ?? []) => {
+    const rangeCounts = countByPos(chaptersIn(r))
     setChoice(c)
     setRange(r)
-    setDeck(buildDeck(chaptersIn(r), c, splitCards))
+    setDeck(buildDeck(chaptersIn(r), c, splitCards, t.filter((x) => rangeCounts[x])))
     setFlipped(false)
     setKnown(0)
     setMissed([])
   }
 
   const card = deck[0]
+
+  /** Toggle one part of speech; picking every type, or none, means “all.” */
+  const toggleType = (pos: PartOfSpeech | 'all') => {
+    const available = PARTS_OF_SPEECH.filter((p) => counts[p.pos]).map((p) => p.pos)
+    const next = pos === 'all' ? [] : types.includes(pos) ? types.filter((t) => t !== pos) : [...types, pos]
+    const chosen = next.length === available.length ? [] : next
+    updateSettings({ flashcardTypes: chosen })
+    restart(choice, split, range, chosen)
+  }
 
   const grade = (gotIt: boolean) => {
     record(cardId(card), gotIt)
@@ -138,8 +151,19 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
         <span className="muted small">Chapters</span>
         <ChapterRange chapter={chapter} range={range} onChange={(r) => restart(choice, split, r)} />
         <span className="muted small">
-          {vocabPool(chapters).length} words · {deck.length + known} cards{multiChapter && ', the ones you know least first'}
+          {vocabPool(chapters, types).length} words · {deck.length + known} cards{multiChapter && ', the ones you know least first'}
         </span>
+      </div>
+      <div className="deck-types" role="group" aria-label="Word types">
+        <span className="muted small">Word types</span>
+        <div className="chips">
+          <button type="button" className={`chip ${types.length ? '' : 'on'}`} aria-pressed={!types.length} onClick={() => toggleType('all')}>All</button>
+          {PARTS_OF_SPEECH.filter((p) => counts[p.pos]).map((p) => (
+            <button key={p.pos} type="button" className={`chip ${types.includes(p.pos) ? 'on' : ''}`} aria-pressed={types.includes(p.pos)} onClick={() => toggleType(p.pos)}>
+              {p.label} <span className="chip-count">{counts[p.pos]}</span>
+            </button>
+          ))}
+        </div>
       </div>
       {hasPrepositions && (
         <label className="check split-toggle">

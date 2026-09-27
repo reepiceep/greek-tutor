@@ -282,6 +282,33 @@ it('flashcards show a noun with its genitive and article', () => {
   expect(fronts).toContain('ἀλλά')
 })
 
+it('flashcards can be filtered to one or more parts of speech, and the filter is remembered', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(9)
+  nav('Flashcards')
+  const chip = (label: string) => [...document.querySelectorAll<HTMLButtonElement>('.chip')].find((b) => b.textContent!.replace(/\s*\d+$/, '').trim() === label)!
+  const count = (label: string) => Number(chip(label).querySelector('.chip-count')!.textContent)
+  const words = () => Number(screen.getByText(/\d+ words · \d+ cards/).textContent!.match(/(\d+) words/)![1])
+  const all = words()
+  expect(chip('All').getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(chip('Nouns'))
+  expect(words()).toBe(count('Nouns'))
+  expect(chip('All').getAttribute('aria-pressed')).toBe('false')
+  // Every card is a noun: shown with its genitive and article (θάνατος, -ου, ὁ).
+  for (let i = 0; i < count('Nouns'); i++) {
+    expect(document.querySelector('.flashcard')!.textContent).toMatch(/, (ὁ|ἡ|τό)$/)
+    fireEvent.click(document.querySelector('.flashcard')!)
+    fireEvent.click(screen.getByText('Got it', { exact: false, selector: 'button' }))
+  }
+  expect(screen.getByText('Deck complete')).toBeTruthy()
+  fireEvent.click(chip('Adjectives'))
+  expect(words()).toBe(count('Nouns') + count('Adjectives'))
+  expect(JSON.parse(localStorage.getItem('greek-tutor:v1')!).settings.flashcardTypes).toEqual(['noun', 'adjective'])
+  fireEvent.click(chip('All'))
+  expect(words()).toBe(all)
+})
+
 it('flashcards can split prepositions into one card per case', () => {
   render(<App />)
   pickChapter(8)

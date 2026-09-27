@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { PartOfSpeech } from '../data/types'
 
 // Per-item progress using Leitner boxes (1 = new/missed … 7 = long-term).
 // A correct answer moves an item up a box; a miss sends it back to box 1.
@@ -31,6 +32,8 @@ export interface Settings {
   autoplay: boolean
   /** Flashcards: one card per preposition + case instead of one per preposition. */
   splitPrepositions?: boolean
+  /** Flashcards: only these parts of speech; empty or unset means every word. */
+  flashcardTypes?: PartOfSpeech[]
   /** Set once the user changes autoplay themselves, so the default can change without overriding their choice. */
   autoplayChosen?: boolean
   /** Color theme chosen with the header toggle; unset means follow the system setting. */

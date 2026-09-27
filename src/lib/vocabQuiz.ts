@@ -1,5 +1,5 @@
 import { CHAPTERS } from '../data/chapters'
-import type { Chapter, VocabWord } from '../data/types'
+import type { Chapter, PartOfSpeech, VocabWord } from '../data/types'
 import { type Direction, vocabDistractors, vocabItemId } from './items'
 import { pickWeakest, shuffle } from './progress'
 
@@ -19,10 +19,25 @@ export interface Question {
 }
 
 /** Every word from the chosen chapters, each tagged with its own chapter. */
-export function vocabPool(chapters: Chapter[]): { word: VocabWord; chapter: number }[] {
+export function vocabPool(chapters: Chapter[], types: PartOfSpeech[] = []): { word: VocabWord; chapter: number }[] {
   const seen = new Set<string>()
   return chapters.flatMap((c) => c.vocab.map((word) => ({ word, chapter: c.number })))
     .filter((e) => !seen.has(e.word.lemma) && !!seen.add(e.word.lemma))
+    .filter((e) => !types.length || types.includes(e.word.pos))
+}
+
+/** Parts of speech in the order the flashcard filter shows them. */
+export const PARTS_OF_SPEECH: { pos: PartOfSpeech; label: string }[] = [
+  { pos: 'noun', label: 'Nouns' }, { pos: 'verb', label: 'Verbs' }, { pos: 'adjective', label: 'Adjectives' },
+  { pos: 'pronoun', label: 'Pronouns' }, { pos: 'preposition', label: 'Prepositions' }, { pos: 'conjunction', label: 'Conjunctions' },
+  { pos: 'adverb', label: 'Adverbs' },
+]
+
+/** How many words of each part of speech the chapters have. */
+export function countByPos(chapters: Chapter[]): Partial<Record<PartOfSpeech, number>> {
+  const counts: Partial<Record<PartOfSpeech, number>> = {}
+  for (const { word } of vocabPool(chapters)) counts[word.pos] = (counts[word.pos] ?? 0) + 1
+  return counts
 }
 
 /** Weakest words first across the chosen chapters; wrong options come from the same pool. */

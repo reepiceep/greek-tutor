@@ -23,6 +23,8 @@ export interface VocabWord {
   hook?: string
 }
 
+export type PartOfSpeech = VocabWord['pos']
+
 export interface ParadigmRow {
   key: string
   label: string
