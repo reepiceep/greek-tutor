@@ -1,29 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { getChapter } from './data/chapters'
 import type { TopicView } from './data/types'
-import { Adjectives } from './components/Adjectives'
-import { ThirdDeclension } from './components/ThirdDeclension'
-import { Pronouns } from './components/Pronouns'
-import { Autos } from './components/Autos'
-import { Demonstratives } from './components/Demonstratives'
-import { RelativePronoun } from './components/RelativePronoun'
-import { VerbIntro } from './components/VerbIntro'
-import { ParticipleIntro } from './components/ParticipleIntro'
-import { Participles } from './components/Participles'
-import { AdjectivalParticiple } from './components/AdjectivalParticiple'
-import { Infinitive } from './components/Infinitive'
-import { Imperative } from './components/Imperative'
-import { NonIndicative } from './components/NonIndicative'
-import { Cases } from './components/Cases'
-import { PresentTense } from './components/PresentTense'
-import { ChapterTest } from './components/ChapterTest'
 import { hasTest } from './lib/chapterTest'
 import { Dashboard } from './components/Dashboard'
-import { Flashcards } from './components/Flashcards'
-import { ParadigmDrill } from './components/ParadigmDrill'
-import { PrepositionDrills } from './components/PrepositionDrills'
-import { PrepositionReview } from './components/PrepositionReview'
-import { VocabQuiz } from './components/VocabQuiz'
 import { useProgress } from './lib/progress'
 import { TOPIC_META } from './lib/views'
 import { applyTheme } from './lib/theme'
@@ -34,6 +13,32 @@ import { ChapterSheet } from './components/ChapterSheet'
 import { reviewPlan } from './lib/review'
 import { useNow } from './lib/useNow'
 import { useStickyNavTop, useTabsFollowSelection } from './lib/layout'
+import { lazyScreen, preloadScreens } from './components/lazyScreen'
+import { ScreenBoundary } from './components/ScreenBoundary'
+import { UpdateBanner } from './components/UpdateBanner'
+
+// Every screen but Home, Today and Practice is fetched when first opened (and in the background once the page is up).
+const Adjectives = lazyScreen(() => import('./components/Adjectives').then((m) => m.Adjectives))
+const ThirdDeclension = lazyScreen(() => import('./components/ThirdDeclension').then((m) => m.ThirdDeclension))
+const Pronouns = lazyScreen(() => import('./components/Pronouns').then((m) => m.Pronouns))
+const Autos = lazyScreen(() => import('./components/Autos').then((m) => m.Autos))
+const Demonstratives = lazyScreen(() => import('./components/Demonstratives').then((m) => m.Demonstratives))
+const RelativePronoun = lazyScreen(() => import('./components/RelativePronoun').then((m) => m.RelativePronoun))
+const VerbIntro = lazyScreen(() => import('./components/VerbIntro').then((m) => m.VerbIntro))
+const ParticipleIntro = lazyScreen(() => import('./components/ParticipleIntro').then((m) => m.ParticipleIntro))
+const Participles = lazyScreen(() => import('./components/Participles').then((m) => m.Participles))
+const AdjectivalParticiple = lazyScreen(() => import('./components/AdjectivalParticiple').then((m) => m.AdjectivalParticiple))
+const Infinitive = lazyScreen(() => import('./components/Infinitive').then((m) => m.Infinitive))
+const Imperative = lazyScreen(() => import('./components/Imperative').then((m) => m.Imperative))
+const NonIndicative = lazyScreen(() => import('./components/NonIndicative').then((m) => m.NonIndicative))
+const Cases = lazyScreen(() => import('./components/Cases').then((m) => m.Cases))
+const PresentTense = lazyScreen(() => import('./components/PresentTense').then((m) => m.PresentTense))
+const ChapterTest = lazyScreen(() => import('./components/ChapterTest').then((m) => m.ChapterTest))
+const Flashcards = lazyScreen(() => import('./components/Flashcards').then((m) => m.Flashcards))
+const ParadigmDrill = lazyScreen(() => import('./components/ParadigmDrill').then((m) => m.ParadigmDrill))
+const PrepositionDrills = lazyScreen(() => import('./components/PrepositionDrills').then((m) => m.PrepositionDrills))
+const PrepositionReview = lazyScreen(() => import('./components/PrepositionReview').then((m) => m.PrepositionReview))
+const VocabQuiz = lazyScreen(() => import('./components/VocabQuiz').then((m) => m.VocabQuiz))
 
 export type View = 'home' | 'today' | 'practice' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
 
@@ -59,6 +64,12 @@ export default function App() {
   useEffect(() => {
     navRef.current?.querySelector('.on')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   }, [view])
+
+  // Once the first screen is up, fetch the rest while the reader is looking at it.
+  useEffect(() => {
+    const id = setTimeout(() => { preloadScreens().catch(() => {}) }, 1500)
+    return () => clearTimeout(id)
+  }, [])
 
   const [picking, setPicking] = useState(false)
   const closePicker = useCallback(() => setPicking(false), [])
@@ -125,30 +136,34 @@ export default function App() {
         </nav>
       </header>
       <main key={chapter.number} className={view === 'home' ? 'wide' : ''}>
-        {view === 'home' && <Dashboard chapter={chapter} go={setView} />}
-        {view === 'today' && <Today chapter={chapter} />}
-        {view === 'practice' && <Practice chapter={chapter} go={setView} />}
-        {view === 'flashcards' && <Flashcards chapter={chapter} />}
-        {view === 'quiz' && <VocabQuiz chapter={chapter} />}
-        {view === 'paradigm' && <ParadigmDrill chapter={chapter} />}
-        {view === 'prepositions' && <PrepositionDrills chapter={chapter} />}
-        {view === 'adjectives' && <Adjectives chapter={chapter} />}
-        {view === 'declension' && <ThirdDeclension chapter={chapter} />}
-        {view === 'pronouns' && <Pronouns chapter={chapter} />}
-        {view === 'autos' && <Autos chapter={chapter} />}
-        {view === 'demonstratives' && <Demonstratives chapter={chapter} />}
-        {view === 'relative' && <RelativePronoun chapter={chapter} />}
-        {view === 'verbs' && <VerbIntro chapter={chapter} />}
-        {view === 'participles' && <ParticipleIntro chapter={chapter} />}
-        {(view === 'ptcPresent' || view === 'ptcAorist' || view === 'ptcPerfect') && <Participles key={view} chapter={chapter} view={view} />}
-        {view === 'ptcAdjectival' && <AdjectivalParticiple chapter={chapter} />}
-        {view === 'infinitive' && <Infinitive chapter={chapter} />}
-        {view === 'imperative' && <Imperative chapter={chapter} />}
-        {view === 'miMoods' && <NonIndicative chapter={chapter} />}
-        {view === 'cases' && <Cases chapter={chapter} />}
-        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive' || view === 'mi' || view === 'mi2') && <PresentTense key={view} chapter={chapter} />}
-        {view === 'review' && <PrepositionReview />}
-        {view === 'test' && <ChapterTest chapter={chapter} />}
+        <ScreenBoundary key={view}>
+          <Suspense fallback={<p className="muted loading">Loading…</p>}>
+            {view === 'home' && <Dashboard chapter={chapter} go={setView} />}
+            {view === 'today' && <Today chapter={chapter} />}
+            {view === 'practice' && <Practice chapter={chapter} go={setView} />}
+            {view === 'flashcards' && <Flashcards chapter={chapter} />}
+            {view === 'quiz' && <VocabQuiz chapter={chapter} />}
+            {view === 'paradigm' && <ParadigmDrill chapter={chapter} />}
+            {view === 'prepositions' && <PrepositionDrills chapter={chapter} />}
+            {view === 'adjectives' && <Adjectives chapter={chapter} />}
+            {view === 'declension' && <ThirdDeclension chapter={chapter} />}
+            {view === 'pronouns' && <Pronouns chapter={chapter} />}
+            {view === 'autos' && <Autos chapter={chapter} />}
+            {view === 'demonstratives' && <Demonstratives chapter={chapter} />}
+            {view === 'relative' && <RelativePronoun chapter={chapter} />}
+            {view === 'verbs' && <VerbIntro chapter={chapter} />}
+            {view === 'participles' && <ParticipleIntro chapter={chapter} />}
+            {(view === 'ptcPresent' || view === 'ptcAorist' || view === 'ptcPerfect') && <Participles key={view} chapter={chapter} view={view} />}
+            {view === 'ptcAdjectival' && <AdjectivalParticiple chapter={chapter} />}
+            {view === 'infinitive' && <Infinitive chapter={chapter} />}
+            {view === 'imperative' && <Imperative chapter={chapter} />}
+            {view === 'miMoods' && <NonIndicative chapter={chapter} />}
+            {view === 'cases' && <Cases chapter={chapter} />}
+            {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive' || view === 'mi' || view === 'mi2') && <PresentTense key={view} chapter={chapter} />}
+            {view === 'review' && <PrepositionReview />}
+            {view === 'test' && <ChapterTest chapter={chapter} />}
+          </Suspense>
+        </ScreenBoundary>
       </main>
       <nav className="tabbar" aria-label="Main">
         {tabs.map((t) => (
@@ -160,6 +175,7 @@ export default function App() {
         ))}
       </nav>
       {picking && <ChapterSheet current={chapter} onClose={closePicker} />}
+      <UpdateBanner />
     </div>
   )
 }

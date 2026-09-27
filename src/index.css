@@ -176,6 +176,19 @@ header nav .nav-group {
 .sheet-close:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 @keyframes fade { from { opacity: 0; } }
 
+/* Screens load on demand; if one can't be fetched, say so. */
+.loading { padding: 24px 0; }
+.load-failed { padding: 24px 0; }
+
+/* A new version is ready: a small bar above the tab bar (phones) or at the bottom (wide screens). */
+.update-banner {
+  position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 40; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px; width: max-content; max-width: calc(100% - 32px); padding: 10px 12px 10px 16px;
+  background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
+  animation: rise 0.25s ease-out;
+}
+.update-banner button { flex: none; padding: 6px 14px; }
+
 /* Bottom tab bar: phones only. */
 .tabbar { display: none; }
 
@@ -680,6 +693,7 @@ header nav .badge {
     border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 0.66rem; font-weight: 700;
   }
   .home-map { display: none; }
+  .update-banner { bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom)); }
   .sheet-backdrop { place-items: end stretch; padding: 0; }
   .sheet { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; border-bottom: none; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
   .sheet-head { justify-content: center; }

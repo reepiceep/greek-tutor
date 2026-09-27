@@ -63,6 +63,14 @@ npm test         # vitest
 
 Progress is stored in the browser (`localStorage`). An item counts as "learned" once it reaches Leitner box 3 (two correct in a row); boxes go up to 7 for the review spacing. Use **Export progress** on the home page to save a JSON backup, and **Import progress** to restore it or move it to another browser.
 
+## Install and offline use
+
+Theophilus can be installed as an app (from the browser's install or “Add to Home Screen” option) and works offline once it has been opened online. A service worker caches the whole app, so later visits load from the device. Mounce's recordings are streamed and need a connection. When a new version is deployed it downloads in the background and a small “A new version is ready” bar offers to switch; progress is kept either way.
+
+The first screen loads the chapter data and question builders (which the daily review and chapter map need) plus React, about 250 kB gzipped; every other screen is a small file fetched on first use, and in the background shortly after the page opens.
+
+The service worker is `pwa/sw.js`. It is a template: the build (`vite.config.ts`) fills in the list of files to cache and a version, and emits it as `dist/sw.js`. It only runs in production builds (`npm run build && npm run preview`), not under `npm run dev`.
+
 ## Pronunciation
 Every vocabulary word has a speaker button (flashcards, vocab quiz, daily review and word details), and the recording plays automatically when the Greek appears (turn this off in Settings). Recordings are Bill Mounce's, played straight from `greek.billmounce.com`, so they need an internet connection. Choose **Erasmian** (Mounce, as taught in BBG) or **Modern Greek** on the home page, and optionally turn on autoplay. In flashcards, press **P** to hear the word. The URLs are in `src/data/audio.ts`; `src/data/audio.test.ts` checks every vocabulary word has both recordings.
 
@@ -82,11 +90,11 @@ The app is a static Vite build with no server and no environment variables, so V
 
 1. Push the repo to GitHub, GitLab or Bitbucket.
 2. In Vercel choose **Add New → Project**, import the repo. The repo root is the app, so leave **Root Directory** as it is.
-3. Deploy. `vercel.json` sets the framework (Vite), build command (`npm run build`, which type-checks then builds) and output folder (`dist`), and adds long-lived caching for the hashed files in `/assets` plus a few basic security headers. Node 24 is requested in `package.json`.
+3. Deploy. `vercel.json` sets the framework (Vite), build command (`npm run build`, which type-checks then builds) and output folder (`dist`), and adds long-lived caching for the hashed files in `/assets`, no caching for `sw.js` (so new versions are picked up), plus a few basic security headers. Node 24 is requested in `package.json`.
 
 Or from the terminal: `npx vercel` (preview) and `npx vercel --prod`.
 
 Notes:
 - Progress is saved in each browser's localStorage, so it is per device and per address. Use the backup export on the dashboard to move it between devices or to a new domain.
-- Fonts come from Google Fonts and the pronunciation audio streams from `greek.billmounce.com`, so the deployed site needs internet access for both.
+- Fonts come from Google Fonts (cached for offline use after the first visit) and the pronunciation audio streams from `greek.billmounce.com`, which needs a connection.
 - There is no client-side routing, so no rewrite rules are needed.

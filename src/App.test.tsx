@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
-import { StrictMode } from 'react'
-import { afterEach, expect, it } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { type ReactNode, StrictMode } from 'react'
+import { afterEach, beforeAll, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import App from './App'
+import { preloadScreens } from './components/lazyScreen'
 
+// Screens load on demand; fetch them all first so every test can switch screens synchronously.
+beforeAll(() => preloadScreens())
 afterEach(cleanup)
 
 const nav = (label: string) => fireEvent.click(screen.getByText(label, { selector: 'header nav button' }))
@@ -901,4 +904,30 @@ it('drills have a side panel: a dot per question, what was missed, and the keys'
   expect(pips()[0].className).toContain(right ? 'right' : 'wrong')
   expect(document.querySelectorAll('.drill-side .side-missed li')).toHaveLength(right ? 0 : 1)
   expect(screen.getByText('pick an answer')).toBeTruthy()
+})
+
+it('a screen that is not loaded yet shows a loading line, then the screen', async () => {
+  const { lazyScreen } = await import('./components/lazyScreen')
+  const { Suspense } = await import('react')
+  const Slow = lazyScreen(() => new Promise<() => ReactNode>((r) => setTimeout(() => r(() => <p>slow screen</p>), 20)))
+  // A render that suspends must happen in an awaited act for React to retry it once the code arrives.
+  await act(async () => { render(<Suspense fallback={<p>Loading…</p>}><Slow /></Suspense>) })
+  expect(screen.getByText('Loading…')).toBeTruthy()
+  expect(await screen.findByText('slow screen')).toBeTruthy()
+})
+
+it('a screen whose code fails to load offers a reload', async () => {
+  const { lazyScreen } = await import('./components/lazyScreen')
+  const { ScreenBoundary } = await import('./components/ScreenBoundary')
+  const { Suspense } = await import('react')
+  const Broken = lazyScreen(() => Promise.reject(new Error('offline')))
+  const quiet = console.error
+  console.error = () => {}
+  try {
+    await act(async () => { render(<ScreenBoundary><Suspense fallback={<p>Loading…</p>}><Broken /></Suspense></ScreenBoundary>) })
+    expect(await screen.findByText('This screen couldn’t be loaded.')).toBeTruthy()
+    expect(screen.getByText('Reload')).toBeTruthy()
+  } finally {
+    console.error = quiet
+  }
 })
