@@ -66,7 +66,7 @@ Progress is stored in the browser (`localStorage`). An item counts as "learned" 
 
 ## Install and offline use
 
-Theophilus can be installed as an app (from the browser's install or “Add to Home Screen” option) and works offline once it has been opened online. A service worker caches the whole app, so later visits load from the device. Mounce's recordings are streamed and need a connection. When a new version is deployed it downloads in the background and a small “A new version is ready” bar offers to switch; progress is kept either way.
+Theophilus can be installed as an app (from the browser's install or “Add to Home Screen” option) and works offline once it has been opened online. A service worker caches the whole app, so later visits load from the device. Mounce's recordings are kept as you play them, so words you've heard work offline in Chrome, Edge and Android; his server doesn't let other sites read the files, and Safari can't play back that kind of copy, so on iPhone and Mac Safari recordings still need a connection. When a new version is deployed it downloads in the background and a small “A new version is ready” bar offers to switch; progress is kept either way.
 
 The first screen loads the chapter data and question builders (which the daily review and chapter map need) plus React, about 250 kB gzipped; every other screen is a small file fetched on first use, and in the background shortly after the page opens.
 
@@ -101,5 +101,5 @@ Or from the terminal: `npx vercel` (preview) and `npx vercel --prod`.
 
 Notes:
 - Progress is saved in each browser's localStorage, so it is per device and per address. Use the backup export on the dashboard to move it between devices or to a new domain.
-- Fonts come from Google Fonts (cached for offline use after the first visit) and the pronunciation audio streams from `greek.billmounce.com`, which needs a connection.
+- Fonts come from Google Fonts (cached for offline use after the first visit) and the pronunciation audio streams from `greek.billmounce.com` (kept for offline use as it plays, in Chrome, Edge and Android).
 - There is no client-side routing, so no rewrite rules are needed.

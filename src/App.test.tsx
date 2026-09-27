@@ -1050,3 +1050,23 @@ it('the reader: passages easiest first, and tapping a word shows its meaning and
   fireEvent.click(screen.getAllByText('All passages', { selector: 'button' })[0])
   expect(screen.getByText('In the beginning was the Word').closest('.reading-card')!.querySelector('.reading-read')).toBeTruthy()
 })
+
+it('the reader is one Tab stop; the arrow keys move focus from word to word', () => {
+  render(<App />)
+  nav('Read')
+  fireEvent.click(screen.getByText('In the beginning was the Word'))
+  const words = [...document.querySelectorAll<HTMLElement>('.rw')]
+  expect(words.filter((w) => w.tabIndex === 0)).toHaveLength(1)
+  words[0].focus()
+  fireEvent.keyDown(words[0], { key: 'ArrowRight' })
+  expect(document.activeElement).toBe(words[1])
+  expect(words[1].getAttribute('aria-pressed')).toBe('true')
+  expect(words.filter((w) => w.tabIndex === 0)).toEqual([words[1]])
+  fireEvent.keyDown(words[1], { key: 'End' })
+  expect(document.activeElement).toBe(words[words.length - 1])
+  fireEvent.keyDown(document.activeElement!, { key: 'Home' })
+  expect(document.activeElement).toBe(words[0])
+  // Escape closes the card; Tab still lands on the word you were on.
+  fireEvent.keyDown(words[0], { key: 'Escape' })
+  expect(words.filter((w) => w.tabIndex === 0)).toEqual([words[0]])
+})

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { READINGS } from '../data/readings'
 import type { Chapter, Reading, ReadingWord } from '../data/types'
 import { recordingFor } from '../lib/audio'
@@ -70,6 +70,11 @@ function Passage({ reading, chapter, onBack }: { reading: Reading; chapter: Chap
   const words = reading.verses.flatMap((v) => v.words)
   // Index into `words` of the word being looked at.
   const [selected, setSelected] = useState<number | null>(null)
+  // The passage is one Tab stop: only this word is in the tab order (the last one focused, or the one selected), and
+  // the arrow keys move from word to word.
+  const [cursor, setCursor] = useState(0)
+  const tabStop = selected ?? cursor
+  const text = useRef<HTMLDivElement>(null)
   const read = (settings.readPassages ?? []).includes(reading.id)
   const stats = passageStats(reading, chapter.number)
 
@@ -77,15 +82,25 @@ function Passage({ reading, chapter, onBack }: { reading: Reading; chapter: Chap
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || (e.target as HTMLElement | null)?.closest?.('input, textarea')) return
+      const inText = !!text.current?.contains(document.activeElement)
       if (e.key === 'Escape') setSelected(null)
-      else if (e.key === 'ArrowRight') setSelected((s) => Math.min((s ?? -1) + 1, words.length - 1))
-      else if (e.key === 'ArrowLeft') setSelected((s) => Math.max((s ?? words.length) - 1, 0))
+      // With nothing selected, step from the focused word (or from the start or end of the passage).
+      else if (e.key === 'ArrowRight') setSelected((s) => Math.min((s ?? (inText ? cursor : -1)) + 1, words.length - 1))
+      else if (e.key === 'ArrowLeft') setSelected((s) => Math.max((s ?? (inText ? cursor : words.length)) - 1, 0))
+      else if (e.key === 'Home' && inText) setSelected(0)
+      else if (e.key === 'End' && inText) setSelected(words.length - 1)
       else return
       e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [words.length])
+  }, [words.length, cursor])
+
+  // When the keyboard moves the selection while focus is in the text, focus follows it.
+  useEffect(() => {
+    if (selected === null || !text.current?.contains(document.activeElement)) return
+    text.current.querySelector<HTMLElement>(`[data-i="${selected}"]`)?.focus()
+  }, [selected])
 
   // Where each verse's words start in `words`.
   const starts = reading.verses.map((_, n) => reading.verses.slice(0, n).reduce((sum, v) => sum + v.words.length, 0))
@@ -106,7 +121,8 @@ function Passage({ reading, chapter, onBack }: { reading: Reading; chapter: Chap
       </div>
 
       <div className="reader-layout">
-        <div className="reading-text greek" lang="el">
+        <div ref={text} className="reading-text greek" lang="el" role="group"
+          aria-label="Passage text. Use the arrow keys to move from word to word, Enter to look one up.">
           {reading.verses.map((v, vi) => (
             <span key={v.n} className="verse">
               <sup className="verse-num">{v.n}</sup>
@@ -118,6 +134,7 @@ function Passage({ reading, chapter, onBack }: { reading: Reading; chapter: Chap
                   <span key={index}>
                     {before}
                     <button type="button" className={`rw${selected === index ? ' on' : ''}${markNew && !learned ? ' new' : ''}`}
+                      data-i={index} tabIndex={index === tabStop ? 0 : -1} onFocus={() => setCursor(index)}
                       aria-pressed={selected === index} onClick={() => setSelected(selected === index ? null : index)}>
                       {core}
                     </button>

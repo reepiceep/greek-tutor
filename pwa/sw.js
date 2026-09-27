@@ -1,11 +1,13 @@
 // Theophilus's service worker. This is a template: the build (vite.config.ts) fills in VERSION and PRECACHE.
 // The whole app is cached on install, so it works offline and loads from the device on later visits. Mounce's
-// recordings come from his server and are not cached.
+// recordings are kept as they are first played; his server doesn't allow other sites to read them, so the copies are
+// "opaque", which Chrome, Edge and Android can play back offline but Safari can't (there they still need a connection).
 
 const VERSION = /* VERSION */ 'dev'
 const PRECACHE = /* PRECACHE */ []
 const APP_CACHE = `app-${VERSION}`
 const FONT_CACHE = 'fonts'
+const RECORDING_CACHE = 'recordings'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(APP_CACHE).then((cache) => cache.addAll(PRECACHE)))
@@ -56,5 +58,21 @@ self.addEventListener('fetch', (event) => {
       return hit
     }))
   }
-  // Anything else (the recordings) goes to the network as usual.
+  // Mounce's recordings: the kept copy if there is one, otherwise the network, keeping a copy for next time.
+  if (url.hostname === 'greek.billmounce.com' && url.pathname.endsWith('.mp3')) {
+    event.respondWith(recording(request))
+  }
+  // Anything else goes to the network as usual.
 })
+
+async function recording(request) {
+  const cache = await caches.open(RECORDING_CACHE)
+  const hit = await cache.match(request.url)
+  if (hit) return hit
+  const response = await fetch(request)
+  // Keep the player's own first request, which asks for the whole file from byte 0 ("bytes=0-"); Chrome only plays an
+  // opaque copy back if it answered such a request. A later range (after seeking) would be partial, so isn't kept.
+  const range = request.headers.get('range')
+  if (!range || range === 'bytes=0-') cache.put(request.url, response.clone()).catch(() => {})
+  return response
+}
