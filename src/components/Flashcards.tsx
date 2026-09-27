@@ -8,6 +8,7 @@ import { CaseTag } from './CaseTag'
 import { WordDetails } from './WordDetails'
 import { AudioButton } from './AudioButton'
 import { Celebration } from './Celebration'
+import { DrillLayout, KeyHelp, MissedList, RoundProgress } from './SidePanel'
 import { ChapterRange } from './ChapterRange'
 import { PARTS_OF_SPEECH, type Range, chaptersIn, countByPos, vocabPool } from '../lib/vocabQuiz'
 import { playWord, recordingFor } from '../lib/audio'
@@ -27,6 +28,9 @@ type DirChoice = Direction | 'mixed'
  * Progress id for a card. Split preposition cards share the preposition drills' items:
  * Greek → English is "what does μετά + gen mean?", English → Greek is "which preposition + case means 'with'?".
  */
+/** One entry per word (or preposition + case) in the missed list, whichever way round the card was. */
+const missKey = (c: Card) => (c.use ? `${c.word.id}:${c.use.case}` : c.word.id)
+
 function cardId(c: Card): string {
   return c.use
     ? prepItemId(c.chapter, c.word.id, c.use.case, c.dir === 'g2e' ? 'meaning' : 'case')
@@ -77,6 +81,8 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
   const hasPrepositions = allUses.length > 0 && (!types.length || types.includes('preposition'))
   const [deck, setDeck] = useState<Card[]>(() => buildDeck([chapter], 'g2e', split, types))
   const [flipped, setFlipped] = useState(false)
+  // Counts grades, so each new card (even the same word coming round again) slides in.
+  const [turn, setTurn] = useState(0)
   const [known, setKnown] = useState(0)
   const [missed, setMissed] = useState<{ key: string; greek: string; gloss: string }[]>([])
 
@@ -109,11 +115,12 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
   const grade = (gotIt: boolean) => {
     record(cardId(card), gotIt)
     setFlipped(false)
+    setTurn((t) => t + 1)
     if (gotIt) {
       setKnown((k) => k + 1)
       setDeck((d) => d.slice(1))
     } else {
-      const key = card.use ? `${card.word.id}:${card.use.case}` : card.word.id
+      const key = missKey(card)
       const greek = card.use ? caseUseLabel(card.use) : displayForm(card.word)
       const gloss = card.use ? card.use.gloss : card.word.gloss
       setMissed((m) => (m.some((x) => x.key === key) ? m : [...m, { key, greek, gloss }]))
@@ -185,12 +192,12 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
       </details>
 
       {card ? (
-        <>
+        <DrillLayout aside={<DeckPanel deck={deck} known={known} missed={missed} />}>
           <p className="muted">
             {known} known · {deck.length} to go
             {multiChapter && <span className="review-tag"> · Ch {card.chapter}</span>}
           </p>
-          <button className={`flashcard ${flipped ? 'flipped' : ''}`} onClick={() => setFlipped((f) => !f)}>
+          <button key={turn} className={`flashcard ${flipped ? 'flipped' : ''}`} onClick={() => setFlipped((f) => !f)}>
             {!flipped ? (
               card.use
                 ? card.dir === 'g2e'
@@ -230,7 +237,7 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
               <span className="touch-only">Tap the card to flip</span>
             </p>
           )}
-        </>
+        </DrillLayout>
       ) : (
         <div className="done">
           <h3>Deck complete</h3>
@@ -246,5 +253,25 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
         </div>
       )}
     </section>
+  )
+}
+
+/** Beside the card on wide screens: the deck so far (cards you missed and haven't got yet are red), misses, keys. */
+function DeckPanel({ deck, known, missed }: { deck: Card[]; known: number; missed: { key: string; greek: string; gloss: string }[] }) {
+  const missedKeys = new Set(missed.map((m) => m.key))
+  return (
+    <>
+      <RoundProgress
+        marks={[...Array<'right'>(known).fill('right'), ...deck.map((c) => (missedKeys.has(missKey(c)) ? 'wrong' as const : 'todo' as const))]}
+        current={known}
+        stats={[[known, 'learned'], [deck.length, 'left'], [missed.length, 'missed']]} />
+      <MissedList items={missed.map((m) => ({ key: m.key, node: <><span className="greek">{m.greek}</span> — {m.gloss}</> }))} />
+      <KeyHelp keys={[
+        [['space'], 'turn the card over'],
+        [['→', 'K'], 'you knew it'],
+        [['←', 'J'], 'you didn’t'],
+        [['P'], 'play the word'],
+      ]} />
+    </>
   )
 }

@@ -887,3 +887,18 @@ it('Home suggests one next step, and its button goes there', () => {
   if (movesOn) expect(document.querySelector('.chapter-pick-num')!.textContent).toBe('Ch 21')
   else expect(document.querySelector('.dashboard')).toBeNull()
 })
+
+it('drills have a side panel: a dot per question, what was missed, and the keys', () => {
+  render(<App />)
+  pickChapter(26)
+  nav('Participles')
+  tab('Agreement')
+  const pips = () => [...document.querySelectorAll('.drill-side .round-pip')]
+  expect(pips()[0].className).toContain('current')
+  expect(pips().every((p) => !/right|wrong/.test(p.className))).toBe(true)
+  fireEvent.click(document.querySelector('.option')!)
+  const right = document.querySelector('.feedback.good') !== null
+  expect(pips()[0].className).toContain(right ? 'right' : 'wrong')
+  expect(document.querySelectorAll('.drill-side .side-missed li')).toHaveLength(right ? 0 : 1)
+  expect(screen.getByText('pick an answer')).toBeTruthy()
+})

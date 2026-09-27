@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { record } from '../lib/progress'
 import { Celebration } from './Celebration'
+import { DrillLayout, KeyHelp, MissedList, RoundProgress } from './SidePanel'
 
 export interface ChoiceOption {
   key: string
@@ -120,14 +121,30 @@ export function ChoiceQuiz({ questions, onRestart, layout = 'list', test, onFini
   }
 
   const correct = picked === q.answer
+  const rightCount = results.filter((r) => r.correct).length
+  const aside = (
+    <>
+      <RoundProgress
+        marks={questions.map((_, i) => (i < results.length ? (test ? 'done' : results[i].correct ? 'right' : 'wrong') : 'todo'))}
+        current={index}
+        stats={test
+          ? [[results.length, 'answered'], [questions.length - results.length, 'left']]
+          : [[rightCount, 'right'], [results.length - rightCount, 'missed'], [bestStreak(results), 'best streak']]} />
+      {!test && <MissedList items={results.flatMap((r, i) => (r.correct ? [] : [{ key: `${i}-${r.q.id}`, node: r.q.review }]))} />}
+      <KeyHelp keys={[
+        [[`1–${Math.min(q.options.length, 9)}`], 'pick an answer'],
+        ...(test ? [] : [[['Enter'], 'next question'] as [string[], string]]),
+      ]} />
+    </>
+  )
 
   return (
-    <div>
+    <DrillLayout aside={aside}>
       <div className="quiz-status">
         <span className="muted">{test ? 'Question ' : ''}{index + 1} of {questions.length}</span>
         {!test && results.length > 0 && (
           <span className="quiz-chips">
-            <span className="chip">{results.filter((r) => r.correct).length} right</span>
+            <span className="chip">{rightCount} right</span>
             {streak >= 3 && <span className="chip streak" key={streak}>★ {streak} in a row</span>}
           </span>
         )}
@@ -156,6 +173,6 @@ export function ChoiceQuiz({ questions, onRestart, layout = 'list', test, onFini
           </div>
         </div>
       )}
-    </div>
+    </DrillLayout>
   )
 }
