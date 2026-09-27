@@ -859,6 +859,28 @@ export function whichTenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot
   }
 }
 
+/** A form that no drilled verb with another lemma shares, for “which verb?”. */
+export const askWhichVerb = (ch: Chapter, v: PresentVerb, slot: PersonSlot) => {
+  const form = presentDisplay(v, slot)
+  return verbsOf(ch).filter((o) => o.lemma !== v.lemma).every((o) => SLOTS.every((s) => presentDisplay(o, s) !== form))
+}
+export const whichVerbPairs = (ch: Chapter) => verbsOf(ch).flatMap((v) => SLOTS.filter((s) => askWhichVerb(ch, v, s)).map((slot) => ({ v, slot })))
+export const whichVerbItemId = (ch: number, v: PresentVerb, slot: PersonSlot) => `ch${ch}:which-verb:${v.id}:${slot}`
+
+/** ἔθηκεν, ἔστησεν, ἔδειξεν, ἀφῆκεν: which μι verb is it from? */
+export function whichVerbQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot): ChoiceQuestion {
+  const lemmas = [...new Set(verbsOf(ch).map((o) => o.lemma))].filter((l) => l !== v.lemma)
+  const options = shuffle([v.lemma, ...shuffle(lemmas).slice(0, 3)])
+  return {
+    id: whichVerbItemId(ch.number, v, slot),
+    prompt: <><span className="greek big">{presentDisplay(v, slot)}</span><p className="muted">Which verb is it from?</p></>,
+    options: options.map((l) => ({ key: l, label: l, greek: true })),
+    answer: v.lemma,
+    explain: explainForm(v, slot),
+    review: <><span className="greek">{presentDisplay(v, slot)}</span> is from <span className="greek">{v.lemma}</span></>,
+  }
+}
+
 // --- Second aorist (chapter 22) ---
 
 export const aoristFormItemId = (ch: number, v: PresentVerb) => `ch${ch}:aorist-form:${v.id}`

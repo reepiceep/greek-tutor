@@ -38,7 +38,7 @@ import {
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
   redupItemId, redupQuestion, PASSIVE_RULES, passiveRuleItemId, passiveRuleQuestion, aoristFormItemId, aoristFormQuestion, augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion, voiceItemId, voicePairs, voiceQuestion, inMood, moodItemId, moodPairs, moodQuestion, subjUseItemId, subjUseQuestion,
-  tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion,
+  tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion, whichVerbItemId, whichVerbPairs, whichVerbQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
@@ -524,6 +524,25 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'parse'), name: `${v.word} in ${v.ref} (person)`, make: () => verseParseQuestion(ch, v) },
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
+  }
+  if (pres.verbs.some((v) => v.lemma === 'ἵστημι')) {
+    const mi2 = 'mi2' as View
+    return [
+      { ...forms, label: 'μι verbs: forms', view: mi2 },
+      {
+        label: 'μι verbs: which tense', view: mi2,
+        items: whichTensePairs(ch).map(({ v, slot }) => ({
+          id: whichTenseItemId(n, v, slot), name: `${presentDisplay(v, slot)}: ${tenseVoiceLabel(v)}`, make: () => whichTenseQuestion(ch, v, slot),
+        })),
+      },
+      {
+        label: 'μι verbs: which verb', view: mi2,
+        items: whichVerbPairs(ch).map(({ v, slot }) => ({
+          id: whichVerbItemId(n, v, slot), name: `${presentDisplay(v, slot)}: from ${v.lemma}`, make: () => whichVerbQuestion(ch, v, slot),
+        })),
+      },
+      { ...verses, label: 'μι verbs: in verses', view: mi2 },
+    ]
   }
   if (pres.verbs.some((v) => v.lemma === 'δίδωμι')) {
     const which: Skill = {

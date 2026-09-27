@@ -711,6 +711,26 @@ it('chapter 35: δίδωμι moods and conditionals, every quiz tab, and the tes
   expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
 })
 
+it('chapter 36: μι verbs lesson, chart, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(36)
+  nav('ἵστημι, τίθημι')
+  const table = [...document.querySelectorAll('.endings-table')].map((t) => t.textContent).join(' ')
+  for (const form of ['ἵστημι', 'ἔθηκα', 'ἀφῆκα', 'ἕστηκα']) expect(table, form).toContain(form)
+  tab('Fill the chart')
+  expect(screen.getByText('ti/qhmi')).toBeTruthy()
+  for (const t of ['Parse & translate', 'Which tense?', 'Which verb?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

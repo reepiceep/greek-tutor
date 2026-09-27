@@ -360,4 +360,14 @@ export const RECORDINGS: Record<string, Recording> = {
   // Chapter 35: the vocabulary pages have no players, and only these two files were found on the server.
   'ἁγιάζω': { mounce: B + 'chpt35/words/hagiaz.mp3' },
   'διακονία': { mounce: B + 'chpt35/words/diakonia.mp3' },
+  // Chapter 36
+  'ἀνίστημι': { mounce: B + 'chpt36/words/anisth.mp3', modern: B + 'chpt36/modern/anisth.mp3' },
+  'ἀνοίγω': { mounce: B + 'chpt36/words/anoigw.mp3', modern: B + 'chpt36/modern/anoigw.mp3' },
+  'ἀφίημι': { mounce: B + 'chpt36/words/afihmi.mp3', modern: B + 'chpt36/modern/afihmi.mp3' },
+  'δείκνυμι': { mounce: B + 'chpt36/words/deiknu.mp3', modern: B + 'chpt36/modern/deiknu.mp3' },
+  'ἴδιος': { mounce: B + 'chpt36/words/idios.mp3', modern: B + 'chpt36/modern/idios.mp3' },
+  'ἵστημι': { mounce: B + 'chpt36/words/histhm.mp3', modern: B + 'chpt36/modern/histhm.mp3' },
+  'μέσος': { mounce: B + 'chpt36/words/mesos.mp3', modern: B + 'chpt36/modern/mesos.mp3' },
+  'τίθημι': { mounce: B + 'chpt36/words/tiqhmi.mp3', modern: B + 'chpt36/modern/tiqhmi.mp3' },
+  'φημί': { mounce: B + 'chpt36/words/fhmi.mp3', modern: B + 'chpt36/modern/fhmi.mp3' },
 }

@@ -32,7 +32,7 @@ import {
   conditionQuestion, conditionTranslateQuestion, didomiBuildQuestion, didomiParseQuestion, didomiVerseQuestion,
 } from './nonindicativeQuestions'
 import {
-  moodPairs, moodQuestion, subjUseQuestion, whichTensePairs, whichTenseQuestion,
+  moodPairs, moodQuestion, subjUseQuestion, whichTensePairs, whichTenseQuestion, whichVerbPairs, whichVerbQuestion,
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
   redupQuestion, PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
@@ -783,6 +783,27 @@ const SPECS: Record<number, TestSpec> = {
           ...conditions.slice(0, 4).map((c) => conditionQuestion(ch, c)),
           ...conditions.slice(4, 7).map((c) => conditionTranslateQuestion(ch, c)),
         ]),
+      ]
+    },
+  },
+  36: {
+    areas: [
+      { name: 'Vocabulary', count: 9, covers: 'the chapter’s nine words, both directions' },
+      { name: 'μι verb forms', count: 8, covers: 'parsing, translating and choosing forms of ἵστημι, τίθημι, δείκνυμι and ἀφίημι' },
+      { name: 'Which verb', count: 4, covers: 'ἔθηκεν, ἔστησεν, ἔδειξεν, ἀφῆκεν: finding the lexical form' },
+      { name: 'Which tense', count: 3, covers: 'present, future, aorist, perfect or passive' },
+      { name: 'Verses', count: 6, covers: 'the μι verbs in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 8)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 6)
+      return [
+        ...vocabArea(ch),
+        ...tag('μι verb forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Which verb', take(whichVerbPairs(ch), 4).map(({ v, slot }) => whichVerbQuestion(ch, v, slot))),
+        ...tag('Which tense', take(whichTensePairs(ch), 3).map(({ v, slot }) => whichTenseQuestion(ch, v, slot))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },
   },

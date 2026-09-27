@@ -3,15 +3,14 @@ import { buildChapterTest, testAreas } from '../lib/chapterTest'
 import { conditionQuestion, didomiBuildQuestion, didomiParseQuestion, didomiVerseQuestion } from '../lib/nonindicativeQuestions'
 import { chapterSkills } from '../lib/skills'
 import { chapter35 as ch } from './chapter35'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 
 const { forms, verses, conditions } = ch.nonindicative!
 const strip = (w: string) => w.normalize('NFD').replace('̀', '́').normalize('NFC').toLowerCase()
 
 describe('chapter 35 data', () => {
-  it('is the latest chapter, with its 15 vocabulary words', () => {
-    expect(LATEST_CHAPTER).toBe(35)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with its 15 vocabulary words', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(15)
   })
 

@@ -115,7 +115,7 @@ export default function App() {
         {view === 'imperative' && <Imperative chapter={chapter} />}
         {view === 'miMoods' && <NonIndicative chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
-        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive' || view === 'mi') && <PresentTense key={view} chapter={chapter} />}
+        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive' || view === 'mi' || view === 'mi2') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}
         {view === 'test' && <ChapterTest chapter={chapter} />}
       </main>

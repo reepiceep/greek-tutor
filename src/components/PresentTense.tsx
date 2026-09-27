@@ -7,16 +7,16 @@ import {
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
   PERF_ENDINGS, PERF_MP_ENDINGS, redupItemId, redupQuestion, AORP_ENDINGS, PASSIVE_RULES, aoristFormItemId, aoristFormQuestion, passiveRuleFor, passiveRuleItemId, passiveRuleQuestion, CONTRACT_IMPF, IMPF_ENDINGS, IMPF_MP_ENDINGS, SECONDARY, SECONDARY_MP, augmentItemId, augmentQuestion, hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
   presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
-  tenseName, voiceName, SUBJUNCTIVE_USES, tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion, moodItemId, moodPairs, moodQuestion, subjUseItemId, subjUseQuestion,
+  tenseName, voiceName, SUBJUNCTIVE_USES, tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion, whichVerbItemId, whichVerbPairs, whichVerbQuestion, moodItemId, moodPairs, moodQuestion, subjUseItemId, subjUseQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { ChartDrill } from './ParadigmDrill'
 
-type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'augment' | 'stems' | 'forming' | 'tense' | 'contractions' | 'mood' | 'uses' | 'which' | 'verses'
+type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'augment' | 'stems' | 'forming' | 'tense' | 'contractions' | 'mood' | 'uses' | 'which' | 'whichVerb' | 'verses'
 
 /** Chapter 16: present active; 17: contract verbs; 18: middle/passive; 19: future; 20: other futures; 21: imperfect; 22: second aorist. */
-type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'subjunctive' | 'mi'
+type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'subjunctive' | 'mi' | 'mi2'
 
 const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
@@ -39,16 +39,17 @@ const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'tense', label: 'Aorist or perfect?', modes: ['perfect'] },
   { tab: 'mood', label: 'Indicative or subjunctive?', modes: ['subjunctive'] },
   { tab: 'uses', label: 'Why subjunctive?', modes: ['subjunctive'] },
-  { tab: 'which', label: 'Which tense?', modes: ['mi'] },
+  { tab: 'which', label: 'Which tense?', modes: ['mi', 'mi2'] },
+  { tab: 'whichVerb', label: 'Which verb?', modes: ['mi2'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
 const modeOf = (ch: Chapter): Mode => {
   const verbs = ch.present?.verbs ?? []
-  return verbs.some((v) => v.lemma === 'δίδωμι') ? 'mi' : verbs.some((v) => v.mood === 'subjunctive') ? 'subjunctive' : verbs.some((v) => v.tense === 'perfect') ? 'perfect' : verbs.some((v) => v.passiveForm) ? 'passive' : verbs.some((v) => v.firstAorist) ? 'aorist1' : verbs.some((v) => v.tense === 'aorist') ? 'aorist' : verbs.some((v) => v.tense === 'imperfect') ? 'imperfect' : verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+  return verbs.some((v) => v.lemma === 'ἵστημι') ? 'mi2' : verbs.some((v) => v.lemma === 'δίδωμι') ? 'mi' : verbs.some((v) => v.mood === 'subjunctive') ? 'subjunctive' : verbs.some((v) => v.tense === 'perfect') ? 'perfect' : verbs.some((v) => v.passiveForm) ? 'passive' : verbs.some((v) => v.firstAorist) ? 'aorist1' : verbs.some((v) => v.tense === 'aorist') ? 'aorist' : verbs.some((v) => v.tense === 'imperfect') ? 'imperfect' : verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
 }
 
-const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures', imperfect: 'Imperfect indicative', aorist: 'Second aorist active/middle indicative', aorist1: 'First aorist active/middle indicative', passive: 'Aorist and future passive indicative', perfect: 'Perfect indicative', subjunctive: 'Subjunctive', mi: 'δίδωμι: the indicative' }
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures', imperfect: 'Imperfect indicative', aorist: 'Second aorist active/middle indicative', aorist1: 'First aorist active/middle indicative', passive: 'Aorist and future passive indicative', perfect: 'Perfect indicative', subjunctive: 'Subjunctive', mi: 'δίδωμι: the indicative', mi2: 'ἵστημι, τίθημι, δείκνυμι, ἀφίημι' }
 
 /** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
@@ -68,7 +69,7 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (mode === 'mi' ? <MiLesson chapter={chapter} /> : mode === 'subjunctive' ? <SubjunctiveLesson chapter={chapter} /> : mode === 'perfect' ? <PerfectLesson chapter={chapter} /> : mode === 'passive' ? <PassiveLesson chapter={chapter} /> : mode === 'aorist1' ? <FirstAoristLesson chapter={chapter} /> : mode === 'aorist' ? <AoristLesson chapter={chapter} /> : mode === 'imperfect' ? <ImperfectLesson chapter={chapter} /> : mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'mi2' ? <Mi2Lesson chapter={chapter} /> : mode === 'mi' ? <MiLesson chapter={chapter} /> : mode === 'subjunctive' ? <SubjunctiveLesson chapter={chapter} /> : mode === 'perfect' ? <PerfectLesson chapter={chapter} /> : mode === 'passive' ? <PassiveLesson chapter={chapter} /> : mode === 'aorist1' ? <FirstAoristLesson chapter={chapter} /> : mode === 'aorist' ? <AoristLesson chapter={chapter} /> : mode === 'imperfect' ? <ImperfectLesson chapter={chapter} /> : mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
@@ -82,6 +83,7 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
       {tab === 'mood' && <Mood key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'uses' && <Uses key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'which' && <WhichTense key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'whichVerb' && <WhichVerb key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} />}
     </section>
   )
@@ -195,6 +197,52 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
         Each cell: stem + contract vowel + ending, e.g. <span className="greek">ἀγαπα + {ENDINGS['1p']}</span>{' '}
         (<span className="greek">α + {ENDING_VOWEL['1p']} → {CONTRACTIONS.α[ENDING_VOWEL['1p']]}</span>) = <span className="greek">ἀγαπῶμεν</span>.
       </p>
+    </>
+  )
+}
+
+function Mi2Lesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const lemmas = [...new Set(verbs.map((v) => v.lemma))]
+  const first = (lemma: string, t: (v: PresentVerb) => boolean) => verbs.find((v) => v.lemma === lemma && t(v))
+  const cols: [string, (v: PresentVerb) => boolean][] = [
+    ['present', (v) => !v.tense && !v.voice], ['future', (v) => v.tense === 'future' && !v.voice], ['aorist', (v) => v.tense === 'aorist' && !v.voice && !v.passiveForm],
+    ['perfect', (v) => v.tense === 'perfect'], ['aor. passive', (v) => !!v.passiveForm],
+  ]
+  return (
+    <>
+      <Lesson title="The other μι verbs">
+        <p>ἵστημι, τίθημι, δείκνυμι and ἀφίημι follow δίδωμι’s rules. What you need is each verb’s <strong>root</strong>, since the forms outside the present are built on it.</p>
+        <ul>
+          <li><span className="greek">ἵστημι</span>, root <span className="greek">*στα</span>: reduplicated σι-στα, and the σ became a rough breathing: <span className="greek">ἱ-στη-μι</span>.</li>
+          <li><span className="greek">τίθημι</span>, root <span className="greek">*θε</span>: θι-θη became <span className="greek">τι-θη</span>. Its aorist is a κα aorist, like δίδωμι’s: <span className="greek">ἔθηκα</span>.</li>
+          <li><span className="greek">δείκνυμι</span>, root <span className="greek">*δεικ</span>: no reduplication; <span className="greek">νυ</span> is added in the present. Elsewhere it is regular: <span className="greek">δείξω, ἔδειξα</span>.</li>
+          <li><span className="greek">ἀφίημι</span> is ἀπό + ἵημι (root <span className="greek">*σε</span>): <span className="greek">ἀφήσω, ἀφῆκα, ἀφέθην</span>, “forgive, leave, let.”</li>
+          <li>
+            <strong>ἵστημι has two aorists:</strong> <span className="greek">ἔστησα</span> is transitive, “I set (something)”; <span className="greek">ἔστην</span> is intransitive, “I stood.” The
+            perfect <span className="greek">ἕστηκα</span> means “I stand.” <span className="greek">ἀνίστημι</span> works the same way: <span className="greek">ἀναστήσω</span> “I will raise,” <span className="greek">ἀνέστη</span> “he rose.”
+          </li>
+        </ul>
+      </Lesson>
+      <Lesson title="Odds and ends">
+        <ul>
+          <li>The <strong>optative</strong> is the mood of wish, rare in the New Testament: <span className="greek">εἴη</span>, “may it be,” and above all <span className="greek">μὴ γένοιτο</span>, “may it never be!” (Rom 3:31).</li>
+          <li><span className="greek">φημί</span>, “I say,” is mostly <span className="greek">φησίν</span>, “he says,” and <span className="greek">ἔφη</span>, “he said.”</li>
+        </ul>
+      </Lesson>
+      {[cols.slice(0, 3), cols.slice(3)].map((group) => (
+        <table key={group[0][0]} className="reference endings-table">
+          <thead><tr><th />{group.map(([label]) => <th key={label}>{label}</th>)}</tr></thead>
+          <tbody>
+            {lemmas.map((l) => (
+              <tr key={l}><th className="greek">{l}</th>{group.map(([label, test]) => {
+                const v = first(l, test)
+                return <td key={label} className="greek">{v ? presentDisplay(v, '1s') : '—'}</td>
+              })}</tr>
+            ))}
+          </tbody>
+        </table>
+      ))}
     </>
   )
 }
@@ -747,7 +795,7 @@ interface QuizProps {
   onRestart: () => void
 }
 
-const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'], imperfect: ['e)/luon', 'ἔλυον'], aorist: ['e)/labon', 'ἔλαβον'], aorist1: ['e)/lusa', 'ἔλυσα'], passive: ['e)lu/qhn', 'ἐλύθην'], perfect: ['le/luka', 'λέλυκα'], subjunctive: ['lu/h|', 'λύῃ'], mi: ['di/dwmi', 'δίδωμι'] }
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'], imperfect: ['e)/luon', 'ἔλυον'], aorist: ['e)/labon', 'ἔλαβον'], aorist1: ['e)/lusa', 'ἔλυσα'], passive: ['e)lu/qhn', 'ἐλύθην'], perfect: ['le/luka', 'λέλυκα'], subjunctive: ['lu/h|', 'λύῃ'], mi: ['di/dwmi', 'δίδωμι'], mi2: ['ti/qhmi', 'τίθημι'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -940,6 +988,17 @@ function WhichTense({ chapter, onRestart }: QuizProps) {
   return (
     <>
       <p className="muted">Reduplicated δι-: present or imperfect (with an augment). σ: future; κα: aorist; δε- and κα: perfect; θη: passive.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
+}
+
+function WhichVerb({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => pickWeakest(whichVerbPairs(chapter), (x) => whichVerbItemId(chapter.number, x.v, x.slot), 12)
+    .map((x) => whichVerbQuestion(chapter, x.v, x.slot)))
+  return (
+    <>
+      <p className="muted">Find the root: στα/στη (ἵστημι), θε/θη (τίθημι), δεικ/δειξ (δείκνυμι), ἀφ + η/ε (ἀφίημι).</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )

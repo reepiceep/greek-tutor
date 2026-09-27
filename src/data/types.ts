@@ -770,7 +770,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'imperative' | 'mi' | 'miMoods' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'imperative' | 'mi' | 'miMoods' | 'mi2' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
