@@ -422,6 +422,26 @@ it('chapter 21: imperfect lesson, augmented chart, and every quiz tab works', ()
   }
 })
 
+it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
+  render(<App />)
+  pickChapter(8)
+  nav('Prepositions')
+  tab('Reference')
+  fireEvent.click(screen.getByLabelText(/Hide meanings/))
+  const hidden = document.querySelectorAll('.reference .reveal').length
+  expect(hidden).toBeGreaterThan(0)
+  // Show one meaning, then click it again to hide it.
+  fireEvent.click(document.querySelector('.reference .reveal')!)
+  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(hidden - 1)
+  fireEvent.click(document.querySelector('.reference .revealed')!)
+  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(hidden)
+  fireEvent.click(screen.getByText('Show all'))
+  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(0)
+  expect(document.querySelectorAll('.reference .revealed')).toHaveLength(hidden)
+  fireEvent.click(screen.getByText('Hide all'))
+  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(hidden)
+})
+
 it('flashcards can span a chapter range, and each card counts toward its own chapter', () => {
   localStorage.clear()
   render(<App />)

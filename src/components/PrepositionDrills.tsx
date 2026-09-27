@@ -68,14 +68,29 @@ function Reference({ chapter }: { chapter: Chapter }) {
   const [hide, setHide] = useState(false)
   const [shown, setShown] = useState<Set<string>>(new Set())
   const preps = chapter.vocab.filter((w) => w.pos === 'preposition')
-  const reveal = (k: string) => setShown((s) => new Set(s).add(k))
+  const cells = preps.flatMap((w) => (w.cases ?? []).map((u) => `${w.id}:${u.case}`))
+  // Click a hidden meaning to check yourself, and click it again to hide it.
+  const toggle = (k: string) => setShown((s) => {
+    const next = new Set(s)
+    if (next.has(k)) next.delete(k)
+    else next.add(k)
+    return next
+  })
 
   return (
     <>
-      <label className="check">
-        <input type="checkbox" checked={hide} onChange={(e) => { setHide(e.target.checked); setShown(new Set()) }} />
-        Hide meanings (click a cell to check yourself)
-      </label>
+      <div className="reference-tools">
+        <label className="check">
+          <input type="checkbox" checked={hide} onChange={(e) => { setHide(e.target.checked); setShown(new Set()) }} />
+          Hide meanings (click a cell to show or hide it)
+        </label>
+        {hide && (
+          <div className="seg small-seg">
+            <button onClick={() => setShown(new Set(cells))} disabled={shown.size === cells.length}>Show all</button>
+            <button onClick={() => setShown(new Set())} disabled={shown.size === 0}>Hide all</button>
+          </div>
+        )}
+      </div>
       <table className="reference">
         <thead><tr><th>Preposition</th><th><CaseTag c="genitive" /></th><th><CaseTag c="dative" /></th><th><CaseTag c="accusative" /></th><th className="hook-col">Remember</th></tr></thead>
         <tbody>
@@ -90,9 +105,10 @@ function Reference({ chapter }: { chapter: Chapter }) {
                 const use = w.cases?.find((u) => u.case === c)
                 const k = `${w.id}:${c}`
                 if (!use) return <td key={c} className="none">—</td>
-                return hide && !shown.has(k)
-                  ? <td key={c}><button className="reveal" onClick={() => reveal(k)}>show</button></td>
-                  : <td key={c}>{use.gloss}</td>
+                if (!hide) return <td key={c}>{use.gloss}</td>
+                return shown.has(k)
+                  ? <td key={c}><button className="revealed" onClick={() => toggle(k)} title="Hide again">{use.gloss}</button></td>
+                  : <td key={c}><button className="reveal" onClick={() => toggle(k)}>show</button></td>
               })}
               <td className="hook-col muted small">{w.hook}</td>
             </tr>
