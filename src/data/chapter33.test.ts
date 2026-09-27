@@ -7,7 +7,7 @@ import {
 } from '../lib/imperativeQuestions'
 import { chapterSkills } from '../lib/skills'
 import { chapter33 as ch } from './chapter33'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 import type { ImperativeKind } from './types'
 
 const { verbs, verses } = ch.imperatives!
@@ -15,9 +15,8 @@ const verb = (id: string) => verbs.find((v) => v.id === id)!
 const row = (id: string, kind: ImperativeKind) => IMP_SLOTS.map((s) => imperative(verb(id), kind, s))
 
 describe('chapter 33 data', () => {
-  it('is the latest chapter, with its 3 vocabulary words, each with audio', () => {
-    expect(LATEST_CHAPTER).toBe(33)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with its 3 vocabulary words, each with audio', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(3)
     for (const w of ch.vocab) expect(recordingFor(w.lemma), w.lemma).toBeTruthy()
   })

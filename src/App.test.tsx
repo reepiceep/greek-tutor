@@ -672,6 +672,45 @@ it('chapter 33: imperative lesson, every quiz tab, and the test', () => {
   expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
 })
 
+it('chapter 34: δίδωμι lesson, chart, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(34)
+  nav('δίδωμι')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('διδόασι(ν)')
+  tab('Fill the chart')
+  expect(screen.getByText('di/dwmi')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('δίδομεν')
+  for (const t of ['Parse & translate', 'Which tense?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
+it('chapter 35: δίδωμι moods and conditionals, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(35)
+  nav('δίδωμι & “if”')
+  const tables = [...document.querySelectorAll('.endings-table')].map((t) => t.textContent).join(' ')
+  for (const form of ['δῷ', 'δός', 'δοῦναι', 'διδούς']) expect(tables, form).toContain(form)
+  for (const t of ['Forms', 'δίδωμι in verses', 'Conditional sentences']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

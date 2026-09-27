@@ -583,6 +583,43 @@ export interface ImperativeSection {
   verses: ImperativeVerse[]
 }
 
+// --- Nonindicative of δίδωμι; conditional sentences (chapter 35) ---
+
+/** One nonindicative form of δίδωμι, with its parsing as a label (“aor act subj 3rd sg”). */
+export interface DidomiForm {
+  id: string
+  form: string
+  /** Mood, for grouping the chart: subjunctive, imperative, infinitive or participle. */
+  mood: 'subjunctive' | 'imperative' | 'infinitive' | 'participle'
+  parse: string
+  english: string
+}
+
+/** A nonindicative form of δίδωμι or παραδίδωμι in a verse. */
+export interface DidomiVerse {
+  id: string
+  ref: string
+  text: string
+  word: string
+  lemma: string
+  /** Matches a DidomiForm's `parse`. */
+  parse: string
+  translation: string
+  help?: string
+  note?: string
+}
+
+/** First class: εἰ + indicative (assumed true); second: contrary to fact (εἰ + past indicative, ἄν); third: ἐάν + subjunctive. */
+export type ConditionClass = 'first' | 'second' | 'third'
+/** `word` is the “if” clause (the protasis) as it appears in `text`. */
+export type ConditionItem = UseItem<ConditionClass>
+
+export interface NonindicativeSection {
+  forms: DidomiForm[]
+  verses: DidomiVerse[]
+  conditions: ConditionItem[]
+}
+
 // --- Genitive and dative (chapter 7) ---
 
 /** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
@@ -733,7 +770,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'imperative' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'imperative' | 'mi' | 'miMoods' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -755,6 +792,7 @@ export interface Chapter {
   participleUses?: ParticipleUseItem[]
   infinitives?: InfinitiveSection
   imperatives?: ImperativeSection
+  nonindicative?: NonindicativeSection
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

@@ -29,7 +29,10 @@ import {
   parsableVerses, prohibitionQuestion, prohibitionVerses, translatableImperatives,
 } from './imperativeQuestions'
 import {
-  moodPairs, moodQuestion, subjUseQuestion,
+  conditionQuestion, conditionTranslateQuestion, didomiBuildQuestion, didomiParseQuestion, didomiVerseQuestion,
+} from './nonindicativeQuestions'
+import {
+  moodPairs, moodQuestion, subjUseQuestion, whichTensePairs, whichTenseQuestion,
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
   redupQuestion, PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
@@ -737,6 +740,49 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Commands in verses', take(parsableVerses(ch), 6).map((v) => imperativeVerseParseQuestion(ch, v))),
         ...tag('Translation', translate.map((v) => imperativeVerseTranslateQuestion(ch, v))),
         ...tag('Prohibitions', take(prohibitionVerses(ch), 4).map((v) => prohibitionQuestion(ch, v))),
+      ]
+    },
+  },
+  34: {
+    areas: [
+      { name: 'Vocabulary', count: 7, covers: 'the chapter’s seven words, both directions' },
+      { name: 'δίδωμι forms', count: 10, covers: 'parsing, translating and choosing forms of δίδωμι and παραδίδωμι' },
+      { name: 'Which tense', count: 6, covers: 'δίδωσι, ἐδίδου, δώσει, ἔδωκεν, δέδωκεν, ἐδόθη' },
+      { name: 'Verses', count: 7, covers: 'δίδωμι and παραδίδωμι in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 10)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 7)
+      return [
+        ...vocabArea(ch),
+        ...tag('δίδωμι forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Which tense', take(whichTensePairs(ch), 6).map(({ v, slot }) => whichTenseQuestion(ch, v, slot))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  35: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'δίδωμι forms', count: 8, covers: 'subjunctive, imperative, infinitive and participle of δίδωμι' },
+      { name: 'δίδωμι in verses', count: 5, covers: 'δός, δοῦναι, διδούς and others in the New Testament' },
+      { name: 'Conditional sentences', count: 7, covers: 'first, second and third class conditions, and translating them' },
+    ],
+    build: (ch) => {
+      const ni = ch.nonindicative!
+      const conditions = shuffle(ni.conditions)
+      return [
+        ...vocabArea(ch),
+        ...tag('δίδωμι forms', [
+          ...take(ni.forms, 5).map((f) => didomiParseQuestion(ch, f)),
+          ...take(ni.forms, 3).map((f) => didomiBuildQuestion(ch, f)),
+        ]),
+        ...tag('δίδωμι in verses', take(ni.verses, 5).map((v) => didomiVerseQuestion(ch, v))),
+        ...tag('Conditional sentences', [
+          ...conditions.slice(0, 4).map((c) => conditionQuestion(ch, c)),
+          ...conditions.slice(4, 7).map((c) => conditionTranslateQuestion(ch, c)),
+        ]),
       ]
     },
   },

@@ -349,4 +349,15 @@ export const RECORDINGS: Record<string, Recording> = {
   'ἀπόλλυμι': { mounce: B + 'chpt33/words/apollu.mp3', modern: B + 'chpt33/modern/apollu.mp3' },
   'ἀπολύω': { mounce: B + 'chpt33/words/apoluw.mp3', modern: B + 'chpt33/modern/apoluw.mp3' },
   'εἴτε': { mounce: B + 'chpt33/words/eite.mp3', modern: B + 'chpt33/modern/eite.mp3' },
+  // Chapter 34
+  'δίδωμι': { mounce: B + 'chpt34/words/didwmi.mp3', modern: B + 'chpt34/modern/didwmi.mp3' },
+  'ἔθνος': { mounce: B + 'chpt34/words/eqnos.mp3', modern: B + 'chpt34/modern/eqnos.mp3' },
+  'λοιπός': { mounce: B + 'chpt34/words/loipos.mp3', modern: B + 'chpt34/modern/loipos.mp3' },
+  'Μωϋσῆς': { mounce: B + 'chpt34/words/mwushs.mp3', modern: B + 'chpt34/modern/mwushs.mp3' },
+  'παραδίδωμι': { mounce: B + 'chpt34/words/paradi.mp3', modern: B + 'chpt34/modern/paradi.mp3' },
+  'πίπτω': { mounce: B + 'chpt34/words/piptw.mp3', modern: B + 'chpt34/modern/piptw.mp3' },
+  'ὑπάρχω': { mounce: B + 'chpt34/words/huparc.mp3', modern: B + 'chpt34/modern/huparc.mp3' },
+  // Chapter 35: the vocabulary pages have no players, and only these two files were found on the server.
+  'ἁγιάζω': { mounce: B + 'chpt35/words/hagiaz.mp3' },
+  'διακονία': { mounce: B + 'chpt35/words/diakonia.mp3' },
 }

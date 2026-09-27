@@ -28,7 +28,7 @@ describe('noun lexical forms', () => {
 })
 
 // Two-termination adjectives list only masculine/feminine and neuter (αἰώνιος, -ον; τρεῖς, τρία), as in Mounce.
-const TWO_TERMINATION = new Set(['αἰώνιος', 'πλείων', 'μείζων', 'τρεῖς'])
+const TWO_TERMINATION = new Set(['αἰώνιος', 'πλείων', 'μείζων', 'τρεῖς', 'ἁμαρτωλός'])
 // Pronouns with no gender forms to list.
 const GENDERLESS = new Set(['ἐγώ', 'σύ', 'ἡμεῖς', 'ὑμεῖς', 'μου', 'κἀγώ', 'ἀλλήλων', 'τίς', 'τις'])
 

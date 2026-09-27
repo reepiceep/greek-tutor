@@ -38,6 +38,7 @@ import {
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
   redupItemId, redupQuestion, PASSIVE_RULES, passiveRuleItemId, passiveRuleQuestion, aoristFormItemId, aoristFormQuestion, augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion, voiceItemId, voicePairs, voiceQuestion, inMood, moodItemId, moodPairs, moodQuestion, subjUseItemId, subjUseQuestion,
+  tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
@@ -56,6 +57,10 @@ import {
   imperative, imperativeBuildQuestion, imperativeItemId, imperativeLabel, imperativeParseQuestion, imperativeTriples, imperativeVerseId,
   imperativeVerseParseQuestion, imperativeVerseTranslateQuestion, parsableVerses, prohibitionQuestion, prohibitionVerses,
 } from './imperativeQuestions'
+import {
+  conditionId, conditionQuestion, conditionTranslateQuestion, didomiBuildQuestion, didomiFormId, didomiParseQuestion, didomiVerseId,
+  didomiVerseQuestion,
+} from './nonindicativeQuestions'
 import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
@@ -281,6 +286,7 @@ function buildSkills(ch: Chapter): Skill[] {
     ...participleUseSkills(ch),
     ...infinitiveSkills(ch),
     ...imperativeSkills(ch),
+    ...nonindicativeSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
   // one card per case; track that here so it shows on the dashboard and in the daily review.
@@ -355,6 +361,31 @@ function participleSkills(ch: Chapter): Skill[] {
         ...(v.wrong?.length
           ? [{ id: participleVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => participleVerseTranslateQuestion(ch, v) }]
           : []),
+      ]),
+    },
+  ]
+}
+
+/** Chapter 35: δίδωμι outside the indicative, and conditional sentences. */
+function nonindicativeSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const ni = ch.nonindicative
+  if (!ni) return []
+  const view: View = 'miMoods'
+  return [
+    {
+      label: 'δίδωμι: moods', view,
+      items: ni.forms.flatMap((f) => [
+        { id: didomiFormId(n, f, 'parse'), name: `${f.form} = ${f.parse}`, make: () => didomiParseQuestion(ch, f) },
+        { id: didomiFormId(n, f, 'build'), name: `${f.parse} → ${f.form}`, make: () => didomiBuildQuestion(ch, f) },
+      ]),
+    },
+    { label: 'δίδωμι: in verses', view, items: ni.verses.map((v) => ({ id: didomiVerseId(n, v), name: `${v.word} (${v.ref})`, make: () => didomiVerseQuestion(ch, v) })) },
+    {
+      label: 'Conditions: class and translation', view,
+      items: ni.conditions.flatMap((c) => [
+        { id: conditionId(n, c, 'use'), name: `${c.ref}: ${c.use} class`, make: () => conditionQuestion(ch, c) },
+        { id: conditionId(n, c, 'translate'), name: `${c.word} = “${c.english}”`, make: () => conditionTranslateQuestion(ch, c) },
       ]),
     },
   ]
@@ -493,6 +524,15 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'parse'), name: `${v.word} in ${v.ref} (person)`, make: () => verseParseQuestion(ch, v) },
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
+  }
+  if (pres.verbs.some((v) => v.lemma === 'δίδωμι')) {
+    const which: Skill = {
+      label: 'δίδωμι: which tense', view: 'mi',
+      items: whichTensePairs(ch).map(({ v, slot }) => ({
+        id: whichTenseItemId(n, v, slot), name: `${presentDisplay(v, slot)}: ${tenseVoiceLabel(v)}`, make: () => whichTenseQuestion(ch, v, slot),
+      })),
+    }
+    return [{ ...forms, label: 'δίδωμι: forms', view: 'mi' }, which, { ...verses, label: 'δίδωμι: in verses', view: 'mi' }]
   }
   if (pres.verbs.some((v) => v.mood === 'subjunctive')) {
     const subjForms = { ...forms, label: 'Subjunctive: forms', view: 'subjunctive' as View }

@@ -831,6 +831,34 @@ export function subjUseQuestion(ch: Chapter, v: PresentVerse): ChoiceQuestion {
   }
 }
 
+// --- μι verbs (chapter 34) ---
+
+export const tenseVoiceLabel = (v: PresentVerb) => `${tenseName(v)} ${voiceName(v)}`
+const sameLemma = (ch: Chapter, v: PresentVerb) => verbsOf(ch).filter((o) => o.lemma === v.lemma)
+
+/** A form of a verb drilled in several tenses, spelled like no form of its other tenses. */
+export const askWhichTense = (ch: Chapter, v: PresentVerb, slot: PersonSlot) => {
+  const others = sameLemma(ch, v).filter((o) => o !== v)
+  const form = presentDisplay(v, slot)
+  return others.length >= 3 && others.every((o) => SLOTS.every((s) => presentDisplay(o, s) !== form))
+}
+export const whichTensePairs = (ch: Chapter) => verbsOf(ch).flatMap((v) => SLOTS.filter((s) => askWhichTense(ch, v, s)).map((slot) => ({ v, slot })))
+export const whichTenseItemId = (ch: number, v: PresentVerb, slot: PersonSlot) => `ch${ch}:which-tense:${v.id}:${slot}`
+
+/** δίδωσι, ἐδίδου, δώσει, ἔδωκεν, δέδωκεν: which tense and voice? */
+export function whichTenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot): ChoiceQuestion {
+  const answer = tenseVoiceLabel(v)
+  const others = shuffle([...new Set(sameLemma(ch, v).map(tenseVoiceLabel))].filter((l) => l !== answer)).slice(0, 3)
+  return {
+    id: whichTenseItemId(ch.number, v, slot),
+    prompt: <><span className="greek big">{presentDisplay(v, slot)}</span><p className="muted">from <span className="greek">{v.lemma}</span> — which tense and voice?</p></>,
+    options: shuffle([answer, ...others]).map((l) => ({ key: l, label: l })),
+    answer,
+    explain: explainForm(v, slot),
+    review: <><span className="greek">{presentDisplay(v, slot)}</span> = {answer} {SLOT_LABEL[slot]}</>,
+  }
+}
+
 // --- Second aorist (chapter 22) ---
 
 export const aoristFormItemId = (ch: number, v: PresentVerb) => `ch${ch}:aorist-form:${v.id}`
