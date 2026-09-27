@@ -5,17 +5,17 @@ import {
   ACTIVE_VOWELS, CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, MP_ENDINGS, MP_PRIMARY, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
   contractTypeQuestion, contractionItemId, contractionPairs, contractionQuestion, endingFormQuestion, endingItemId, endingPersonQuestion,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
-  hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
+  CONTRACT_IMPF, IMPF_ENDINGS, IMPF_MP_ENDINGS, SECONDARY, SECONDARY_MP, augmentItemId, augmentQuestion, hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
   presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { ChartDrill } from './ParadigmDrill'
 
-type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'forming' | 'tense' | 'contractions' | 'verses'
+type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'augment' | 'forming' | 'tense' | 'contractions' | 'verses'
 
-/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive; 19: the future; 20: roots and other futures. */
-type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots'
+/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive; 19: the future; 20: roots and other futures; 21: the imperfect. */
+type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect'
 
 const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
@@ -25,17 +25,19 @@ const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'voice', label: 'Active or passive?', modes: ['middle'] },
   { tab: 'contractions', label: 'Contractions', modes: ['contract'] },
   { tab: 'roots', label: 'Verbal roots', modes: ['roots'] },
+  { tab: 'augment', label: 'The augment', modes: ['imperfect'] },
   { tab: 'forming', label: 'Forming the future', modes: ['future', 'roots'] },
   { tab: 'tense', label: 'Present or future?', modes: ['future', 'roots'] },
+  { tab: 'tense', label: 'Present or imperfect?', modes: ['imperfect'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
 const modeOf = (ch: Chapter): Mode => {
   const verbs = ch.present?.verbs ?? []
-  return verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+  return verbs.some((v) => v.tense === 'imperfect') ? 'imperfect' : verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
 }
 
-const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures' }
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures', imperfect: 'Imperfect indicative' }
 
 /** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
@@ -55,11 +57,12 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'imperfect' ? <ImperfectLesson chapter={chapter} /> : mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'voice' && <Voice key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'augment' && <Augment key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'roots' && <Roots key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forming' && <Forming key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'tense' && <Tense key={key} chapter={chapter} onRestart={restart} />}
@@ -177,6 +180,64 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
         Each cell: stem + contract vowel + ending, e.g. <span className="greek">ἀγαπα + {ENDINGS['1p']}</span>{' '}
         (<span className="greek">α + {ENDING_VOWEL['1p']} → {CONTRACTIONS.α[ENDING_VOWEL['1p']]}</span>) = <span className="greek">ἀγαπῶμεν</span>.
       </p>
+    </>
+  )
+}
+
+function ImperfectLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const luo = verbs.find((v) => !v.voice && !v.contract)
+  const luoMp = verbs.find((v) => v.voice === 'passive')
+  const eimi = verbs.find((v) => v.irregular)
+  const contracts = CONTRACT_VOWELS.map((c) => verbs.find((v) => v.contract === c && !v.prefix)).filter((v) => !!v)
+  if (!luo) return null
+  return (
+    <>
+      <Lesson title="The imperfect indicative">
+        <p>
+          The imperfect describes <strong>continuous action in the past</strong>: <span className="greek">ἔλυον</span>, “I was loosing.” It is built on the
+          <strong> present stem</strong>, with an <strong>augment</strong> in front and <strong>secondary endings</strong>:
+          augment + present stem + connecting vowel + secondary ending (<span className="greek">ἐ-λύ-ο-μεν</span>, “we were loosing”).
+        </p>
+        <ul>
+          <li>The <strong>augment</strong> marks past time. Before a consonant it is <span className="greek">ἐ</span> (<span className="greek">λύω → ἔλυον</span>). Before a vowel it lengthens the vowel: α and ε → η, ο → ω, αι → ῃ, οι → ῳ, αυ and ευ → ηυ (<span className="greek">ἀκούω → ἤκουον</span>).</li>
+          <li>In a <strong>compound verb</strong> the augment goes after the preposition, which loses a final vowel: <span className="greek">ἐκβάλλω → ἐξέβαλλον</span>, <span className="greek">ἐπερωτάω → ἐπηρώτων</span>. <span className="greek">περι</span> keeps its ι: <span className="greek">περιεπάτουν</span>.</li>
+          <li>The <strong>secondary endings</strong> are the past-time set: active <span className="greek">{SLOTS.map((s) => SECONDARY[s]).join(', ')}</span>; middle/passive <span className="greek">{SLOTS.map((s) => SECONDARY_MP[s]).join(', ')}</span>. With the connecting vowel: <span className="greek">{SLOTS.map((s) => IMPF_ENDINGS[s]).join(', ')}</span> and <span className="greek">{SLOTS.map((s) => IMPF_MP_ENDINGS[s]).join(', ')}</span>.</li>
+          <li><span className="greek">ἔλυον</span> is both “I was loosing” and “they were loosing”: the context decides.</li>
+          <li>The accent goes back as far as it can, but never before the augment: <span className="greek">ἔλυον</span>, but <span className="greek">συνῆγον</span>.</li>
+          <li>Contract verbs contract as usual: <span className="greek">ἐποίε + ον → ἐποίουν</span>, <span className="greek">ἠγάπα + ε → ἠγάπα</span>.</li>
+          <li>Some verbs have an unexpected augment: <span className="greek">ἔχω → εἶχον</span>, <span className="greek">θέλω → ἤθελον</span>.</li>
+          {eimi && <li>The imperfect of <span className="greek">εἰμί</span>: <span className="greek">{SLOTS.map((s) => presentDisplay(eimi, s)).join(', ')}</span>, “I was, you were…”.</li>}
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th>Active</th><th /><th>Middle/passive</th><th /></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek">{presentDisplay(luo, s)}</td>
+              <td className="muted">{presentEnglish(luo, s)}</td>
+              <td className="greek">{luoMp ? presentDisplay(luoMp, s) : ''}</td>
+              <td className="muted">{luoMp ? presentEnglish(luoMp, s) : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {contracts.length > 0 && (
+        <table className="reference endings-table">
+          <caption>Contract verbs in the imperfect</caption>
+          <thead><tr><th />{contracts.map((v) => <th key={v.id} className="greek">{v.lemma}</th>)}</tr></thead>
+          <tbody>
+            {SLOTS.map((s) => (
+              <tr key={s}>
+                <th>{SLOT_LABEL[s]} <span className="muted greek">+{IMPF_ENDINGS[s]}</span></th>
+                {contracts.map((v) => <td key={v.id}><span className="greek">{presentDisplay(v, s)}</span><div className="muted small greek">-{CONTRACT_IMPF[v.contract!][s]}</div></td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </>
   )
 }
@@ -384,7 +445,7 @@ interface QuizProps {
   onRestart: () => void
 }
 
-const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'] }
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'], imperfect: ['e)/luon', 'ἔλυον'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -396,7 +457,9 @@ function Chart({ chapter, onRestart }: QuizProps) {
     <>
       <div className="seg small-seg" role="group" aria-label="Verb">
         {verbs.map((v) => (
-          <button key={v.id} className={`greek ${v === verb ? 'on' : ''}`} onClick={() => { setVerb(v); setRound((r) => r + 1) }}>{v.lemma}</button>
+          <button key={v.id} className={`greek ${v === verb ? 'on' : ''}`} onClick={() => { setVerb(v); setRound((r) => r + 1) }}>
+            {v.lemma}{v.voice === 'passive' && verbs.some((o) => o !== v && o.lemma === v.lemma) ? ' (m/p)' : ''}
+          </button>
         ))}
       </div>
       <ChartDrill key={`${verb.id}-${round}`} chapter={chapter} paradigm={presentParadigm(verb)} onRestart={onRestart}
@@ -450,6 +513,20 @@ function Forming({ chapter, onRestart }: QuizProps) {
   return (
     <>
       <p className="muted">What the σ does to a stem (Square of Stops, lengthened vowels), which future a verb has, and which verb a future comes from.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
+}
+
+/** ἀκούω → ἤκουον: where the augment goes and what it does. */
+function Augment({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = (chapter.present?.augments ?? []).map((r) => ({ id: augmentItemId(chapter.number, r), make: () => augmentQuestion(chapter, r) }))
+    return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">ε- before a consonant, a lengthened vowel before a vowel, and after the preposition in a compound verb.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )

@@ -36,7 +36,7 @@ import {
   CONTRACTIONS, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId, contractTypeQuestion, contractionItemId, contractionPairs,
   contractionQuestion, inVoice, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
-  hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
+  augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
@@ -286,11 +286,12 @@ function presentSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const pres = ch.present
   if (!pres) return []
-  const future = pres.verbs.some((v) => v.tense)
+  const imperfect = pres.verbs.some((v) => v.tense === 'imperfect')
+  const future = !imperfect && pres.verbs.some((v) => v.tense)
   const roots = pres.verbs.some((v) => v.liquid)
-  const middle = !future && pres.verbs.some((v) => v.voice)
-  const contract = !future && !middle && pres.verbs.some((v) => v.contract)
-  const [topic, view]: [string, View] = roots ? ['Other futures', 'roots'] : future ? ['Future', 'future'] : middle ? ['Middle/passive', 'middle']
+  const middle = !imperfect && !future && pres.verbs.some((v) => v.voice)
+  const contract = !imperfect && !future && !middle && pres.verbs.some((v) => v.contract)
+  const [topic, view]: [string, View] = imperfect ? ['Imperfect', 'imperfect'] : roots ? ['Other futures', 'roots'] : future ? ['Future', 'future'] : middle ? ['Middle/passive', 'middle']
     : contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
   const endings = plainEndingsOf(pres.verbs[0])
   const forms: Skill = {
@@ -334,6 +335,19 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
   }
+  const tenseSkill = (label: string): Skill => ({
+    label: `${topic}: ${label}`, view,
+    items: tensePairs(ch).map(({ v, slot, tense: t }) => ({
+      id: tenseItemId(n, v, slot, t), name: `${presentDisplay(inTense(v, t), slot)}: ${t} ${SLOT_LABEL[slot]}`, make: () => tenseQuestion(ch, v, slot, t),
+    })),
+  })
+  if (imperfect) {
+    const augment: Skill = {
+      label: `${topic}: the augment`, view,
+      items: (pres.augments ?? []).map((r) => ({ id: augmentItemId(n, r), name: `${r.lemma} → ${r.options[0]}`, make: () => augmentQuestion(ch, r) })),
+    }
+    return [forms, augment, tenseSkill('present or imperfect'), verses]
+  }
   if (future) {
     const forming: Skill = {
       label: `${topic}: forming the future`, view,
@@ -347,12 +361,7 @@ function presentSkills(ch: Chapter): Skill[] {
         }))),
       ],
     }
-    const tense: Skill = {
-      label: `${topic}: present or future`, view,
-      items: tensePairs(ch).map(({ v, slot, tense: t }) => ({
-        id: tenseItemId(n, v, slot, t), name: `${presentDisplay(inTense(v, t), slot)}: ${t} ${SLOT_LABEL[slot]}`, make: () => tenseQuestion(ch, v, slot, t),
-      })),
-    }
+    const tense = tenseSkill('present or future')
     const rootSkill: Skill = {
       label: `${topic}: verbal roots`, view,
       items: (pres.roots ?? []).map((r) => ({ id: rootItemId(n, r), name: `${r.lemma}: *${r.options[0]}`, make: () => rootQuestion(ch, r) })),

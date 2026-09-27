@@ -51,16 +51,98 @@ export const CONTRACT_MP_ENDINGS: Record<ContractVowel, Record<PersonSlot, strin
 }
 
 /** The future has a separate passive (chapter 24), so a future with middle/passive endings is simply middle. */
+// --- Imperfect (chapter 21) ---
+
+/** Connecting vowel + secondary active endings (ν, ς, –, μεν, τε, ν). */
+export const IMPF_ENDINGS: Record<PersonSlot, string> = { '1s': 'ον', '2s': 'ες', '3s': 'ε(ν)', '1p': 'ομεν', '2p': 'ετε', '3p': 'ον' }
+/** Connecting vowel + secondary middle/passive endings (μην, σο, το, μεθα, σθε, ντο); ε + σο → ου. */
+export const IMPF_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'ομην', '2s': 'ου', '3s': 'ετο', '1p': 'ομεθα', '2p': 'εσθε', '3p': 'οντο' }
+export const SECONDARY: Record<PersonSlot, string> = { '1s': 'ν', '2s': 'ς', '3s': '–', '1p': 'μεν', '2p': 'τε', '3p': 'ν' }
+export const SECONDARY_MP: Record<PersonSlot, string> = { '1s': 'μην', '2s': 'σο', '3s': 'το', '1p': 'μεθα', '2p': 'σθε', '3p': 'ντο' }
+const IMPF_VOWEL: Record<PersonSlot, string> = { '1s': 'ο', '2s': 'ε', '3s': 'ε', '1p': 'ο', '2p': 'ε', '3p': 'ο' }
+const IMPF_MP_VOWEL: Record<PersonSlot, string> = { '1s': 'ο', '2s': 'ου', '3s': 'ε', '1p': 'ο', '2p': 'ε', '3p': 'ο' }
+
+/**
+ * Contracted imperfect endings. Where the accent falls on the stem (ἠγάπων, ἐποίουν) the ending is unaccented; where
+ * the contraction takes it (ἠγαπῶμεν) the ending carries it.
+ */
+export const CONTRACT_IMPF: Record<ContractVowel, Record<PersonSlot, string>> = {
+  α: { '1s': 'ων', '2s': 'ας', '3s': 'α', '1p': 'ῶμεν', '2p': 'ᾶτε', '3p': 'ων' },
+  ε: { '1s': 'ουν', '2s': 'εις', '3s': 'ει', '1p': 'οῦμεν', '2p': 'εῖτε', '3p': 'ουν' },
+  ο: { '1s': 'ουν', '2s': 'ους', '3s': 'ου', '1p': 'οῦμεν', '2p': 'οῦτε', '3p': 'ουν' },
+}
+export const CONTRACT_IMPF_MP: Record<ContractVowel, Record<PersonSlot, string>> = {
+  α: { '1s': 'ώμην', '2s': 'ῶ', '3s': 'ᾶτο', '1p': 'ώμεθα', '2p': 'ᾶσθε', '3p': 'ῶντο' },
+  ε: { '1s': 'ούμην', '2s': 'οῦ', '3s': 'εῖτο', '1p': 'ούμεθα', '2p': 'εῖσθε', '3p': 'οῦντο' },
+  ο: { '1s': 'ούμην', '2s': 'οῦ', '3s': 'οῦτο', '1p': 'ούμεθα', '2p': 'οῦσθε', '3p': 'οῦντο' },
+}
+
+const DIPHTHONGS = new Set(['αι', 'ει', 'οι', 'υι', 'αυ', 'ευ', 'ου', 'ηυ'])
+const MARK = /[\u0300-\u036f]/
+
+/** A word's letters (NFD, with their marks) and its syllable nuclei: which letter takes the accent, and whether it is long. */
+function syllables(word: string) {
+  const letters: { ch: string; marks: string }[] = []
+  for (const c of unaccented(word).normalize('NFD')) {
+    if (MARK.test(c) && letters.length) letters[letters.length - 1].marks += c
+    else letters.push({ ch: c, marks: '' })
+  }
+  const nuclei: { at: number; long: boolean }[] = []
+  for (let k = 0; k < letters.length; k++) {
+    const l = letters[k]
+    if (!'αεηιουω'.includes(l.ch)) continue
+    const next = letters[k + 1]
+    if (next && DIPHTHONGS.has(l.ch + next.ch) && !next.marks.includes('\u0308')) {
+      nuclei.push({ at: k + 1, long: true })
+      k++
+    } else nuclei.push({ at: k, long: 'ηω'.includes(l.ch) || l.marks.includes('\u0345') })
+  }
+  return { letters, nuclei }
+}
+
+/**
+ * The recessive accent of verbs: as far back as the ultima allows (antepenult, or penult when the ultima is long),
+ * never before syllable `earliest` (a compound's augment), and a circumflex on a long penult before a short ultima.
+ * α, ι, υ count as short, which holds for every ending here.
+ */
+export function recessive(word: string, earliest = 0): string {
+  const { letters, nuclei } = syllables(word)
+  const n = nuclei.length
+  const ultimaLong = nuclei[n - 1].long
+  let t = n === 1 ? 0 : ultimaLong ? n - 2 : Math.max(0, n - 3)
+  t = Math.max(t, Math.min(earliest, n - 1))
+  const circumflex = n === 1 ? ultimaLong : t === n - 2 && nuclei[t].long && !ultimaLong
+  letters[nuclei[t].at].marks += circumflex ? '\u0342' : '\u0301'
+  return letters.map((l) => l.ch + l.marks).join('').normalize('NFC')
+}
+
+/** The imperfect: augmented stem + ending, accented; the contracted 1st and 2nd plural carry the accent on the ending. */
+function imperfectParts(v: PresentVerb, slot: PersonSlot): [string, string] {
+  const e = endingsOf(v)[slot]
+  const nu = e.endsWith('(ν)')
+  const base = nu ? e.slice(0, -3) : e
+  if (v.contract) {
+    const onEnding = /[\u0301\u0342]/.test(base.normalize('NFD'))
+    return [(onEnding ? unaccented(v.stem) : accentLastVowel(v.stem)) + base, nu ? '(ν)' : '']
+  }
+  const earliest = v.prefix ? syllables(v.prefix).nuclei.length : 0
+  return [recessive(v.stem + base, earliest), nu ? '(ν)' : '']
+}
+
 export const voiceName = (v: PresentVerb) => (!v.voice ? 'active' : v.tense === 'future' ? 'middle' : 'middle/passive')
 export const tenseName = (v: PresentVerb) => v.tense ?? 'present'
 const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
-export const plainEndingsOf = (v: PresentVerb) => (!v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS)
-const endingVowelOf = (v: PresentVerb) => (v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL)
+export const plainEndingsOf = (v: PresentVerb) =>
+  v.tense === 'imperfect' ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
+const endingVowelOf = (v: PresentVerb) =>
+  v.tense === 'imperfect' ? (v.voice ? IMPF_MP_VOWEL : IMPF_VOWEL) : v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL
 
 export const endingsOf = (v: PresentVerb) =>
-  v.contract ? (v.voice ? CONTRACT_MP_ENDINGS : CONTRACT_ENDINGS)[v.contract] : plainEndingsOf(v)
+  !v.contract ? plainEndingsOf(v)
+    : v.tense === 'imperfect' ? (v.voice ? CONTRACT_IMPF_MP : CONTRACT_IMPF)[v.contract]
+      : (v.voice ? CONTRACT_MP_ENDINGS : CONTRACT_ENDINGS)[v.contract]
 
 const ACCENTS = /[\u0300\u0301\u0342]/g
 const unaccented = (w: string) => w.normalize('NFD').replace(ACCENTS, '').normalize('NFC')
@@ -81,6 +163,7 @@ function accentLastVowel(w: string) {
 function formParts(v: PresentVerb, slot: PersonSlot): [string, string] {
   const odd = v.irregular?.[slot]
   if (odd) return [odd, '']
+  if (v.tense === 'imperfect') return imperfectParts(v, slot)
   const e = endingsOf(v)[slot]
   if (v.voice && !v.contract && slot === '1p') return v.athematic ? [accentLastVowel(v.stem), e] : [unaccented(v.stem), `ό${e.slice(1)}`]
   return [v.stem, e]
@@ -111,9 +194,16 @@ export function presentForms(v: PresentVerb, slot: PersonSlot): string[] {
 export const presentDisplay = (v: PresentVerb, slot: PersonSlot) => formParts(v, slot).join('')
 
 const BE: Record<PersonSlot, string> = { '1s': 'am', '2s': 'are', '3s': 'is', '1p': 'are', '2p': 'are', '3p': 'are' }
+const WAS: Record<PersonSlot, string> = { '1s': 'was', '2s': 'were', '3s': 'was', '1p': 'were', '2p': 'were', '3p': 'were' }
+
+function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
+  if (v.voice === 'passive') return `${PRONOUN[slot]} ${WAS[slot]} being ${v.pp}`
+  return `${PRONOUN[slot]} ${WAS[slot]}${v.ing ? ` ${v.ing}` : ''}`
+}
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.tense === 'future' ? `${PRONOUN[slot]} will ${v.en}`
+  v.tense === 'imperfect' ? imperfectEnglish(v, slot)
+    : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.en}`
     : v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
 
 /** The verb's present chart, in the shape the chart drill expects. */
@@ -137,6 +227,8 @@ export const endingItemId = (ch: number, slot: PersonSlot, dir: 'person' | 'endi
 export const presentVerseId = (ch: number, v: PresentVerse, skill: VerseSkill) => `ch${ch}:present-verse:${v.id}:${skill}`
 
 const verbsOf = (ch: Chapter) => ch.present?.verbs ?? []
+/** One verb per lemma, shuffled (λύω can appear as active and passive). */
+const distinctLemmas = (vs: PresentVerb[]) => shuffle([...new Map(vs.map((v) => [v.lemma, v])).values()])
 export const presentVerb = (ch: Chapter, id: string) => verbsOf(ch).find((v) => v.id === id)!
 
 /** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου), or for a future βλεπ + σ + ω (π + σ → ψ). */
@@ -174,10 +266,14 @@ function explainForm(v: PresentVerb, slot: PersonSlot) {
 
 /** Two other persons of the same verb and the same person of another verb: the mistakes worth practising. */
 function distractors(ch: Chapter, v: PresentVerb, slot: PersonSlot): { v: PresentVerb; slot: PersonSlot }[] {
-  const sameVerb = shuffle(SLOTS.filter((s) => s !== slot)).slice(0, 2).map((s) => ({ v, slot: s }))
-  const other = shuffle(verbsOf(ch).filter((o) => o !== v))[0]
-  return other ? [...sameVerb, { v: other, slot }] : shuffle(SLOTS.filter((s) => s !== slot)).slice(0, 3).map((s) => ({ v, slot: s }))
+  const form = presentDisplay(v, slot)
+  const others = shuffle(SLOTS.filter((s) => presentDisplay(v, s) !== form))
+  const other = shuffle(verbsOf(ch).filter((o) => o.lemma !== v.lemma))[0]
+  return other ? [...others.slice(0, 2).map((s) => ({ v, slot: s })), { v: other, slot }] : others.slice(0, 3).map((s) => ({ v, slot: s }))
 }
+
+/** The first slot with the same form: ἔλυον answers both 1st sg and 3rd pl, so they share one option. */
+const sameFormSlot = (v: PresentVerb, slot: PersonSlot) => SLOTS.find((s) => presentDisplay(v, s) === presentDisplay(v, slot))!
 
 const key = (x: { v: PresentVerb; slot: PersonSlot }) => `${x.v.id}:${x.slot}`
 
@@ -186,8 +282,11 @@ export function presentIdentifyQuestion(ch: Chapter, v: PresentVerb, slot: Perso
   return {
     id: presentItemId(ch.number, v, slot, 'identify'),
     prompt: <><span className="greek big">{form}</span><p className="muted">Person and number?</p></>,
-    options: GRID_ORDER.map((s) => ({ key: s, label: <>{SLOT_LABEL[s]} <span className="muted">-{endingsOf(v)[s]}</span></> })),
-    answer: slot,
+    options: [...new Set(GRID_ORDER.map((s) => sameFormSlot(v, s)))].map((k) => ({
+      key: k,
+      label: <>{SLOTS.filter((s) => sameFormSlot(v, s) === k).map((s) => SLOT_LABEL[s]).join(' / ')} <span className="muted">-{endingsOf(v)[k]}</span></>,
+    })),
+    answer: sameFormSlot(v, slot),
     explain: explainForm(v, slot),
     review: <><span className="greek">{form}</span> = {SLOT_LABEL[slot]}, “{presentEnglish(v, slot)}”</>,
   }
@@ -272,6 +371,9 @@ function explainVerse(ch: Chapter, v: PresentVerse) {
           : <> <span className="greek">{verb.lemma}</span> is middle-only: middle/passive endings, active meaning.</>)}
       </p>
       <p className="english">“{v.translation}”</p>
+      {sameFormSlot(verb, v.slot) !== v.slot || SLOTS.some((s) => s !== v.slot && sameFormSlot(verb, s) === v.slot)
+        ? <p className="muted">The same form is also {SLOTS.filter((s) => s !== v.slot && presentDisplay(verb, s) === presentDisplay(verb, v.slot)).map((s) => SLOT_LABEL[s]).join(', ')}; the context decides.</p>
+        : null}
       {v.note && <p>{v.note}</p>}
     </>
   )
@@ -290,7 +392,7 @@ export function verseParseQuestion(ch: Chapter, v: PresentVerse): ChoiceQuestion
 
 export function verseLexicalQuestion(ch: Chapter, v: PresentVerse): ChoiceQuestion {
   const verb = presentVerb(ch, v.verb)
-  const others = shuffle(verbsOf(ch).filter((o) => o !== verb)).slice(0, 3)
+  const others = distinctLemmas(verbsOf(ch).filter((o) => o.lemma !== verb.lemma)).slice(0, 3)
   return {
     id: presentVerseId(ch.number, v, 'lexical'),
     prompt: <>{highlighted(v)}<p className="muted">What is the lexical form of the highlighted verb?</p></>,
@@ -514,22 +616,32 @@ export function futureFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion 
 }
 
 export const rootItemId = (ch: number, r: RootItem) => `ch${ch}:root:${r.lemma}`
+export const augmentItemId = (ch: number, r: RootItem) => `ch${ch}:augment:${r.lemma}`
 
 /** ἀποστέλλω → *στελ. */
 export function rootQuestion(ch: Chapter, r: RootItem): ChoiceQuestion {
+  return ruleChoice(rootItemId(ch.number, r), r, 'What is its verbal root?', '*')
+}
+
+/** ἀκούω → ἤκουον; α- → η. */
+export function augmentQuestion(ch: Chapter, r: RootItem): ChoiceQuestion {
+  return ruleChoice(augmentItemId(ch.number, r), r, 'Imperfect, 1st singular?', '')
+}
+
+function ruleChoice(id: string, r: RootItem, ask: string, mark: string): ChoiceQuestion {
   return {
-    id: rootItemId(ch.number, r),
-    prompt: <><span className="greek big">{r.lemma}</span><p className="muted">{r.ask ?? 'What is its verbal root?'}</p></>,
-    options: shuffle(r.options).map((o) => ({ key: o, label: `*${o}`, greek: true })),
+    id,
+    prompt: <><span className="greek big">{r.lemma}</span><p className="muted">{r.ask ?? ask}</p></>,
+    options: shuffle(r.options).map((o) => ({ key: o, label: `${mark}${o}`, greek: true })),
     answer: r.options[0],
     explain: <p>{r.how}</p>,
-    review: <><span className="greek">{r.lemma}: *{r.options[0]}</span></>,
+    review: <><span className="greek">{r.lemma}: {mark}{r.options[0]}</span></>,
   }
 }
 
 /** λύσουσιν → λύω: undo the σ to find the lexical form. */
 export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot): ChoiceQuestion {
-  const others = shuffle(verbsOf(ch).filter((o) => o !== v)).slice(0, 3)
+  const others = distinctLemmas(verbsOf(ch).filter((o) => o.lemma !== v.lemma)).slice(0, 3)
   return {
     id: futureLexicalItemId(ch.number, v, slot),
     prompt: <><span className="greek big">{presentForms(v, slot).at(-1)}</span><p className="muted">What is its lexical form?</p></>,
@@ -540,30 +652,32 @@ export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonS
   }
 }
 
-export type TenseKey = 'present' | 'future'
-const TENSES = ['present', 'future'] as const
+export type TenseKey = 'present' | 'future' | 'imperfect'
+const tensesOf = (v: PresentVerb): TenseKey[] => ['present', v.tense ?? 'future']
 
 /** The same verb in the present or the future. */
 export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
-  tense === 'future' ? v : {
-    ...v, tense: undefined, from: undefined, irregular: undefined, liquid: undefined, change: undefined,
+  tense !== 'present' ? v : {
+    ...v, tense: undefined, from: undefined, irregular: undefined, liquid: undefined, change: undefined, prefix: undefined,
     stem: v.present!.stem, contract: v.present!.contract, voice: v.present!.voice,
   }
 
 export const tenseItemId = (ch: number, v: PresentVerb, slot: PersonSlot, tense: TenseKey) => `ch${ch}:future-tense:${v.id}:${slot}:${tense}`
 
-export const askTense = (v: PresentVerb, slot: PersonSlot, tense: TenseKey) => !!v.present && oneParse((t) => inTense(v, t), TENSES, slot, tense)
+export const askTense = (v: PresentVerb, slot: PersonSlot, tense: TenseKey) =>
+  !!v.present && oneParse((t) => inTense(v, t), tensesOf(v), slot, tense)
 
 export const tensePairs = (ch: Chapter) =>
-  verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => TENSES.filter((tense) => askTense(v, slot, tense)).map((tense) => ({ v, slot, tense }))))
+  verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => tensesOf(v).filter((tense) => askTense(v, slot, tense)).map((tense) => ({ v, slot, tense }))))
 
-/** λύει or λύσει? */
+/** λύει or λύσει? λύει or ἔλυε? */
 export function tenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, tense: TenseKey): ChoiceQuestion {
-  const other: TenseKey = tense === 'present' ? 'future' : 'present'
+  const [present, past] = tensesOf(v)
+  const other = tense === present ? past : present
   return contrastQuestion(
     tenseItemId(ch.number, v, slot, tense),
     { key: tense, label: tense, v: inTense(v, tense) },
     { key: other, label: other, v: inTense(v, other) },
-    slot, 'Present or future, and which person?',
+    slot, `Present or ${past}, and which person?`,
   )
 }

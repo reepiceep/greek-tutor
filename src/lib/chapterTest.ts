@@ -18,7 +18,7 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
-  hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
+  augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -444,6 +444,27 @@ const SPECS: Record<number, TestSpec> = {
           ...lexical.map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
         ]),
         ...tag('Present or future', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  21: {
+    areas: [
+      { name: 'Vocabulary', count: 9, covers: 'the chapter’s nine words, both directions' },
+      { name: 'Imperfect forms', count: 9, covers: 'parsing, translating and choosing imperfect forms' },
+      { name: 'The augment', count: 5, covers: 'where the augment goes and what it does to a vowel' },
+      { name: 'Present or imperfect', count: 3, covers: 'λύει or ἔλυε' },
+      { name: 'Verses', count: 4, covers: 'imperfect verbs in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 9)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
+      return [
+        ...vocabArea(ch),
+        ...tag('Imperfect forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('The augment', take(pr.augments ?? [], 5).map((r) => augmentQuestion(ch, r))),
+        ...tag('Present or imperfect', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },

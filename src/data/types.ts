@@ -438,12 +438,20 @@ export interface PresentVerb {
   pp?: string
   /** δύναμαι: the endings μαι, σαι, ται... go straight onto the stem, with no connecting vowel. */
   athematic?: boolean
-  /** Chapter 19: the verb is drilled in the future, and `stem` is the future stem with its σ (λύσ, βλέψ, ἀγαπήσ). */
-  tense?: 'future'
+  /**
+   * Chapter 19: the verb is drilled in the future, and `stem` is the future stem with its σ (λύσ, βλέψ, ἀγαπήσ).
+   * Chapter 21: the imperfect, and `stem` is the augmented stem without an accent (ἐλυ, ἠκου, συνηγ); the accent is
+   * worked out for each form.
+   */
+  tense?: 'future' | 'imperfect'
+  /** A compound verb's preposition as it appears before the augment (συν, ἐξ, περι): the accent can't go back past it. */
+  prefix?: string
+  /** English -ing form for the imperfect ("loosing"); empty for εἰμί ("I was"). */
+  ing?: string
   /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
   from?: string
   /** The present stem, for telling present from future (λύει, λύσει). Absent when the present is irregular (ζάω, εἰμί). */
-  present?: { stem: string; contract?: ContractVowel; voice?: 'middle' }
+  present?: { stem: string; contract?: ContractVowel; voice?: 'passive' | 'middle' }
   /**
    * Chapter 20: a liquid future. The stem (μεν) takes εσ; the σ drops out and the ε contracts with the ending, so it is
    * conjugated like a present ε-contract verb and has `contract: 'ε'` (μενῶ, μενεῖς).
@@ -489,11 +497,13 @@ export interface PresentSection {
   verbs: PresentVerb[]
   verses: PresentVerse[]
   roots?: RootItem[]
+  /** Chapter 21: how verbs take the augment (ἀκούω → ἤκουον). */
+  augments?: RootItem[]
 }
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'cases'
 
 export interface Chapter {
   number: number

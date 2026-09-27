@@ -259,4 +259,14 @@ export const RECORDINGS: Record<string, Recording> = {
   'σοφία': { mounce: B + 'chpt20/words/sofia.mp3', modern: B + 'chpt20/modern/sofia.mp3' },
   'στόμα': { mounce: B + 'chpt20/words/stoma.mp3', modern: B + 'chpt20/modern/stoma.mp3' },
   'σῴζω': { mounce: B + 'chpt20/words/swzw.mp3', modern: B + 'chpt20/modern/swzw.mp3' },
+  // Chapter 21
+  'ἀκολουθέω': { mounce: B + 'chpt21/words/akolou.mp3', modern: B + 'chpt21/modern/akolou.mp3' },
+  'διδάσκω': { mounce: B + 'chpt21/words/didask.mp3', modern: B + 'chpt21/modern/didask.mp3' },
+  'ἐπερωτάω': { mounce: B + 'chpt21/words/eperwt.mp3', modern: B + 'chpt21/modern/eperwt.mp3' },
+  'ἐρωτάω': { mounce: B + 'chpt21/words/erwtaw.mp3', modern: B + 'chpt21/modern/erwtaw.mp3' },
+  'θέλω': { mounce: B + 'chpt21/words/qelw.mp3', modern: B + 'chpt21/modern/qelw.mp3' },
+  'περιπατέω': { mounce: B + 'chpt21/words/peripa.mp3', modern: B + 'chpt21/modern/peripa.mp3' },
+  'συναγωγή': { mounce: B + 'chpt21/words/sunagw.mp3', modern: B + 'chpt21/modern/sunagw.mp3' },
+  'Φαρισαῖος': { mounce: B + 'chpt21/words/farisa.mp3', modern: B + 'chpt21/modern/farisa.mp3' },
+  'χρόνος': { mounce: B + 'chpt21/words/cronos.mp3', modern: B + 'chpt21/modern/cronos.mp3' },
 }

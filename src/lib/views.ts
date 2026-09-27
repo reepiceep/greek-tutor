@@ -15,6 +15,7 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   middle: { nav: 'Middle/passive', title: 'Present middle/passive', description: 'λύομαι and middle-only verbs like ἔρχομαι: endings, forms, active or passive, and verses', glyph: 'μαι' },
   future: { nav: 'Future', title: 'Future indicative', description: 'λύσω and λύσομαι: the σ, the Square of Stops, lengthened vowels, ἔσομαι, and present or future', glyph: 'σω' },
   roots: { nav: 'Other futures', title: 'Verbal roots and other futures', description: 'Roots and present stems; liquid futures (μενῶ, ἀποστελῶ) and changed stems (ὄψομαι, γνώσομαι)', glyph: 'ῶ' },
+  imperfect: { nav: 'Imperfect', title: 'Imperfect indicative', description: 'ἔλυον and ἐλυόμην: the augment, secondary endings, contract verbs, and present or imperfect', glyph: 'ἐ' },
   cases: { nav: 'Genitive & dative', title: 'Genitive and dative', description: 'The endings, and what each case does in a sentence', glyph: 'γ' },
   declension: { nav: '3rd declension', title: 'Third declension', description: 'Square of Stops, stems, parsing, πᾶς, τίς vs τις', glyph: 'σ' },
 }
