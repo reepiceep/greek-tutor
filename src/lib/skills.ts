@@ -4,7 +4,7 @@ import { ENCLITIC_FORMS } from '../data/chapter08Eimi'
 import type { Chapter, DeclensionParadigm, ParadigmRow, TopicView } from '../data/types'
 import { autosItemId, autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
 import {
-  adjAgreeItemId, adjAgreeQuestion, adjParseItemId, adjParseQuestion, adjTranslateQuestion, adjUseItemId, adjUseQuestion, distinctForms,
+  adjAgreeItemId, adjAgreeQuestion, adjParseItemId, adjParseQuestion, adjTranslateQuestion, adjUseItemId, adjUseQuestion, distinctForms, slotsOf,
   translatable,
 } from './declensionQuestions'
 import {
@@ -43,6 +43,10 @@ import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
 import { PARTICIPLE_AREAS, participleItemId, participleQuestion } from './participleIntroQuestions'
+import {
+  parsingLabel, participleBuildId, participleBuildQuestion, participleCharts, participleParseId, participleParseQuestion, participleVerseId,
+  participleVerseParseQuestion, participleVerseTranslateQuestion,
+} from './participleQuestions'
 import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
@@ -254,6 +258,7 @@ export function chapterSkills(ch: Chapter): Skill[] {
     })),
     ...casesSkills(ch),
     ...presentSkills(ch),
+    ...participleSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
   // one card per case; track that here so it shows on the dashboard and in the daily review.
@@ -286,6 +291,35 @@ export function weakestItems(skills: Skill[], items: Record<string, ItemStats>, 
     .filter((w): w is WeakItem => !!w.stats && w.stats.attempts > 0 && w.stats.box < LEARNED_BOX)
     .sort((a, b) => accuracy(a.stats) - accuracy(b.stats) || b.stats.attempts - a.stats.attempts)
     .slice(0, n)
+}
+
+/** Chapter 27: present participle forms, both ways, and participles in verses. */
+function participleSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const charts = participleCharts(ch)
+  const verses = ch.participles?.verses ?? []
+  return [
+    {
+      label: 'Present participles: forms', view: 'ptcPresent',
+      items: charts.flatMap((c) => [
+        ...distinctForms(c.p).map((form) => ({
+          id: participleParseId(n, c, form), name: `${form}: parse`, make: () => participleParseQuestion(ch, c, form),
+        })),
+        ...slotsOf(c.p).map((s) => ({
+          id: participleBuildId(n, c, s), name: `${parsingLabel(c.voice, s)} of ${c.v.lemma}`, make: () => participleBuildQuestion(ch, c, s),
+        })),
+      ]),
+    },
+    {
+      label: 'Present participles: verses', view: 'ptcPresent',
+      items: verses.flatMap((v) => [
+        { id: participleVerseId(n, v, 'parse'), name: `${v.word} (${v.ref})`, make: () => participleVerseParseQuestion(ch, v) },
+        ...(v.wrong?.length
+          ? [{ id: participleVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => participleVerseTranslateQuestion(ch, v) }]
+          : []),
+      ]),
+    },
+  ]
 }
 
 /** Chapters 16 (present tense), 17 (contract verbs) and 18 (middle/passive) share their form and verse drills; each adds its own extras. */

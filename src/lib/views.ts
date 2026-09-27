@@ -11,6 +11,7 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   relative: { nav: 'Relative pronoun', title: 'Relative pronoun', description: 'ὅς, ἥ, ὅ: forms, article or relative, antecedent and case', glyph: 'ὅς' },
   verbs: { nav: 'Verbs', title: 'Introduction to verbs', description: 'Person, number, tense and aspect, voice, mood; the parts of a verb', glyph: 'ω' },
   participles: { nav: 'Participles', title: 'Introduction to participles', description: 'Verbal adjectives: aspect, voice, agreement, and word structure', glyph: 'ντ' },
+  ptcPresent: { nav: 'Present participles', title: 'Present adverbial participles', description: 'λύων and λυόμενος: ντ and μενο/η, agreement, “while,” and verses', glyph: 'ων' },
   present: { nav: 'Present tense', title: 'Present active indicative', description: 'λύω and its endings: form, parse and translate, in charts and in verses', glyph: 'ω' },
   contract: { nav: 'Contract verbs', title: 'Contract verbs', description: 'ἀγαπάω, ποιέω, πληρόω: the contraction rules, forms, and verses', glyph: 'ῶ' },
   middle: { nav: 'Middle/passive', title: 'Present middle/passive', description: 'λύομαι and middle-only verbs like ἔρχομαι: endings, forms, active or passive, and verses', glyph: 'μαι' },

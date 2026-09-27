@@ -3,12 +3,11 @@ import { buildChapterTest, hasTest, testAreas } from '../lib/chapterTest'
 import { PARTICIPLE_AREAS } from '../lib/participleIntroQuestions'
 import { chapterSkills } from '../lib/skills'
 import { chapter26 as ch } from './chapter26'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 
 describe('chapter 26 participle introduction', () => {
-  it('is the latest chapter and has no vocabulary screen', () => {
-    expect(LATEST_CHAPTER).toBe(26)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list and has no vocabulary screen', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toEqual([])
     expect(ch.topics).toContain('participles')
     expect(hasTest(26)).toBe(true)

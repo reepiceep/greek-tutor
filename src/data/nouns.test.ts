@@ -11,7 +11,8 @@ describe('noun lexical forms', () => {
       for (const w of ch.vocab.filter((v) => v.pos === 'noun')) {
         const parts = w.lexical?.split(', ') ?? []
         expect(parts[0], `${w.lemma}: lexical starts with the lemma`).toBe(w.lemma)
-        expect(['ὁ', 'ἡ', 'τό'], `${w.lemma}: ends with the article`).toContain(parts.at(-1))
+        // Ἱεροσόλυμα is a plural noun: τά.
+        expect(['ὁ', 'ἡ', 'τό', 'τά'], `${w.lemma}: ends with the article`).toContain(parts.at(-1))
         expect(parts.length, `${w.lemma}: has a genitive`).toBe(INDECLINABLE.has(w.lemma) ? 2 : 3)
       }
     }
@@ -26,8 +27,8 @@ describe('noun lexical forms', () => {
   })
 })
 
-// Two-termination adjectives list only masculine/feminine and neuter (αἰώνιος, -ον), as in Mounce.
-const TWO_TERMINATION = new Set(['αἰώνιος', 'πλείων', 'μείζων'])
+// Two-termination adjectives list only masculine/feminine and neuter (αἰώνιος, -ον; τρεῖς, τρία), as in Mounce.
+const TWO_TERMINATION = new Set(['αἰώνιος', 'πλείων', 'μείζων', 'τρεῖς'])
 // Pronouns with no gender forms to list.
 const GENDERLESS = new Set(['ἐγώ', 'σύ', 'ἡμεῖς', 'ὑμεῖς', 'μου', 'κἀγώ', 'ἀλλήλων', 'τίς', 'τις'])
 

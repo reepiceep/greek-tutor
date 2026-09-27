@@ -509,6 +509,27 @@ it('chapter 26: participle lesson, four drills, and test work without vocabulary
   expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
 })
 
+it('chapter 27: present participle lesson, charts, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(27)
+  expect(screen.getByText('Flashcards', { selector: 'nav button' })).toBeTruthy()
+  nav('Present participles')
+  const charts = [...document.querySelectorAll('.adj-table')].map((t) => t.textContent)
+  expect(charts.some((t) => t!.includes('λυουσῶν'))).toBe(true)
+  expect(charts.some((t) => t!.includes('λυομένης'))).toBe(true)
+  expect(charts.some((t) => t!.includes('οὔσῃ'))).toBe(true)
+  for (const t of ['Parse', 'Build the form', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

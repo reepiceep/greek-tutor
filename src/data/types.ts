@@ -409,6 +409,56 @@ export interface ParticipleIntroSection {
   structure: ParticipleIntroItem[]
 }
 
+// --- Present participles (chapter 27) ---
+
+export type ParticipleVoice = 'active' | 'middle/passive'
+
+/** A verb whose present participles are generated: stem + ο + ντ (3-1-3) or stem + ο + μενο/η (2-1-2). */
+export interface ParticipleVerb {
+  id: string
+  lemma: string
+  /** Present stem with the lexical form's accent (λύ, πιστεύ, ἀναβαίν); the active participle keeps it there when it can. */
+  stem: string
+  /** A long α, ι or υ in the accented syllable, which takes a circumflex before a short ultima (λῦον). */
+  long?: boolean
+  voices: ParticipleVoice[]
+  /** Middle-only (ἔρχομαι): middle/passive forms, active meaning. */
+  middleOnly?: boolean
+  /** κάθημαι: μενο/η goes straight onto the stem, with no connecting vowel (καθήμενος). */
+  athematic?: boolean
+  /** English: "loosing"; the passive is "being" + `pp`. */
+  ing: string
+  pp?: string
+}
+
+/** A present participle in a real verse, parsed as in the MorphGNT. */
+export interface ParticipleVerse {
+  id: string
+  ref: string
+  text: string
+  /** The participle exactly as it appears in `text`. */
+  word: string
+  lemma: string
+  voice: ParticipleVoice
+  case: NounCase
+  number: GrammaticalNumber
+  gender: Gender
+  /** What the participle agrees with: a word in `text`, or the subject inside the main verb. */
+  agrees: string
+  translation: string
+  /** Wrong translations; the translation question is only asked when these are given. */
+  wrong?: string[]
+  help?: string
+  note?: string
+}
+
+export interface ParticipleSection {
+  verbs: ParticipleVerb[]
+  /** ὤν, οὖσα, ὄν: εἰμί's participle, the active endings with no stem. */
+  eimi: DeclensionParadigm
+  verses: ParticipleVerse[]
+}
+
 // --- Genitive and dative (chapter 7) ---
 
 /** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
@@ -549,7 +599,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -567,6 +617,7 @@ export interface Chapter {
   relative?: RelativeSection
   verbIntro?: VerbIntroSection
   participleIntro?: ParticipleIntroSection
+  participles?: ParticipleSection
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

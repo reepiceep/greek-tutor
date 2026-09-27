@@ -10,12 +10,16 @@ import {
   encliticAccentQuestion, encliticRuleQuestion, predicateSubjectQuestion, predicateTranslateQuestion,
 } from './eimiQuestions'
 import {
-  adjAgreeQuestion, adjParseQuestion, adjTranslateQuestion, adjUseQuestion, distinctForms, translatable,
+  adjAgreeQuestion, adjParseQuestion, adjTranslateQuestion, adjUseQuestion, distinctForms, slotsOf, translatable,
 } from './declensionQuestions'
 import { caseUseQuestion, caseUseTranslateQuestion, phraseParseQuestion, phraseSlots, phraseTranslateQuestion } from './caseQuestions'
 import { caseUses, elidedForms } from './prepositions'
 import { shuffle, type AreaScore, type TestResult } from './progress'
 import { PARTICIPLE_AREAS, participleQuestion } from './participleIntroQuestions'
+import {
+  participleBuildQuestion, participleCharts, participleParseQuestion, participleVerseParseQuestion, participleVerseTranslateQuestion,
+  translatableVerses,
+} from './participleQuestions'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
@@ -573,6 +577,27 @@ const SPECS: Record<number, TestSpec> = {
     areas: PARTICIPLE_AREAS.map((area) => ({ name: area.label, count: area.testCount, covers: area.label.toLowerCase() })),
     build: (ch) => PARTICIPLE_AREAS.flatMap((area) => tag(area.label,
       take(ch.participleIntro![area.key], area.testCount).map((item) => participleQuestion(ch, area.key, item)))),
+  },
+  27: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'Participle forms', count: 10, covers: 'parsing present participles, and choosing the form for a parsing' },
+      { name: 'Verses', count: 6, covers: 'parsing present participles in the New Testament' },
+      { name: 'Translation', count: 4, covers: 'what the participle agrees with, and translating it with “while”' },
+    ],
+    build: (ch) => {
+      const charts = participleCharts(ch)
+      const verses = ch.participles!.verses
+      return [
+        ...vocabArea(ch),
+        ...tag('Participle forms', [
+          ...take(charts.flatMap((c) => distinctForms(c.p).map((form) => ({ c, form }))), 6).map(({ c, form }) => participleParseQuestion(ch, c, form)),
+          ...take(charts.flatMap((c) => slotsOf(c.p).map((s) => ({ c, s }))), 4).map(({ c, s }) => participleBuildQuestion(ch, c, s)),
+        ]),
+        ...tag('Verses', take(verses, 6).map((v) => participleVerseParseQuestion(ch, v))),
+        ...tag('Translation', take(translatableVerses(ch), 4).map((v) => participleVerseTranslateQuestion(ch, v))),
+      ]
+    },
   },
 }
 
