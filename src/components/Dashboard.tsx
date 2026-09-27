@@ -6,19 +6,12 @@ import {
   type ItemStats, currentStreak, exportProgress, importProgress, learnedFraction, resetProgress, updateSettings, useProgress,
 } from '../lib/progress'
 import { type Skill, chapterSkills, weakestItems } from '../lib/skills'
-import { TOPIC_META } from '../lib/views'
+import { nextStep } from '../lib/nextStep'
+import { practiceCards } from '../lib/views'
 import { AreaBars } from './ChapterTest'
 import { CourseMap } from './CourseMap'
 import { reviewPlan, whenDue } from '../lib/review'
 import { useNow } from '../lib/useNow'
-
-interface Card {
-  view: View
-  glyph: string
-  title: string
-  description: string
-  greekTitle?: boolean
-}
 
 export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) {
   const { items, tests } = useProgress()
@@ -27,64 +20,27 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
   const chapterTests = tests.filter((t) => t.chapter === chapter.number)
   const latest = chapterTests.at(-1)
   const best = chapterTests.reduce((m, t) => Math.max(m, t.correct / t.total), 0)
-  const allIds = skills.flatMap((s) => s.items.map((i) => i.id))
-  const learnedPct = Math.round(learnedFraction(allIds, items) * 100)
-  const started = allIds.some((id) => items[id])
-
-  const cards: Card[] = [
-    ...(chapter.vocab.length
-      ? [
-          { view: 'flashcards' as View, glyph: 'α', title: 'Flashcards', description: `Learn the ${chapter.vocab.length} new words` },
-          { view: 'quiz' as View, glyph: 'λ', title: 'Vocab quiz', description: 'Multiple choice or typed, both directions' },
-        ]
-      : []),
-    ...(chapter.topics ?? []).map((t): Card => ({
-      view: t, glyph: TOPIC_META[t].glyph, title: TOPIC_META[t].title, description: TOPIC_META[t].description, greekTitle: true,
-    })),
-    ...(chapter.number >= 8
-      ? [{ view: 'review' as View, glyph: 'Π', title: 'All prepositions', description: 'Review every preposition from chapters 6–14' }]
-      : []),
-  ]
+  const cards = practiceCards(chapter)
 
   return (
     <section className="dashboard">
-      <CourseMap current={chapter} />
-      <div className="dash-hero">
-        <p className="eyebrow">Chapter {chapter.number}</p>
-        <h2 className="greek">{chapter.title}</h2>
-        <p className="muted">
-          {started ? <>{learnedPct}% of this chapter learned</> : <>{chapter.vocab.length ? 'Not started yet: begin with the flashcards' : 'Not started yet: begin with the lesson'}</>}
-          {' · '}{chapter.vocab.length ? `${chapter.vocab.length} words · ` : 'no new vocabulary · '}{skills.length} skills
-        </p>
-      </div>
+      <Continue chapter={chapter} go={go} />
+      <CourseMap current={chapter} className="home-map" />
 
       <div className="dash-grid">
         <div className="dash-main">
-          <TodayCard chapter={chapter} go={go} />
-          {hasTest(chapter.number) && <div className={`readiness ${latest?.ready ? 'good' : ''}`}>
-            {latest ? (
-              <>
-                <div className="readiness-head">
-                  <div>
-                    <strong>{latest.ready ? 'Ready for the next chapter' : 'Not ready yet'}</strong>
-                    <div className="muted">
-                      Last test {latest.correct}/{latest.total} in {formatTime(latest.seconds)}, {new Date(latest.date).toLocaleDateString()}
-                      {chapterTests.length > 1 && <> · best {Math.round(best * 100)}% · {chapterTests.length} tests</>}
-                    </div>
-                  </div>
-                  <button className="primary" onClick={() => go('test')}>Take the test</button>
+          {latest && <div className={`readiness ${latest.ready ? 'good' : ''}`}>
+            <div className="readiness-head">
+              <div>
+                <strong>{latest.ready ? 'Ready for the next chapter' : 'Not ready yet'}</strong>
+                <div className="muted">
+                  Last test {latest.correct}/{latest.total} in {formatTime(latest.seconds)}, {new Date(latest.date).toLocaleDateString()}
+                  {chapterTests.length > 1 && <> · best {Math.round(best * 100)}% · {chapterTests.length} tests</>}
                 </div>
-                <AreaBars result={latest} />
-              </>
-            ) : (
-              <div className="readiness-head">
-                <div>
-                  <strong>Chapter test</strong>
-                  <div className="muted">30 mixed questions. Score 90% in every area to be ready for chapter {chapter.number + 1}.</div>
-                </div>
-                <button className="primary" onClick={() => go('test')}>Take the test</button>
               </div>
-            )}
+              <button onClick={() => go('test')}>Take the test again</button>
+            </div>
+            <AreaBars result={latest} />
           </div>}
 
           <h3>Practice</h3>
@@ -133,25 +89,59 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
   )
 }
 
-/** The daily review at a glance: how much is due and the current streak. */
-function TodayCard({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) {
-  const { items, daily } = useProgress()
+/**
+ * The top of Home: where you are, the one thing to do next, and the daily review and chapter test at a glance.
+ */
+function Continue({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) {
+  const { items, tests, daily } = useProgress()
   const now = useNow()
   const plan = reviewPlan(items, now, chapter)
   const streak = currentStreak(daily, now)
-  const count = plan.due.length + plan.fresh.length
+  const skills = chapterSkills(chapter)
+  const allIds = skills.flatMap((s) => s.items.map((i) => i.id))
+  const learnedPct = Math.round(learnedFraction(allIds, items) * 100)
+  const started = allIds.some((id) => items[id])
+  const latest = tests.filter((t) => t.chapter === chapter.number).at(-1)
+  const step = nextStep(chapter, items, tests, plan.totalDue)
+  const fresh = plan.fresh.length
+
   return (
-    <div className="today-card">
-      <div>
-        <strong>Today’s review</strong>
-        <div className="muted">
-          {plan.totalDue ? `${plan.totalDue} due` : 'Nothing due'}
-          {plan.fresh.length > 0 && ` · ${plan.fresh.length} new`}
-          {streak > 0 && ` · ★ ${streak}-day streak`}
-          {!count && plan.nextDue && ` · next ${whenDue(plan.nextDue, now)}`}
-        </div>
+    <div className="continue">
+      <div className="dash-hero">
+        <p className="eyebrow">Chapter {chapter.number}</p>
+        <h2 className="greek">{chapter.title}</h2>
+        <p className="muted">
+          {started ? <>{learnedPct}% of this chapter learned</> : <>Not started yet</>}
+          {' · '}{chapter.vocab.length ? `${chapter.vocab.length} words · ` : 'no new vocabulary · '}{skills.length} skills
+        </p>
       </div>
-      <button className={count ? 'primary' : ''} onClick={() => go('today')}>{count ? 'Start review' : 'Open'}</button>
+      <button className="primary next-step" onClick={() => step.chapter ? updateSettings({ chapter: step.chapter }) : go(step.view!)}>
+        <span className="next-text">
+          <span className="next-kicker">Next</span>
+          <strong>{step.label}</strong>
+          <span className="next-detail">{step.detail}</span>
+        </span>
+        <span className="next-arrow" aria-hidden="true">→</span>
+      </button>
+      <div className="continue-tiles">
+        <button className="tile" onClick={() => go('today')}>
+          <strong>Today’s review</strong>
+          <span className="muted">
+            {plan.totalDue ? `${plan.totalDue} due` : 'Nothing due'}
+            {fresh > 0 && ` · ${fresh} new`}
+            {streak > 0 && ` · ★ ${streak}-day streak`}
+            {!plan.totalDue && !fresh && plan.nextDue && ` · next ${whenDue(plan.nextDue, now)}`}
+          </span>
+        </button>
+        {hasTest(chapter.number) && (
+          <button className={`tile ${latest?.ready ? 'good' : ''}`} onClick={() => go('test')}>
+            <strong>Chapter test</strong>
+            <span className="muted">
+              {latest ? `Last ${latest.correct}/${latest.total} · ${latest.ready ? 'passed' : 'not passed yet'}` : `30 questions · 90% in every area to pass`}
+            </span>
+          </button>
+        )}
+      </div>
     </div>
   )
 }

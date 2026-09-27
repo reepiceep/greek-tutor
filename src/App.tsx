@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { CHAPTERS, getChapter } from './data/chapters'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { getChapter } from './data/chapters'
 import type { TopicView } from './data/types'
 import { Adjectives } from './components/Adjectives'
 import { ThirdDeclension } from './components/ThirdDeclension'
@@ -24,16 +24,18 @@ import { ParadigmDrill } from './components/ParadigmDrill'
 import { PrepositionDrills } from './components/PrepositionDrills'
 import { PrepositionReview } from './components/PrepositionReview'
 import { VocabQuiz } from './components/VocabQuiz'
-import { updateSettings, useProgress } from './lib/progress'
+import { useProgress } from './lib/progress'
 import { TOPIC_META } from './lib/views'
 import { applyTheme } from './lib/theme'
 import { ThemeToggle } from './components/ThemeToggle'
 import { Today } from './components/Today'
+import { Practice } from './components/Practice'
+import { ChapterSheet } from './components/ChapterSheet'
 import { reviewPlan } from './lib/review'
 import { useNow } from './lib/useNow'
 import { useStickyNavTop, useTabsFollowSelection } from './lib/layout'
 
-export type View = 'home' | 'today' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
+export type View = 'home' | 'today' | 'practice' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
 
 export default function App() {
   const { settings, items } = useProgress()
@@ -58,17 +60,38 @@ export default function App() {
     navRef.current?.querySelector('.on')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   }, [view])
 
+  const [picking, setPicking] = useState(false)
+  const closePicker = useCallback(() => setPicking(false), [])
+
   const now = useNow()
   const dueNow = reviewPlan(items, now, chapter).totalDue
-  const nav: { view: View; label: string; badge?: number }[] = [
+  const test = hasTest(chapter.number)
+  type NavItem = { view: View; label: string; badge?: number }
+  // Global screens, then this chapter's own: the nav shows them as two groups.
+  const global: NavItem[] = [
     { view: 'home', label: 'Home' },
     { view: 'today', label: 'Today', badge: dueNow },
+  ]
+  const local: NavItem[] = [
     // Chapters without vocabulary have no flashcards or vocab quiz.
     ...(chapter.vocab.length ? [{ view: 'flashcards' as View, label: 'Flashcards' }, { view: 'quiz' as View, label: 'Vocab quiz' }] : []),
     ...topics.map((t) => ({ view: t, label: TOPIC_META[t].nav })),
     // Most prepositions arrive in chapter 8; before that, the review would quiz words not yet taught.
     ...(chapter.number >= 8 ? [{ view: 'review' as View, label: 'All prepositions' }] : []),
-    ...(hasTest(chapter.number) ? [{ view: 'test' as View, label: 'Test' }] : []),
+    ...(test ? [{ view: 'test' as View, label: 'Test' }] : []),
+  ]
+  const navButton = (n: NavItem) => (
+    <button key={n.view} className={view === n.view ? 'on' : ''} onClick={() => setView(n.view)}>
+      {n.label}{n.badge ? <span className="badge" aria-label={`${n.badge} due`}>{n.badge}</span> : null}
+    </button>
+  )
+  // Phones get a bottom bar instead of the nav: every chapter screen is under Practice.
+  const tab: View = view === 'home' || view === 'today' || view === 'test' ? view : 'practice'
+  const tabs: (NavItem & { glyph: string })[] = [
+    { view: 'home', label: 'Home', glyph: 'Θ' },
+    { view: 'today', label: 'Today', glyph: '★', badge: dueNow },
+    { view: 'practice', label: 'Practice', glyph: 'α' },
+    ...(test ? [{ view: 'test' as View, label: 'Test', glyph: '✓' }] : []),
   ]
 
   return (
@@ -87,26 +110,24 @@ export default function App() {
             </button>
           </h1>
           <div className="header-tools">
-            <label className="chapter-pick">
-              <span className="sr-label">Chapter</span>
-              <select value={chapter.number} onChange={(e) => updateSettings({ chapter: Number(e.target.value) })}>
-                {CHAPTERS.map((c) => <option key={c.number} value={c.number}>Ch {c.number}: {c.title}</option>)}
-              </select>
-            </label>
+            <button type="button" className="chapter-pick" onClick={() => setPicking(true)} aria-haspopup="dialog" aria-expanded={picking}>
+              <span className="chapter-pick-num">Ch {chapter.number}</span>
+              <span className="chapter-pick-title">{chapter.short}</span>
+              <svg className="chapter-pick-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+            </button>
             <ThemeToggle />
           </div>
         </div>
         <nav ref={navRef} aria-label="Sections">
-          {nav.map((n) => (
-            <button key={n.view} className={view === n.view ? 'on' : ''} onClick={() => setView(n.view)}>
-              {n.label}{n.badge ? <span className="badge" aria-label={`${n.badge} due`}>{n.badge}</span> : null}
-            </button>
-          ))}
+          {global.map(navButton)}
+          <span className="nav-group" aria-hidden="true">Ch {chapter.number}</span>
+          {local.map(navButton)}
         </nav>
       </header>
       <main key={chapter.number} className={view === 'home' ? 'wide' : ''}>
         {view === 'home' && <Dashboard chapter={chapter} go={setView} />}
         {view === 'today' && <Today chapter={chapter} />}
+        {view === 'practice' && <Practice chapter={chapter} go={setView} />}
         {view === 'flashcards' && <Flashcards chapter={chapter} />}
         {view === 'quiz' && <VocabQuiz chapter={chapter} />}
         {view === 'paradigm' && <ParadigmDrill chapter={chapter} />}
@@ -129,6 +150,16 @@ export default function App() {
         {view === 'review' && <PrepositionReview />}
         {view === 'test' && <ChapterTest chapter={chapter} />}
       </main>
+      <nav className="tabbar" aria-label="Main">
+        {tabs.map((t) => (
+          <button key={t.view} className={tab === t.view ? 'on' : ''} aria-current={tab === t.view ? 'page' : undefined} onClick={() => setView(t.view)}>
+            <span className="tab-glyph greek" aria-hidden="true">{t.glyph}</span>
+            <span className="tab-label">{t.label}</span>
+            {t.badge ? <span className="badge" aria-label={`${t.badge} due`}>{t.badge}</span> : null}
+          </button>
+        ))}
+      </nav>
+      {picking && <ChapterSheet current={chapter} onClose={closePicker} />}
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import type { TopicView } from '../data/types'
+import type { View } from '../App'
+import type { Chapter, TopicView } from '../data/types'
 
 /** Labels for the chapter-specific practice screens, used by the nav bar and the dashboard. */
 export const TOPIC_META: Record<TopicView, { nav: string; title: string; description: string; glyph: string }> = {
@@ -33,4 +34,31 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   perfect: { nav: 'Perfect', title: 'Perfect indicative', description: 'λέλυκα and λέλυμαι: reduplication, κα, second perfects, and aorist or perfect', glyph: 'λε' },
   cases: { nav: 'Genitive & dative', title: 'Genitive and dative', description: 'The endings, and what each case does in a sentence', glyph: 'γ' },
   declension: { nav: '3rd declension', title: 'Third declension', description: 'Square of Stops, stems, parsing, πᾶς, τίς vs τις', glyph: 'σ' },
+}
+
+export interface PracticeCard {
+  view: View
+  glyph: string
+  title: string
+  description: string
+  greekTitle?: boolean
+}
+
+/** A chapter's practice screens in book order: vocabulary first, then its topics, then the preposition review. */
+export function practiceCards(chapter: Chapter): PracticeCard[] {
+  return [
+    ...(chapter.vocab.length
+      ? [
+          { view: 'flashcards' as View, glyph: 'α', title: 'Flashcards', description: `Learn the ${chapter.vocab.length} new words` },
+          { view: 'quiz' as View, glyph: 'λ', title: 'Vocab quiz', description: 'Multiple choice or typed, both directions' },
+        ]
+      : []),
+    ...(chapter.topics ?? []).map((t): PracticeCard => ({
+      view: t, glyph: TOPIC_META[t].glyph, title: TOPIC_META[t].title, description: TOPIC_META[t].description, greekTitle: true,
+    })),
+    // Most prepositions arrive in chapter 8; before that, the review would quiz words not yet taught.
+    ...(chapter.number >= 8
+      ? [{ view: 'review' as View, glyph: 'Π', title: 'All prepositions', description: 'Review every preposition from chapters 6–14' }]
+      : []),
+  ]
 }

@@ -6,9 +6,13 @@ import App from './App'
 
 afterEach(cleanup)
 
-const nav = (label: string) => fireEvent.click(screen.getByText(label, { selector: 'nav button' }))
+const nav = (label: string) => fireEvent.click(screen.getByText(label, { selector: 'header nav button' }))
 const tab = (label: string) => fireEvent.click(screen.getByText(label, { selector: '.seg button' }))
-const pickChapter = (n: number) => fireEvent.change(document.querySelector('.chapter-pick select')!, { target: { value: String(n) } })
+// Opens the chapter sheet and picks from its course map (every part's buttons are in the page, open or not).
+const pickChapter = (n: number) => {
+  fireEvent.click(document.querySelector('.chapter-pick')!)
+  fireEvent.click(document.querySelector(`.sheet .stop button[aria-label^="Chapter ${n}:"]`)!)
+}
 
 it('renders every view without crashing', () => {
   render(<StrictMode><App /></StrictMode>)
@@ -77,7 +81,7 @@ it('takes a whole chapter test and shows the result on the dashboard', () => {
 it('chapter 9: every adjectives tab works and the test adds up to 30', () => {
   render(<StrictMode><App /></StrictMode>)
   pickChapter(9)
-  expect(screen.queryByText('εἰμί', { selector: 'nav button' })).toBeNull()
+  expect(screen.queryByText('εἰμί', { selector: 'header nav button' })).toBeNull()
   nav('Adjectives')
   expect(document.querySelectorAll('.adj-table')).toHaveLength(4)
   for (const t of ['Parse', 'Agreement', 'Uses']) {
@@ -207,7 +211,7 @@ it('shows the Theophilus brand, which returns to the home page', () => {
   expect(screen.getByText('Theophilus')).toBeTruthy()
   nav('Flashcards')
   fireEvent.click(document.querySelector('.brand')!)
-  expect(screen.getByText('Home', { selector: 'nav button' }).className).toBe('on')
+  expect(screen.getByText('Home', { selector: 'header nav button' }).className).toBe('on')
 })
 
 it('the course map lists every chapter and switches chapter on click', () => {
@@ -357,7 +361,7 @@ it('vocab quiz can cover several chapters and records each word under its own ch
 it('chapter 15: no vocab tabs, and every verbs tab works', () => {
   render(<App />)
   pickChapter(15)
-  expect(screen.queryByText('Flashcards', { selector: 'nav button' })).toBeNull()
+  expect(screen.queryByText('Flashcards', { selector: 'header nav button' })).toBeNull()
   expect(screen.getByText(/no new vocabulary/)).toBeTruthy()
   nav('Verbs')
   expect(document.querySelector('.terms-table')).toBeTruthy()
@@ -554,8 +558,10 @@ it('chapter 26: participle lesson, four drills, and test work without vocabulary
   localStorage.clear()
   render(<App />)
   pickChapter(26)
-  expect(screen.queryByText('Flashcards', { selector: 'nav button' })).toBeNull()
-  expect(screen.getByText(/Not started yet: begin with the lesson/)).toBeTruthy()
+  expect(screen.queryByText('Flashcards', { selector: 'header nav button' })).toBeNull()
+  // With no vocabulary, practice starts with the lesson.
+  fireEvent.click(screen.getByText('Practice', { selector: '.tabbar .tab-label' }))
+  expect(document.querySelector('.practice .mode strong')!.textContent).toBe('Introduction to participles')
   nav('Participles')
   expect(screen.getByText(/verbal adjective/, { selector: 'summary' })).toBeTruthy()
   for (const area of ['English participles', 'Verbal and adjectival', 'Agreement', 'Word structure']) {
@@ -573,7 +579,7 @@ it('chapter 27: present participle lesson, charts, every quiz tab, and the test'
   localStorage.clear()
   render(<App />)
   pickChapter(27)
-  expect(screen.getByText('Flashcards', { selector: 'nav button' })).toBeTruthy()
+  expect(screen.getByText('Flashcards', { selector: 'header nav button' })).toBeTruthy()
   nav('Present participles')
   const charts = [...document.querySelectorAll('.adj-table')].map((t) => t.textContent)
   expect(charts.some((t) => t!.includes('λυουσῶν'))).toBe(true)
@@ -806,7 +812,7 @@ it('chapter 7: genitive and dative charts, and every quiz tab works', () => {
   render(<App />)
   pickChapter(7)
   expect(screen.getByText(/15 new words/)).toBeTruthy()
-  expect(screen.queryByText('All prepositions', { selector: 'nav button' })).toBeNull()
+  expect(screen.queryByText('All prepositions', { selector: 'header nav button' })).toBeNull()
   nav('Genitive & dative')
   expect(document.querySelector('.article-table')!.textContent).toContain('τοῦ')
   expect(document.querySelectorAll('.adj-table')).toHaveLength(8)
@@ -821,11 +827,63 @@ it('chapter 7: genitive and dative charts, and every quiz tab works', () => {
 it('chapter 6: vocabulary only, with flashcards and no test', () => {
   render(<App />)
   pickChapter(6)
-  expect(screen.queryByText('Test', { selector: 'nav button' })).toBeNull()
+  expect(screen.queryByText('Test', { selector: 'header nav button' })).toBeNull()
   expect(screen.queryByText('Take the test')).toBeNull()
   nav('Flashcards')
   expect(screen.getByText(/13 words/)).toBeTruthy()
   fireEvent.click(document.querySelector('.flashcard')!)
   fireEvent.click(screen.getByText('Got it', { exact: false, selector: 'button' }))
   expect(screen.getByText(/1 known/)).toBeTruthy()
+})
+
+it('the chapter pill opens a sheet with the course map; Escape or picking a chapter closes it', () => {
+  render(<App />)
+  pickChapter(12)
+  expect(document.querySelector('.sheet')).toBeNull()
+  expect(document.querySelector('.chapter-pick-num')!.textContent).toBe('Ch 12')
+  fireEvent.click(document.querySelector('.chapter-pick')!)
+  expect(screen.getByRole('dialog', { name: 'Choose a chapter' })).toBeTruthy()
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(document.querySelector('.sheet')).toBeNull()
+  fireEvent.click(document.querySelector('.chapter-pick')!)
+  fireEvent.click(document.querySelector('.sheet-backdrop')!)
+  expect(document.querySelector('.sheet')).toBeNull()
+})
+
+it('the nav groups this chapter’s screens under its number', () => {
+  render(<App />)
+  pickChapter(20)
+  const nav = document.querySelector('header nav')!
+  expect(nav.querySelector('.nav-group')!.textContent).toBe('Ch 20')
+  const labels = [...nav.children].map((c) => c.textContent)
+  expect(labels.indexOf('Ch 20')).toBe(2)
+  expect(labels.slice(0, 2)).toEqual(['Home', expect.stringMatching(/^Today/)])
+})
+
+it('the bottom tab bar: Practice lists the chapter’s screens and stays lit inside one', () => {
+  render(<App />)
+  pickChapter(20)
+  const tabBtn = (label: string) => screen.getByText(label, { selector: '.tabbar .tab-label' }).closest('button')!
+  expect(tabBtn('Home').className).toBe('on')
+  fireEvent.click(tabBtn('Practice'))
+  const modes = [...document.querySelectorAll('.practice .mode strong')].map((m) => m.textContent)
+  expect(modes).toContain('Flashcards')
+  fireEvent.click(screen.getByText('Flashcards', { selector: '.practice .mode strong' }))
+  expect(tabBtn('Practice').getAttribute('aria-current')).toBe('page')
+  fireEvent.click(tabBtn('Test'))
+  expect(screen.getByText('Start the test')).toBeTruthy()
+  expect(tabBtn('Test').className).toBe('on')
+})
+
+it('Home suggests one next step, and its button goes there', () => {
+  render(<App />)
+  pickChapter(20)
+  nav('Home')
+  const step = document.querySelector<HTMLButtonElement>('.next-step')!
+  expect(step.querySelector('strong')!.textContent).toMatch(/^(Review what’s due|Start with|Continue:|Take the chapter test|Go on to chapter)/)
+  const movesOn = /Go on to chapter/.test(step.textContent!)
+  fireEvent.click(step)
+  // Either another screen, or Home for the next chapter.
+  if (movesOn) expect(document.querySelector('.chapter-pick-num')!.textContent).toBe('Ch 21')
+  else expect(document.querySelector('.dashboard')).toBeNull()
 })

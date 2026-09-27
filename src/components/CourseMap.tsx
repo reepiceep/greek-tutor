@@ -53,7 +53,7 @@ type Status = ReturnType<typeof chapterStatus>
  * The built chapters, grouped by part of the book: progress per chapter, ✓ once its test is passed. Each part can be
  * collapsed to one line (with a pip per chapter); the current chapter's part opens by default.
  */
-export function CourseMap({ current }: { current: Chapter }) {
+export function CourseMap({ current, onPick, className = '' }: { current: Chapter; onPick?: () => void; className?: string }) {
   const { items, tests } = useProgress()
   const parts = PARTS
     .map((p) => ({ ...p, chapters: CHAPTERS.filter((c) => c.number >= p.from && c.number <= p.to).map((c) => chapterStatus(c, current, items, tests)) }))
@@ -78,7 +78,7 @@ export function CourseMap({ current }: { current: Chapter }) {
   const allOpen = parts.every((p) => open.has(p.title))
 
   return (
-    <nav className="course-map" aria-label="Chapters">
+    <nav className={`course-map ${className}`.trim()} aria-label="Chapters">
       <div className="course-map-head">
         <h2>Chapters</h2>
         <button type="button" className="link" onClick={() => setOpen(allOpen ? new Set() : new Set(parts.map((p) => p.title)))}>
@@ -86,13 +86,15 @@ export function CourseMap({ current }: { current: Chapter }) {
         </button>
       </div>
       {parts.map((part) => (
-        <CoursePart key={part.title} part={part} chapters={part.chapters} open={open.has(part.title)} onToggle={() => toggle(part.title)} />
+        <CoursePart key={part.title} part={part} chapters={part.chapters} open={open.has(part.title)} onToggle={() => toggle(part.title)} onPick={onPick} />
       ))}
     </nav>
   )
 }
 
-function CoursePart({ part, chapters, open, onToggle }: { part: Part; chapters: Status[]; open: boolean; onToggle: () => void }) {
+function CoursePart({ part, chapters, open, onToggle, onPick }: {
+  part: Part; chapters: Status[]; open: boolean; onToggle: () => void; onPick?: () => void
+}) {
   const bodyId = useId()
   const passed = chapters.filter((c) => c.ready).length
   const pct = Math.round(chapters.reduce((sum, c) => sum + (c.ready ? 100 : c.pct), 0) / chapters.length)
@@ -117,7 +119,7 @@ function CoursePart({ part, chapters, open, onToggle }: { part: Part; chapters: 
             <li key={ch.number} className={`stop ${state}`}>
               <button
                 type="button"
-                onClick={() => updateSettings({ chapter: ch.number })}
+                onClick={() => { updateSettings({ chapter: ch.number }); onPick?.() }}
                 aria-current={state === 'current' ? 'step' : undefined}
                 title={`Chapter ${ch.number}: ${ch.title} · ${status}`}
                 aria-label={`Chapter ${ch.number}: ${ch.title}, ${status}`}

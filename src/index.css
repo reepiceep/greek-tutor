@@ -73,6 +73,7 @@
 }
 
 :root {
+  --tabbar-h: 58px;
   accent-color: var(--accent);
   --radius: 10px;
   --greek-font: 'Gentium Book Plus', 'Gentium Plus', 'SBL Greek', 'Noto Serif', serif;
@@ -93,6 +94,9 @@ kbd { border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color
 .greek.big { font-size: 2.6rem; }
 .muted { color: var(--muted); }
 .center { text-align: center; }
+
+/* Keep room for the scrollbar, so locking the page behind the chapter sheet doesn't shift it sideways. */
+html { scrollbar-gutter: stable; }
 
 /* One content width for the header, the nav and every screen, so their left edges line up. */
 .app { max-width: 960px; margin: 0 auto; padding: 0 16px 64px; }
@@ -122,13 +126,16 @@ header { position: sticky; top: 0; z-index: 20; padding: 18px 0 0; margin-bottom
 .brand-tag { color: var(--muted); font-size: 0.8rem; font-style: italic; }
 @media (max-width: 520px) {
   .brand-name .latin, .brand-tag { display: none; }
-  .chapter-pick select { max-width: 200px; }
 }
 .header-tools { display: flex; align-items: center; gap: 8px; }
-.chapter-pick select {
-  font: inherit; font-size: 0.9rem; color: inherit; max-width: 280px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px;
+/* The chapter pill: opens the chapter sheet. */
+.chapter-pick {
+  display: flex; align-items: center; gap: 8px; max-width: 320px; min-width: 0;
+  font-size: 0.9rem; border-radius: 999px; padding: 6px 10px 6px 12px;
 }
+.chapter-pick-num { flex: none; font-weight: 700; color: var(--accent); }
+.chapter-pick-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-pick-chevron { flex: none; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--muted); }
 .theme-toggle { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border-radius: 50%; color: var(--accent); }
 .sr-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 header nav { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 14px; }
@@ -138,6 +145,32 @@ header nav button {
 }
 header nav button:hover:not(:disabled) { color: var(--text); border-bottom-color: var(--border); }
 header nav button.on { color: var(--text); border-bottom-color: var(--accent); background: none; font-weight: 600; }
+/* Between the global screens and this chapter's: a divider with the chapter number. */
+header nav .nav-group {
+  display: flex; align-items: center; margin: 0 6px 0 10px; padding-left: 14px; border-left: 1px solid var(--border);
+  color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+}
+
+/* Chapter sheet: a centered panel on wide screens, a sheet up from the bottom on phones. */
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: start center; padding: 8vh 16px 16px;
+  background: rgb(0 0 0 / 0.35); animation: fade 0.15s ease-out;
+}
+.sheet {
+  width: min(760px, 100%); max-height: 84vh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+  padding: 8px 16px 16px; animation: rise 0.2s ease-out;
+}
+.sheet:focus { outline: none; }
+.sheet .course-map { margin: 0; }
+.sheet-head { position: sticky; top: -8px; z-index: 1; display: flex; justify-content: flex-end; margin: -8px -16px 0; padding: 8px 8px 0; background: var(--bg); }
+.sheet-grip { display: none; }
+.sheet-close { width: 34px; height: 34px; padding: 0; border: none; background: none; color: var(--muted); font-size: 1rem; border-radius: 50%; }
+.sheet-close:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+@keyframes fade { from { opacity: 0; } }
+
+/* Bottom tab bar: phones only. */
+.tabbar { display: none; }
 
 button {
   font: inherit; color: inherit; cursor: pointer;
@@ -357,6 +390,27 @@ header nav .badge {
 .mode-text { display: grid; gap: 2px; }
 .mode-text span { color: var(--muted); font-size: 0.88rem; }
 .readiness { box-shadow: var(--shadow); }
+.mode-text .mode-progress { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.8rem; }
+.mode-progress .meter { flex: 1; max-width: 120px; height: 5px; }
+
+/* Home: Continue */
+.continue { display: grid; gap: 14px; margin-bottom: 28px; }
+.continue .dash-hero { margin: 0; }
+.next-step {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px;
+  text-align: left; font-weight: 400; border-radius: 14px; box-shadow: var(--shadow);
+}
+.next-text { display: grid; gap: 2px; min-width: 0; }
+.next-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; }
+.next-step strong { font-size: 1.15rem; }
+.next-detail { opacity: 0.85; font-size: 0.9rem; }
+.next-arrow { flex: none; font-size: 1.5rem; line-height: 1; transition: transform 0.12s; }
+.next-step:hover:not(:disabled) .next-arrow { transform: translateX(3px); }
+.continue-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.tile { display: grid; gap: 2px; text-align: left; padding: 12px 16px; box-shadow: var(--shadow); }
+.tile .muted { font-size: 0.88rem; }
+.tile.good { border-color: var(--good); background: var(--good-soft); }
+.practice h2 { font-size: 1.6rem; margin: 2px 0 16px; }
 .settings-panel { margin-top: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 12px 16px; }
 .settings-panel > summary { cursor: pointer; font-weight: 600; }
 .settings-panel h3 { margin-top: 20px; }
@@ -565,23 +619,49 @@ header nav .badge {
 
 /* Phones: a compact header, smaller tabs, a shorter card with pinned grade buttons, and a numbers-only chapter map */
 @media (max-width: 560px) {
-  header { padding-top: 10px; margin-bottom: 16px; }
+  /* No section nav on phones (the tab bar replaces it), so the header just scrolls away. */
+  header { position: static; padding: 10px 0 10px; margin-bottom: 16px; }
+  header nav { display: none; }
+  .app { padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom)); }
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgb(0 0 0 / 0.06);
+  }
+  .tabbar button {
+    position: relative; display: grid; place-items: center; align-content: center; gap: 1px; padding: 4px 0;
+    border: none; border-radius: 0; background: none; color: var(--muted); font-size: 0.72rem; font-weight: 600;
+  }
+  .tabbar .tab-glyph { font-size: 1.25rem; line-height: 1.2; }
+  .tabbar button.on { color: var(--accent); }
+  .tabbar button.on::before { content: ''; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+  .tabbar .badge {
+    position: absolute; top: 5px; left: calc(50% + 8px); min-width: 17px; height: 17px; padding: 0 4px; display: grid; place-items: center;
+    border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 0.66rem; font-weight: 700;
+  }
+  .home-map { display: none; }
+  .sheet-backdrop { place-items: end stretch; padding: 0; }
+  .sheet { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; border-bottom: none; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .sheet-head { justify-content: center; }
+  .sheet-grip { display: block; width: 40px; height: 4px; margin: 6px 0 4px; border-radius: 2px; background: var(--border); }
+  .sheet-close { position: absolute; right: 8px; top: 6px; }
+  .next-step { padding: 14px 16px; }
+  .continue-tiles { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tile { padding: 10px 12px; }
   .header-top { flex-wrap: nowrap; gap: 8px; }
   .brand-text { display: none; }
   .brand-mark { width: 38px; height: 38px; font-size: 2rem; }
   .header-tools { flex: 1; min-width: 0; justify-content: flex-end; }
-  .chapter-pick { flex: 1; min-width: 0; }
-  .chapter-pick select { width: 100%; max-width: none; }
-  header nav { margin-top: 8px; }
-  header nav button { padding: 7px 8px; font-size: 0.92rem; }
+  .chapter-pick { flex: 1; max-width: none; justify-content: flex-start; }
+  .chapter-pick-chevron { margin-left: auto; }
 
-  /* The nav and each screen's tabs: one row that scrolls sideways, fading out at the right edge. */
-  header nav, .toolbar .seg {
+  /* Each screen's tabs: one row that scrolls sideways, fading out at the right edge. */
+  .toolbar .seg {
     flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
     padding-right: 24px; mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
   }
-  header nav::-webkit-scrollbar, .toolbar .seg::-webkit-scrollbar { display: none; }
-  header nav button, .toolbar .seg button { flex: none; white-space: nowrap; }
+  .toolbar .seg::-webkit-scrollbar { display: none; }
+  .toolbar .seg button { flex: none; white-space: nowrap; }
   .toolbar .seg { width: 100%; margin: 0 -2px; padding-left: 2px; }
 
   .toolbar { gap: 8px; margin-bottom: 12px; }
@@ -592,7 +672,7 @@ header nav .badge {
 
   .flashcard { min-height: 170px; padding: 16px; }
   .grade-bar {
-    position: sticky; bottom: 0; z-index: 2; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    position: sticky; bottom: var(--tabbar-h); z-index: 2; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
     background: var(--bg); border-top: 1px solid var(--border);
   }
   .grade-bar button { flex: 1; }
