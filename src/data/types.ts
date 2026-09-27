@@ -260,6 +260,10 @@ export interface RuleItem {
   options: string[]
   rule: string
   gloss?: string
+  /** The question under the prompt, when the drill's default doesn't fit (“What gender is it?”). */
+  ask?: string
+  /** The options are English, not Greek. */
+  english?: boolean
 }
 
 /** A verse with τίς (who? what?) or τις (someone, anyone) to identify. */
@@ -275,9 +279,42 @@ export interface TisItem {
   note?: string
 }
 
+/** A verse with one declined word to parse in context, then translate (chapter 10). */
+export interface D3Reading {
+  id: string
+  ref: string
+  /** Greek text (SBLGNT), possibly an excerpt of the verse. */
+  text: string
+  /** The word exactly as in `text`; the first occurrence is highlighted. */
+  word: string
+  /** Id of the chart (in the section's paradigms or `more`) the word comes from. */
+  paradigm: string
+  /** The chart's spelling when the verse's differs (grave accent, or an extra accent before an enclitic). */
+  form?: string
+  case: NounCase
+  number: GrammaticalNumber
+  gender: Gender
+  /** The word it agrees with (πᾶς, εἷς), when that is worth asking. */
+  head?: string
+  decoys?: string[]
+  help?: string
+  translation: string
+  wrong: string[]
+  note?: string
+}
+
 export interface ThirdDeclensionSection {
   /** Words to chart and parse. */
   paradigms: DeclensionParadigm[]
+  /** More of the chapter's words to parse (charts collapsed). */
+  more?: DeclensionParadigm[]
+  /** Which declension, which case (with the article), which gender. */
+  forms?: RuleItem[]
+  /** πᾶς by position: every, all, whole, all things. */
+  pasUses?: RuleItem[]
+  /** εἷς / εἰς, ἕν / ἐν, εἰ / εἶ. */
+  lookalikes?: RuleItem[]
+  readings?: D3Reading[]
   /** Adjective practised for agreement, and the noun phrases it agrees with. */
   agreement: { paradigm: DeclensionParadigm; nouns: NounPhrase[] }
   /** Square of Stops: stop + σ, and stem + ending → form. */

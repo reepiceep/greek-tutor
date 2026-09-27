@@ -4,20 +4,27 @@ import { shuffle } from './progress'
 
 // Questions for chapter 10: the Square of Stops, finding stems, and τίς vs τις.
 
-export type RuleKind = 'stop' | 'stem'
+/** stop + σ, find the stem, declension/case/gender, πᾶς by position, look-alikes. */
+export type RuleKind = 'stop' | 'stem' | 'decl' | 'pas' | 'look'
+
+const ASK: Record<RuleKind, string> = {
+  stop: 'What does it become?', stem: 'What is the stem?', decl: 'Which is it?', pas: 'How is it translated?', look: 'What is it?',
+}
 
 export const ruleItemId = (ch: number, kind: RuleKind, r: RuleItem) => `ch${ch}:${kind}:${r.id}`
 export const tisItemId = (ch: number, t: TisItem) => `ch${ch}:tis:${t.id}`
 
 export function ruleItemQuestion(ch: Chapter, kind: RuleKind, r: RuleItem): ChoiceQuestion {
-  const ask = kind === 'stop' ? 'What does it become?' : 'What is the stem?'
+  const ask = r.ask ?? ASK[kind]
   return {
     id: ruleItemId(ch.number, kind, r),
     prompt: <><span className="greek big">{r.prompt}</span><p className="muted">{r.gloss && <>“{r.gloss}” · </>}{ask}</p></>,
-    options: shuffle(r.options).map((o) => ({ key: o, label: o, greek: true })),
+    options: shuffle(r.options).map((o) => ({ key: o, label: o, greek: !r.english })),
     answer: r.options[0],
     explain: <p>{r.rule}</p>,
-    review: <><span className="greek">{r.prompt} → {r.options[0]}</span></>,
+    review: r.english
+      ? <><span className="greek">{r.prompt}</span> → {r.options[0]}</>
+      : <><span className="greek">{r.prompt} → {r.options[0]}</span></>,
   }
 }
 

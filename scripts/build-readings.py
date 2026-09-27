@@ -30,6 +30,7 @@ BOOKS = {
 PASSAGES = [
     ('jn1', 'Jn', 1, 1, 18, 'In the beginning was the Word'),
     ('1jn1', '1Jn', 1, 1, 10, 'What was from the beginning'),
+    ('1jn4', '1Jn', 4, 1, 6, 'Test the spirits'),
     ('mk1', 'Mk', 1, 1, 15, 'The beginning of the gospel'),
     ('mt5', 'Mt', 5, 3, 12, 'The Beatitudes'),
     ('mt6', 'Mt', 6, 9, 13, 'The Lord’s Prayer'),

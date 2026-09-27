@@ -1,5 +1,6 @@
 import type { ChoiceQuestion, ChoiceResult } from '../components/ChoiceQuiz'
 import { readingModifiesQuestion, readingTranslateQuestion } from './prepReadingQuestions'
+import { MASTER_COLUMNS, MASTER_ROWS, d3Paradigms, d3ReadingQuestion, masterCellQuestion } from './d3ReadingQuestions'
 import { ADJ_READING_SKILLS, adjReadingQuestion, allAdjectives, lexicalFormQuestion, lexicalForms } from './adjReadingQuestions'
 import { chapter08 } from '../data/chapter08'
 import { chapter09 } from '../data/chapter09'
@@ -192,13 +193,15 @@ const SPECS: Record<number, TestSpec> = {
   10: {
     areas: [
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
-      { name: 'Third declension', count: 10, covers: 'Square of Stops, stems, parsing' },
-      { name: 'πᾶς and τίς', count: 6, covers: 'πᾶς agreement; τίς or τις' },
+      { name: 'Third declension', count: 10, covers: 'Square of Stops, stems, parsing, endings, declension and gender' },
+      { name: 'πᾶς, τίς and verses', count: 6, covers: 'πᾶς agreement and meaning; τίς or τις; parsing and translating verses' },
       { name: 'Review', count: 4, covers: 'adjectives (ch 9) and εἰμί (ch 8)' },
     ],
     build: (ch) => {
       const d = ch.thirdDeclension!
-      const parse = take(d.paradigms.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 5)
+      const parse = take(d3Paradigms(ch).flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 3)
+      const [cell] = take(MASTER_COLUMNS.flatMap(({ col }) => MASTER_ROWS.map((row) => ({ col, row }))), 1)
+      const [reading] = take(d.readings ?? [], 1)
       const ch9 = chapter09
       return [
         ...vocabArea(ch),
@@ -206,10 +209,14 @@ const SPECS: Record<number, TestSpec> = {
           ...take(d.stops, 3).map((r) => ruleItemQuestion(ch, 'stop', r)),
           ...take(d.stems, 2).map((r) => ruleItemQuestion(ch, 'stem', r)),
           ...parse.map(({ p, f }) => adjParseQuestion(ch, p, f)),
+          masterCellQuestion(ch, 'true', cell.col, cell.row),
+          ...take(d.forms ?? [], 1).map((r) => ruleItemQuestion(ch, 'decl', r)),
         ]),
-        ...tag('πᾶς and τίς', [
-          ...take(d.agreement.nouns, 3).map((n) => adjAgreeQuestion(ch, d.agreement.paradigm, n)),
-          ...take(d.tis, 3).map((t) => tisQuestion(ch, t)),
+        ...tag('πᾶς, τίς and verses', [
+          ...take(d.agreement.nouns, 1).map((n) => adjAgreeQuestion(ch, d.agreement.paradigm, n)),
+          ...take(d.pasUses ?? [], 1).map((r) => ruleItemQuestion(ch, 'pas', r)),
+          ...take(d.tis, 2).map((t) => tisQuestion(ch, t)),
+          ...(reading ? [d3ReadingQuestion(ch, reading, 'parse'), d3ReadingQuestion(ch, reading, 'translate')] : []),
         ]),
         ...tag('Review', [
           ...take(ch9.adjectives!.uses, 2).map((u) => adjUseQuestion(ch9, u)),

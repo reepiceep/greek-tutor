@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import {
+  MASTER_COLUMNS, MASTER_ROWS, checkEnding, d3ReadingParadigm, d3ReadingQuestion, d3ReadingSkills, masterCellQuestion, masterChart,
+} from '../lib/d3ReadingQuestions'
 import { adjAgreeQuestion, adjParseQuestion, distinctForms, parsingsOf, slotLabel, slotsOf } from '../lib/declensionQuestions'
 import { buildChapterTest } from '../lib/chapterTest'
 import { chapter10 as ch } from './chapter10'
@@ -64,9 +67,66 @@ describe('chapter 10 data', () => {
       const qs = buildChapterTest(ch)
       expect(qs).toHaveLength(30)
       const count = (a: string) => qs.filter((q) => q.area === a).length
-      expect([count('Vocabulary'), count('Third declension'), count('πᾶς and τίς'), count('Review')]).toEqual([10, 10, 6, 4])
+      expect([count('Vocabulary'), count('Third declension'), count('πᾶς, τίς and verses'), count('Review')]).toEqual([10, 10, 6, 4])
       expect(new Set(qs.map((q) => q.id)).size).toBe(30)
       for (const q of qs) expect(q.options.map((o) => o.key)).toContain(q.answer)
+    }
+  })
+})
+
+describe('chapter 10 additions', () => {
+  const d = ch.thirdDeclension!
+  const words = (text: string) => text.split(/[\s,.·;]+/).filter(Boolean)
+
+  it('extra charts match the vocabulary lexical forms', () => {
+    const lexical: Record<string, string> = { σῶμα: 'σῶμα, -ματος, τό', πνεῦμα: 'πνεῦμα, -ατος, τό', Σίμων: 'Σίμων, -ωνος, ὁ', τις: 'τις, τι', οὐδείς: 'οὐδείς, οὐδεμία, οὐδέν' }
+    for (const p of d.more ?? []) expect(p.lexical, p.lemma).toBe(lexical[p.lemma])
+  })
+
+  it('verses parse a word from a known chart, in a slot that form really has', () => {
+    const readings = d.readings ?? []
+    expect(readings.length).toBeGreaterThanOrEqual(15)
+    expect(new Set(readings.map((r) => r.id)).size).toBe(readings.length)
+    for (const r of readings) {
+      expect(r.text, r.id).toContain(r.word)
+      const p = d3ReadingParadigm(ch, r)
+      const slots = parsingsOf(p, r.form ?? r.word).map((s) => `${s.case} ${s.number} ${s.gender}`)
+      expect(slots, r.id).toContain(`${r.case} ${r.number} ${r.gender}`)
+      if (r.head) expect(words(r.text), r.id).toContain(r.head)
+      for (const x of r.decoys ?? []) expect(words(r.text), r.id).toContain(x)
+      expect(new Set(r.wrong).size, r.id).toBe(3)
+      expect(r.wrong, r.id).not.toContain(r.translation)
+      for (const skill of d3ReadingSkills(r)) {
+        const q = d3ReadingQuestion(ch, r, skill)
+        const keys = q.options.map((o) => o.key)
+        expect(keys, `${r.id} ${skill}`).toContain(q.answer)
+        expect(new Set(keys).size, `${r.id} ${skill}`).toBe(keys.length)
+      }
+    }
+  })
+
+  it('rule items have distinct options with the answer first', () => {
+    for (const r of [...(d.forms ?? []), ...(d.pasUses ?? []), ...(d.lookalikes ?? [])]) {
+      expect(new Set(r.options).size, r.id).toBe(r.options.length)
+      expect(r.options.length, r.id).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('the master chart checks endings, alternatives and "no ending"', () => {
+    expect(checkEnding('σι', ['σι(ν)', 'σι', 'σιν'])).toBe(true)
+    expect(checkEnding('α/ν', ['α', 'ν'])).toBe(true)
+    expect(checkEnding('-', ['—'])).toBe(true)
+    expect(checkEnding('', ['—'])).toBe(false)
+    expect(checkEnding('-ος', ['ος'])).toBe(true)
+    expect(checkEnding('ες', ['ος'])).toBe(false)
+    for (const mode of ['true', 'stem'] as const) {
+      for (const { col } of MASTER_COLUMNS) {
+        expect(masterChart(mode)[col]).toHaveLength(MASTER_ROWS.length)
+        for (const row of MASTER_ROWS) {
+          const q = masterCellQuestion(ch, mode, col, row)
+          expect(q.options.map((o) => o.key)).toContain(q.answer)
+        }
+      }
     }
   })
 })

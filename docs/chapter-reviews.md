@@ -8,7 +8,7 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
 |---|---|---|
 | 8. Prepositions and εἰμί | 2026-09-27 | Gaps built (see below) |
 | 9. Adjectives | 2026-09-27 | Gaps built (see below) |
-| 10. Third declension | 2026-09-27 | Reviewed; plan written, waiting to build |
+| 10. Third declension | 2026-09-27 | Gaps built (see below) |
 
 ## Chapter 8: Prepositions and εἰμί
 
@@ -130,7 +130,7 @@ Details of what shipped:
 | 7 | Look-alikes: εἷς/ἕν ("one") vs the prepositions εἰς/ἐν (breathing and accent), and εἰ ("if") vs εἶ ("you are"). | Mounce §10.12 and vocabulary notes |
 | 8 | Lesson points missing: all four hints spelled out (ν drops before σ: τιν + ς → τίς); the adjective categories 2-1-2, 3-1-3, 2-2, 3-3; ὁ δέ "but he"; the εἰ μή "except" idiom; double accusatives. | Mounce §10.6, §10.24–25, vocabulary; workbook summary |
 
-**Plan (not built yet):**
+**What was built (2026-09-27):**
 1. **Read verses for chapter 10** (gaps 1, 7, 8): about 14 SBLGNT verses, mostly the workbook's and Merkle & Plummer's references. Candidates: Mk 9:37, Mt 19:5, Mt 12:48, Jn 3:26, Lk 1:49, Jn 2:21, Mk 10:18 (εἰ μή; double accusative), 1 Cor 12:3, Mt 16:13, 1 Cor 9:22, Lk 7:35, Rom 8:9, 1 Cor 2:12, Col 1:18, Eph 1:15. Each verse asks, in order: parse the highlighted third-declension word, say what it is doing (or which word πᾶς goes with), then translate the whole sentence.
 2. **More parsing** (gap 2): charts for σῶμα, πνεῦμα, Σίμων, τις and οὐδείς, plus a lexical-form question as in chapter 9.
 3. **Declension and gender drill** (gaps 3 and 4): "Which declension?" for mixed forms, "What case is it? Use the article" for -ος, -α and -ι look-alikes, and "What gender is ὄνομα / σάρξ / Σίμων?"
@@ -139,6 +139,18 @@ Details of what shipped:
 6. **Look-alikes** (gap 7): quick questions on εἷς/εἰς, ἕν/ἐν, εἰ/εἶ (and the existing τίς/τις).
 7. **Lesson updates** (gap 8), and the **chapter 10 test** updated to include the new drills.
 8. *Optional:* add 1 John 4:1–6 (the workbook's Review #2 passage) to the Reader.
+
+Details of what shipped (all 8 steps):
+- **Read verses tab:** 16 verses in `src/data/chapter10Extras.ts`, with the questions in `src/lib/d3ReadingQuestions.tsx`. Each asks you to parse the word in context (other parsings of the same form are never wrong answers; the explanation lists them), then, for πᾶς with a noun, which word it agrees with, then to translate.
+- **Parse tab:** now includes σῶμα, πνεῦμα, Σίμων, τις and οὐδείς (collapsed charts on Forms), plus lexical-form questions. The chapter 9 lexical-form question was generalised to nouns.
+- **Declension & gender tab:** 20 rule items (which declension, case through the article, gender).
+- **Case ending chart tab:** type the chart from memory, as Mounce's true endings or with the stem vowel. A dash means "no ending" (a blank never counts). Each cell is a progress item.
+- **πᾶς tab** (was "πᾶς agreement"): agreement mixed with 10 meaning items, plus a lesson on position.
+- **Look-alikes tab:** εἷς/εἰς, ἕν/ἐν, ἕνα, εἰ/εἶ, τί/τι.
+- **Lessons:** the four hints in full, adjective patterns, ὁ δέ, double accusative. The Square of Stops items gain τιν + ς and τιν + σι.
+- **Skills:** lexical form, case ending chart, declension & gender, πᾶς meaning, look-alikes, reading verses.
+- **Chapter 10 test:** "Third declension" adds a chart cell and a declension/gender item; the second area became "πᾶς, τίς and verses" with a verse to parse and translate. Still 30 questions.
+- **Reader:** 1 John 4:1–6, "Test the spirits," added via `scripts/build-readings.py`.
 
 **Left for later (from Merkle & Plummer ch. 14):**
 - Noun variations χάρις (acc χάριν), πίστις (-εως), liquid nouns (πατήρ, ἀνήρ) → chapter 11 review, where those nouns arrive.

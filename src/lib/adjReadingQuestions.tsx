@@ -93,14 +93,18 @@ export const lexicalItemId = (ch: number, p: DeclensionParadigm, form: string) =
 /** Forms worth asking about: not the lexical form itself. */
 export const lexicalForms = (p: DeclensionParadigm) => distinctForms(p).filter((f) => f !== p.lemma)
 
-/** The lexical form of any word with more than one gender is the masculine nominative singular (ἀγαθαῖς → ἀγαθός). */
-export function lexicalFormQuestion(ch: Chapter, p: DeclensionParadigm, form: string): ChoiceQuestion {
-  const nomSg = (g: Gender) => formAt(p, { case: 'nominative', number: 'sg', gender: g })
-  // The trap is the feminine or neuter nominative (ἀγαθή, ἀγαθόν), then other adjectives' lemmas.
-  const traps = [nomSg('feminine'), nomSg('neuter')].filter((f) => f !== p.lemma && f !== form)
-  const others = shuffle(allAdjectives(ch).filter((o) => o.id !== p.id).map((o) => o.lemma))
+/**
+ * The lexical form: the nominative singular, and for a word with more than one gender the masculine (ἀγαθαῖς → ἀγαθός).
+ * `pool` supplies other words' lexical forms as wrong answers (defaults to the chapter's adjectives).
+ */
+export function lexicalFormQuestion(ch: Chapter, p: DeclensionParadigm, form: string, pool: DeclensionParadigm[] = allAdjectives(ch)): ChoiceQuestion {
+  const genders = (['feminine', 'neuter'] as Gender[]).filter((g) => p.forms[g]?.sg)
+  // The trap is the feminine or neuter nominative (ἀγαθή, ἀγαθόν), then other words' lemmas.
+  const traps = genders.map((g) => formAt(p, { case: 'nominative', number: 'sg', gender: g })).filter((f) => f !== p.lemma && f !== form)
+  const others = shuffle(pool.filter((o) => o.id !== p.id && o.lemma !== p.lemma).map((o) => o.lemma))
   const wrong = [...new Set([...traps, ...others])].slice(0, 3)
   const where = parsingsOf(p, form).map((s) => `${s.case} ${s.number} ${s.gender}`)
+  const multi = Object.keys(p.forms).length > 1
   return {
     id: lexicalItemId(ch.number, p, form),
     prompt: <><span className="greek big">{form}</span><p className="muted">What is its lexical form?</p></>,
@@ -108,8 +112,8 @@ export function lexicalFormQuestion(ch: Chapter, p: DeclensionParadigm, form: st
     answer: p.lemma,
     explain: (
       <p>
-        <span className="greek">{form}</span> is {where.join(' or ')}. The lexical form of a word that has more than one gender is its
-        masculine nominative singular: <span className="greek">{p.lexical}</span>.
+        <span className="greek">{form}</span> is {where.join(' or ')}. The lexical form is the {multi ? 'masculine ' : ''}nominative
+        singular: <span className="greek">{p.lexical}</span>.
       </p>
     ),
     review: <><span className="greek">{form}</span> → <span className="greek">{p.lemma}</span></>,

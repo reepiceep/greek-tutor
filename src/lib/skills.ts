@@ -45,6 +45,9 @@ import {
   ADJ_READING_SKILLS, adjReadingItemId, adjReadingQuestion, allAdjectives, lexicalFormQuestion, lexicalForms, lexicalItemId, substItemId,
   substItems, substQuestion,
 } from './adjReadingQuestions'
+import {
+  MASTER_COLUMNS, MASTER_ROWS, d3Paradigms, d3ReadingItemId, d3ReadingQuestion, d3ReadingSkills, masterCellQuestion, masterItemId,
+} from './d3ReadingQuestions'
 import { nounPrepForms, nounPrepItemId, nounPrepQuestion, readingItemId, readingQuestion, readingSkills } from './prepReadingQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
@@ -223,7 +226,35 @@ function buildSkills(ch: Chapter): Skill[] {
         ...(d3?.stems ?? []).map((r) => ({ id: ruleItemId(n, 'stem', r), name: `stem of ${r.prompt}`, make: () => ruleItemQuestion(ch, 'stem', r) })),
       ],
     },
-    { label: '3rd declension: parsing', view: 'declension', items: parseItems(d3?.paradigms ?? []) },
+    { label: '3rd declension: parsing', view: 'declension', items: d3 ? parseItems(d3Paradigms(ch)) : [] },
+    {
+      label: '3rd declension: lexical form', view: 'declension',
+      items: d3 ? d3Paradigms(ch).flatMap((dp) => lexicalForms(dp).map((f) => ({ id: lexicalItemId(n, dp, f), name: `${f} → lexical form`, make: () => lexicalFormQuestion(ch, dp, f, d3Paradigms(ch)) }))) : [],
+    },
+    {
+      label: '3rd declension: case ending chart', view: 'declension',
+      items: d3 ? (['true', 'stem'] as const).flatMap((mode) => MASTER_COLUMNS.flatMap(({ col }) => MASTER_ROWS.map((row) => ({
+        id: masterItemId(n, mode, col, row), name: `${mode === 'true' ? 'ending' : 'ending with stem vowel'}: ${col} ${row}`, make: () => masterCellQuestion(ch, mode, col, row),
+      })))) : [],
+    },
+    {
+      label: '3rd declension: declension & gender', view: 'declension',
+      items: (d3?.forms ?? []).map((r) => ({ id: ruleItemId(n, 'decl', r), name: `${r.prompt}: ${r.ask ?? ''}`, make: () => ruleItemQuestion(ch, 'decl', r) })),
+    },
+    {
+      label: '3rd declension: πᾶς meaning', view: 'declension',
+      items: (d3?.pasUses ?? []).map((r) => ({ id: ruleItemId(n, 'pas', r), name: r.prompt, make: () => ruleItemQuestion(ch, 'pas', r) })),
+    },
+    {
+      label: '3rd declension: look-alikes', view: 'declension',
+      items: (d3?.lookalikes ?? []).map((r) => ({ id: ruleItemId(n, 'look', r), name: `${r.prompt} = ?`, make: () => ruleItemQuestion(ch, 'look', r) })),
+    },
+    {
+      label: '3rd declension: reading verses', view: 'declension',
+      items: (d3?.readings ?? []).flatMap((r) => d3ReadingSkills(r).map((skill) => ({
+        id: d3ReadingItemId(n, r, skill), name: `${r.ref}: ${skill}`, make: () => d3ReadingQuestion(ch, r, skill),
+      }))),
+    },
     {
       label: '3rd declension: πᾶς agreement', view: 'declension',
       items: (d3?.agreement.nouns ?? []).map((nn) => ({

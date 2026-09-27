@@ -140,8 +140,14 @@ it('chapter 10: every third-declension tab works and the test runs', () => {
   render(<App />)
   pickChapter(10)
   nav('3rd declension')
-  expect(document.querySelectorAll('.adj-table')).toHaveLength(5)
-  for (const t of ['Stops & stems', 'Parse', 'πᾶς agreement', 'τίς or τις?']) {
+  // Five main charts, and five more words in a collapsed section.
+  expect(document.querySelectorAll('.adj-tables > .adj-table')).toHaveLength(10)
+  expect(document.querySelectorAll('details .adj-table')).toHaveLength(5)
+  tab('Case ending chart')
+  expect(document.querySelectorAll('.master-chart input')).toHaveLength(40)
+  fireEvent.click(screen.getByText('Check'))
+  expect(screen.getByText('0 / 40')).toBeTruthy()
+  for (const t of ['Stops & stems', 'Parse', 'Declension & gender', 'πᾶς', 'τίς or τις?', 'Look-alikes', 'Read verses']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

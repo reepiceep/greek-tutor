@@ -1,5 +1,6 @@
 import { preposition } from './prepositions'
 import type { Chapter, DeclensionParadigm, NounPhrase, RuleItem, TisItem } from './types'
+import { D3_FORMS, D3_READINGS, LOOKALIKES, MORE_D3, PAS_USES } from './chapter10Extras'
 
 // Mounce, Basics of Biblical Greek (4th ed.), ch. 10: Third Declension.
 // Verse excerpts are from the SBLGNT (CC BY 4.0); translations and other examples are written for this app.
@@ -92,6 +93,8 @@ const STOPS: RuleItem[] = [
   { id: 'onomasi', prompt: 'ὀνοματ + σι(ν)', options: ['ὀνόμασι(ν)', 'ὀνόματσι(ν)', 'ὀνόμαξι(ν)', 'ὀνόματι(ν)'], rule: `${DENTAL} Dative plural of ὄνομα.` },
   { id: 'onoma', prompt: 'ὀνοματ + (no ending)', options: ['ὄνομα', 'ὄνοματ', 'ὄνομας', 'ὀνόματα'], rule: 'τ cannot stand at the end of a word, so it drops: ὄνομα.' },
   { id: 'pas', prompt: 'παντ + ς', options: ['πᾶς', 'πάντς', 'πάνς', 'πάξ'], rule: 'ντ drops out before σ, and the vowel before it lengthens: πᾶς.' },
+  { id: 'tis', prompt: 'τιν + ς', options: ['τίς', 'τίνς', 'τίξ', 'τίψ'], rule: 'ν drops out before σ (Mounce’s third hint): τίς.' },
+  { id: 'tisi', prompt: 'τιν + σι(ν)', options: ['τίσι(ν)', 'τίνσι(ν)', 'τίξι(ν)', 'τίνι(ν)'], rule: 'ν drops out before σ; whatever happens in the nominative singular also happens in the dative plural.' },
   { id: 'pasi', prompt: 'παντ + σι(ν)', options: ['πᾶσι(ν)', 'πάντσι(ν)', 'πάνσι(ν)', 'πάξι(ν)'], rule: 'ντ drops out before σ, and the vowel before it lengthens: πᾶσι(ν).' },
 ]
 
@@ -152,6 +155,11 @@ export const chapter10: Chapter = {
   paradigms: [],
   thirdDeclension: {
     paradigms: [SARX, ONOMA, PAS, TIS, HEIS],
+    more: MORE_D3,
+    forms: D3_FORMS,
+    pasUses: PAS_USES,
+    lookalikes: LOOKALIKES,
+    readings: D3_READINGS,
     agreement: { paradigm: PAS, nouns: PAS_NOUNS },
     stops: STOPS,
     stems: STEMS,
