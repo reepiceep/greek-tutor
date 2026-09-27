@@ -532,6 +532,57 @@ export interface InfinitiveSection {
   items: InfinitiveItem[]
 }
 
+// --- Imperatives (chapter 33) ---
+
+export type ImperativeKind = 'pres-act' | 'pres-mp' | 'aor-act' | 'aor-mid' | 'aor-pass'
+/** The imperative has only 2nd and 3rd persons. */
+export type ImperativeSlot = '2s' | '3s' | '2p' | '3p'
+
+/**
+ * A verb whose imperatives are generated from its stems, unaccented (λυ, λυσ, λαβ, λυθ): the ending goes on and the
+ * accent is recessive. Contract verbs and the few irregulars (εἰπέ, ἐλθέ, ἴσθι) are listed in `irregular`.
+ */
+export interface ImperativeVerb {
+  id: string
+  lemma: string
+  /** "loose": “loose!”, “let him loose”; the passive “be loosed!” uses `pp`. */
+  en: string
+  pp?: string
+  /** Middle-only (ἔρχομαι): middle forms, active meaning. */
+  middleOnly?: boolean
+  present?: string
+  /** First aorist stem with its σ (λυσ; a liquid has none: ἀρ), or a second aorist stem with `second`. */
+  aorist?: string
+  second?: boolean
+  passive?: string
+  /** The stem's last vowel is a long α, ι or υ, so it takes a circumflex before a short ultima (λῦε, λῦσον, ἆρον). */
+  long?: boolean
+  kinds: ImperativeKind[]
+  irregular?: Partial<Record<ImperativeKind, Partial<Record<ImperativeSlot, string>>>>
+}
+
+/** An imperative in a verse, or (for the prohibition drill) μή + aorist subjunctive. */
+export interface ImperativeVerse {
+  id: string
+  ref: string
+  text: string
+  word: string
+  lemma: string
+  kind: ImperativeKind
+  slot: ImperativeSlot
+  /** A prohibition: μή + present imperative, or μή + aorist subjunctive (then `word` is subjunctive, not imperative). */
+  prohibition?: 'imperative' | 'subjunctive'
+  translation: string
+  wrong?: string[]
+  help?: string
+  note?: string
+}
+
+export interface ImperativeSection {
+  verbs: ImperativeVerb[]
+  verses: ImperativeVerse[]
+}
+
 // --- Genitive and dative (chapter 7) ---
 
 /** What a noun is doing in its clause; the case follows from it (subject → nominative, "of" → genitive). */
@@ -682,7 +733,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'infinitive' | 'imperative' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -703,6 +754,7 @@ export interface Chapter {
   participles?: ParticipleSection
   participleUses?: ParticipleUseItem[]
   infinitives?: InfinitiveSection
+  imperatives?: ImperativeSection
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

@@ -345,4 +345,8 @@ export const RECORDINGS: Record<string, Recording> = {
   // Chapter 32
   'δίκαιος': { mounce: B + 'chpt32/words/dikaio.mp3', modern: B + 'chpt32/modern/dikaio.mp3' },
   'μέλλω': { mounce: B + 'chpt32/words/mellw.mp3', modern: B + 'chpt32/modern/mellw.mp3' },
+  // Chapter 33
+  'ἀπόλλυμι': { mounce: B + 'chpt33/words/apollu.mp3', modern: B + 'chpt33/modern/apollu.mp3' },
+  'ἀπολύω': { mounce: B + 'chpt33/words/apoluw.mp3', modern: B + 'chpt33/modern/apoluw.mp3' },
+  'εἴτε': { mounce: B + 'chpt33/words/eite.mp3', modern: B + 'chpt33/modern/eite.mp3' },
 }

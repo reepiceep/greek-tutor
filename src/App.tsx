@@ -12,6 +12,7 @@ import { ParticipleIntro } from './components/ParticipleIntro'
 import { Participles } from './components/Participles'
 import { AdjectivalParticiple } from './components/AdjectivalParticiple'
 import { Infinitive } from './components/Infinitive'
+import { Imperative } from './components/Imperative'
 import { Cases } from './components/Cases'
 import { PresentTense } from './components/PresentTense'
 import { ChapterTest } from './components/ChapterTest'
@@ -110,6 +111,7 @@ export default function App() {
         {(view === 'ptcPresent' || view === 'ptcAorist' || view === 'ptcPerfect') && <Participles key={view} chapter={chapter} view={view} />}
         {view === 'ptcAdjectival' && <AdjectivalParticiple chapter={chapter} />}
         {view === 'infinitive' && <Infinitive chapter={chapter} />}
+        {view === 'imperative' && <Imperative chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
         {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}

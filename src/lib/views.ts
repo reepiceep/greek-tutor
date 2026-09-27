@@ -17,6 +17,7 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   ptcPerfect: { nav: 'Perfect participles', title: 'Perfect participles and genitive absolutes', description: 'λελυκώς and λελυμένος: reduplication, οτ and υια, and genitive absolutes', glyph: 'κώς' },
   subjunctive: { nav: 'Subjunctive', title: 'Subjunctive', description: 'λύω, λύῃς, λύῃ: lengthened vowels, no augment, and ἵνα, ἐάν, “let us”', glyph: 'ῃ' },
   infinitive: { nav: 'Infinitive', title: 'Infinitive', description: 'λύειν, λῦσαι, λυθῆναι: forms, and complementary, purpose, result, time, cause, and τὸ ζῆν', glyph: 'ειν' },
+  imperative: { nav: 'Imperative', title: 'Imperative', description: 'λῦε, λυέτω, λῦσον, λύθητι: commands, “let him …,” and prohibitions with μή', glyph: 'ε!' },
   present: { nav: 'Present tense', title: 'Present active indicative', description: 'λύω and its endings: form, parse and translate, in charts and in verses', glyph: 'ω' },
   contract: { nav: 'Contract verbs', title: 'Contract verbs', description: 'ἀγαπάω, ποιέω, πληρόω: the contraction rules, forms, and verses', glyph: 'ῶ' },
   middle: { nav: 'Middle/passive', title: 'Present middle/passive', description: 'λύομαι and middle-only verbs like ἔρχομαι: endings, forms, active or passive, and verses', glyph: 'μαι' },

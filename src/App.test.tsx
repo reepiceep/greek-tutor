@@ -654,6 +654,24 @@ it('chapter 32: infinitive lesson, every quiz tab, and the test', () => {
   expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
 })
 
+it('chapter 33: imperative lesson, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(33)
+  nav('Imperative')
+  const tables = [...document.querySelectorAll('.endings-table')].map((t) => t.textContent).join(' ')
+  for (const form of ['λῦε', 'λύου', 'λῦσον', 'λῦσαι', 'λύθητι']) expect(tables, form).toContain(form)
+  for (const t of ['Parse', 'Build the form', 'Commands in verses', 'Prohibitions']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

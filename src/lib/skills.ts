@@ -53,6 +53,10 @@ import {
   infinitiveUseId, infinitiveUseQuestion, infinitiveVerseParseId, infinitiveVerseParseQuestion,
 } from './infinitiveQuestions'
 import {
+  imperative, imperativeBuildQuestion, imperativeItemId, imperativeLabel, imperativeParseQuestion, imperativeTriples, imperativeVerseId,
+  imperativeVerseParseQuestion, imperativeVerseTranslateQuestion, parsableVerses, prohibitionQuestion, prohibitionVerses,
+} from './imperativeQuestions'
+import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
 } from './verbIntroQuestions'
@@ -276,6 +280,7 @@ function buildSkills(ch: Chapter): Skill[] {
     ...participleSkills(ch),
     ...participleUseSkills(ch),
     ...infinitiveSkills(ch),
+    ...imperativeSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
   // one card per case; track that here so it shows on the dashboard and in the daily review.
@@ -351,6 +356,32 @@ function participleSkills(ch: Chapter): Skill[] {
           ? [{ id: participleVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => participleVerseTranslateQuestion(ch, v) }]
           : []),
       ]),
+    },
+  ]
+}
+
+/** Chapter 33: imperative forms both ways, commands in verses, and prohibitions. */
+function imperativeSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const view: View = 'imperative'
+  return [
+    {
+      label: 'Imperative: forms', view,
+      items: imperativeTriples(ch).flatMap(({ v, kind, slot }) => [
+        { id: imperativeItemId(n, v, kind, slot, 'parse'), name: `${imperative(v, kind, slot)} = ${imperativeLabel(kind, slot)}`, make: () => imperativeParseQuestion(ch, v, kind, slot) },
+        { id: imperativeItemId(n, v, kind, slot, 'build'), name: `${imperativeLabel(kind, slot)} of ${v.lemma} → ${imperative(v, kind, slot)}`, make: () => imperativeBuildQuestion(ch, v, kind, slot) },
+      ]),
+    },
+    {
+      label: 'Imperative: in verses', view,
+      items: parsableVerses(ch).flatMap((v) => [
+        { id: imperativeVerseId(n, v, 'parse'), name: `${v.word} (${v.ref})`, make: () => imperativeVerseParseQuestion(ch, v) },
+        ...(v.wrong?.length ? [{ id: imperativeVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => imperativeVerseTranslateQuestion(ch, v) }] : []),
+      ]),
+    },
+    {
+      label: 'Imperative: prohibitions', view,
+      items: prohibitionVerses(ch).map((v) => ({ id: imperativeVerseId(n, v, 'prohibition'), name: `μὴ ${v.word} (${v.ref})`, make: () => prohibitionQuestion(ch, v) })),
     },
   ]
 }

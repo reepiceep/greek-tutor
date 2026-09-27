@@ -4,16 +4,15 @@ import { buildChapterTest, testAreas } from '../lib/chapterTest'
 import { infinitive, infinitiveBuildQuestion, infinitiveEnglish, infinitivePairs, infinitiveParseQuestion } from '../lib/infinitiveQuestions'
 import { chapterSkills } from '../lib/skills'
 import { chapter32 as ch } from './chapter32'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 
 const { verbs, items } = ch.infinitives!
 const verb = (id: string) => verbs.find((v) => v.id === id)!
 const forms = (id: string) => verb(id).kinds.map((k) => infinitive(verb(id), k))
 
 describe('chapter 32 data', () => {
-  it('is the latest chapter, with its 2 vocabulary words, each with audio', () => {
-    expect(LATEST_CHAPTER).toBe(32)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with its 2 vocabulary words, each with audio', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(2)
     for (const w of ch.vocab) expect(recordingFor(w.lemma), w.lemma).toBeTruthy()
   })

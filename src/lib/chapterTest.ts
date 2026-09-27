@@ -25,6 +25,10 @@ import {
   infinitiveBuildQuestion, infinitivePairs, infinitiveParseQuestion, infinitiveTranslateQuestion, infinitiveUseQuestion, infinitiveVerseParseQuestion,
 } from './infinitiveQuestions'
 import {
+  imperativeBuildQuestion, imperativeParseQuestion, imperativeTriples, imperativeVerseParseQuestion, imperativeVerseTranslateQuestion,
+  parsableVerses, prohibitionQuestion, prohibitionVerses, translatableImperatives,
+} from './imperativeQuestions'
+import {
   moodPairs, moodQuestion, subjUseQuestion,
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
@@ -710,6 +714,29 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Uses', items.slice(0, 8).map((it) => infinitiveUseQuestion(ch, it))),
         ...tag('Translation', items.slice(8, 14).map((it) => infinitiveTranslateQuestion(ch, it))),
         ...tag('Parsing in verses', items.slice(14, 18).map((it) => infinitiveVerseParseQuestion(ch, it))),
+      ]
+    },
+  },
+  33: {
+    areas: [
+      { name: 'Vocabulary', count: 3, covers: 'ἀπόλλυμι, ἀπολύω and εἴτε, both directions' },
+      { name: 'Imperative forms', count: 11, covers: 'parsing imperatives, and choosing the form for a parsing' },
+      { name: 'Commands in verses', count: 6, covers: 'parsing imperatives in the New Testament' },
+      { name: 'Translation', count: 6, covers: '“loose!”, “let him …,” and telling imperative from indicative' },
+      { name: 'Prohibitions', count: 4, covers: 'μή + present imperative or μή + aorist subjunctive' },
+    ],
+    build: (ch) => {
+      const triples = imperativeTriples(ch)
+      const translate = shuffle(translatableImperatives(ch)).slice(0, 6)
+      return [
+        ...vocabArea(ch),
+        ...tag('Imperative forms', [
+          ...take(triples, 7).map(({ v, kind, slot }) => imperativeParseQuestion(ch, v, kind, slot)),
+          ...take(triples, 4).map(({ v, kind, slot }) => imperativeBuildQuestion(ch, v, kind, slot)),
+        ]),
+        ...tag('Commands in verses', take(parsableVerses(ch), 6).map((v) => imperativeVerseParseQuestion(ch, v))),
+        ...tag('Translation', translate.map((v) => imperativeVerseTranslateQuestion(ch, v))),
+        ...tag('Prohibitions', take(prohibitionVerses(ch), 4).map((v) => prohibitionQuestion(ch, v))),
       ]
     },
   },
