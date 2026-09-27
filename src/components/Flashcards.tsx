@@ -92,6 +92,11 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
 
   const card = deck[0]
 
+  // The deck options fold into one line; open on wide screens, closed on phones so the card comes first.
+  const [optionsOpen, setOptionsOpen] = useState(() => typeof window === 'undefined' || !window.matchMedia?.('(max-width: 560px)').matches)
+  const rangeLabel = range[0] === range[1] ? `Ch ${range[0]}` : `Ch ${range[0]}–${range[1]}`
+  const typesLabel = types.length ? PARTS_OF_SPEECH.filter((p) => types.includes(p.pos)).map((p) => p.label.toLowerCase()).join(', ') : 'all words'
+
   /** Toggle one part of speech; picking every type, or none, means “all.” */
   const toggleType = (pos: PartOfSpeech | 'all') => {
     const available = PARTS_OF_SPEECH.filter((p) => counts[p.pos]).map((p) => p.pos)
@@ -147,12 +152,15 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
+      <details className="deck-options" open={optionsOpen} onToggle={(e) => setOptionsOpen(e.currentTarget.open)}>
+        <summary>
+          <span className="deck-summary">{rangeLabel} · {typesLabel}{hasPrepositions && split ? ' · prepositions by case' : ''}</span>
+          <span className="muted small">{vocabPool(chapters, types).length} words · {deck.length + known} cards</span>
+        </summary>
       <div className="deck-range">
         <span className="muted small">Chapters</span>
         <ChapterRange chapter={chapter} range={range} onChange={(r) => restart(choice, split, r)} />
-        <span className="muted small">
-          {vocabPool(chapters, types).length} words · {deck.length + known} cards{multiChapter && ', the ones you know least first'}
-        </span>
+        {multiChapter && <span className="muted small">The ones you know least come first.</span>}
       </div>
       <div className="deck-types" role="group" aria-label="Word types">
         <span className="muted small">Word types</span>
@@ -174,6 +182,7 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
           <span>Prepositions: one card per case (<span className="greek">μετά</span> + gen, <span className="greek">μετά</span> + acc)</span>
         </label>
       )}
+      </details>
 
       {card ? (
         <>

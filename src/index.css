@@ -94,12 +94,15 @@ kbd { border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color
 .muted { color: var(--muted); }
 .center { text-align: center; }
 
-.app { max-width: 1080px; margin: 0 auto; padding: 0 16px 64px; }
-main { max-width: 760px; margin: 0 auto; }
-main.wide { max-width: none; }
+/* One content width for the header, the nav and every screen, so their left edges line up. */
+.app { max-width: 960px; margin: 0 auto; padding: 0 16px 64px; }
+main { max-width: none; }
+/* Keep lesson prose to a comfortable line length inside the wider column. */
+.lesson :is(p, li) { max-width: 72ch; }
 
 /* Header: brand, chapter pill, theme toggle, then tab nav */
-header { padding: 18px 0 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+/* Sticky with a negative top (set in code to the nav's offset): the brand row scrolls away, the nav stays. */
+header { position: sticky; top: 0; z-index: 20; padding: 18px 0 0; margin-bottom: 28px; background: var(--bg); border-bottom: 1px solid var(--border); }
 .header-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .brand-heading { margin: 0; font-size: inherit; font-weight: inherit; }
 .brand {
@@ -493,6 +496,17 @@ header nav .badge {
 .range-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 400; }
 .range-pick select { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; }
 .deck-range { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 12px; }
+/* Flashcards: the deck options fold into a one-line summary */
+.deck-options { margin: 0 0 16px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.deck-options > summary { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; }
+.deck-options > summary::-webkit-details-marker { display: none; }
+.deck-options > summary::after { content: '▾'; color: var(--muted); transition: transform 0.2s; }
+.deck-options[open] > summary::after { transform: rotate(180deg); }
+.deck-options[open] > summary { margin-bottom: 12px; }
+.deck-summary { flex: 1; font-weight: 600; }
+.deck-options .deck-range, .deck-options .deck-types { margin-bottom: 10px; }
+.deck-options .split-toggle { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .deck-options > summary::after { transition: none; } }
 /* Flashcards: a toggle chip per part of speech; several can be on at once, “All” clears them. */
 .deck-types { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -560,6 +574,15 @@ header nav .badge {
   .chapter-pick select { width: 100%; max-width: none; }
   header nav { margin-top: 8px; }
   header nav button { padding: 7px 8px; font-size: 0.92rem; }
+
+  /* The nav and each screen's tabs: one row that scrolls sideways, fading out at the right edge. */
+  header nav, .toolbar .seg {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+    padding-right: 24px; mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  }
+  header nav::-webkit-scrollbar, .toolbar .seg::-webkit-scrollbar { display: none; }
+  header nav button, .toolbar .seg button { flex: none; white-space: nowrap; }
+  .toolbar .seg { width: 100%; margin: 0 -2px; padding-left: 2px; }
 
   .toolbar { gap: 8px; margin-bottom: 12px; }
   .seg button { padding: 5px 10px; font-size: 0.88rem; }

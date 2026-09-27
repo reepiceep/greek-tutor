@@ -786,7 +786,8 @@ it('flashcards can span a chapter range, and each card counts toward its own cha
   fireEvent.change(screen.getByLabelText('From chapter'), { target: { value: '8' } })
   fireEvent.change(screen.getByLabelText('To chapter'), { target: { value: '12' } })
   // Every word in chapters 8–12 is in the deck: no cap on a round.
-  const words = Number(screen.getByText(/words · \d+ cards, the ones you know least first/).textContent!.match(/(\d+) words/)![1])
+  const words = Number(screen.getByText(/\d+ words · \d+ cards/).textContent!.match(/(\d+) words/)![1])
+  expect(screen.getByText('The ones you know least come first.')).toBeTruthy()
   expect(words).toBeGreaterThan(30)
   expect(screen.getByText(new RegExp(`${words} to go`))).toBeTruthy()
   for (let i = 0; i < words; i++) {
@@ -798,7 +799,7 @@ it('flashcards can span a chapter range, and each card counts toward its own cha
   const chapters = new Set([...saved.matchAll(/"ch(\d+):vocab:/g)].map((m) => m[1]))
   expect(chapters.size).toBeGreaterThan(1)
   fireEvent.click(screen.getByText('This chapter'))
-  expect(screen.queryByText(/the ones you know least first/)).toBeNull()
+  expect(screen.queryByText('The ones you know least come first.')).toBeNull()
 })
 
 it('chapter 7: genitive and dative charts, and every quiz tab works', () => {

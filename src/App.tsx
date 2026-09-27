@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CHAPTERS, getChapter } from './data/chapters'
 import type { TopicView } from './data/types'
 import { Adjectives } from './components/Adjectives'
@@ -31,6 +31,7 @@ import { ThemeToggle } from './components/ThemeToggle'
 import { Today } from './components/Today'
 import { reviewPlan } from './lib/review'
 import { useNow } from './lib/useNow'
+import { useStickyNavTop, useTabsFollowSelection } from './lib/layout'
 
 export type View = 'home' | 'today' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
 
@@ -48,6 +49,15 @@ export default function App() {
     || (chosen === 'test' && !hasTest(chapter.number))
   const view: View = unavailable ? 'home' : chosen
 
+  const headerRef = useRef<HTMLElement>(null)
+  const navRef = useRef<HTMLElement>(null)
+  const headerTop = useStickyNavTop(headerRef, navRef)
+  useTabsFollowSelection()
+  // On a phone the nav scrolls sideways: keep the current screen's tab in view, however it was reached.
+  useEffect(() => {
+    navRef.current?.querySelector('.on')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  }, [view])
+
   const now = useNow()
   const dueNow = reviewPlan(items, now, chapter).totalDue
   const nav: { view: View; label: string; badge?: number }[] = [
@@ -63,7 +73,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <header>
+      <header ref={headerRef} style={{ top: headerTop }}>
         <div className="header-top">
           <h1 className="brand-heading">
             <button type="button" className="brand" onClick={() => setView('home')} title="Home">
@@ -86,7 +96,7 @@ export default function App() {
             <ThemeToggle />
           </div>
         </div>
-        <nav>
+        <nav ref={navRef} aria-label="Sections">
           {nav.map((n) => (
             <button key={n.view} className={view === n.view ? 'on' : ''} onClick={() => setView(n.view)}>
               {n.label}{n.badge ? <span className="badge" aria-label={`${n.badge} due`}>{n.badge}</span> : null}
