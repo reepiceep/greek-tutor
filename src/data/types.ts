@@ -804,3 +804,15 @@ export interface Chapter {
   predicates?: PredicateItem[]
   enclitics?: EncliticItem[]
 }
+
+/** A word in a reading: as printed (with punctuation), lemma, MorphGNT part of speech (e.g. "V", "N", "RA") and parse code. */
+export type ReadingWord = [text: string, lemma: string, pos: string, parse: string]
+
+/** A New Testament passage for the reader. */
+export interface Reading {
+  id: string
+  /** "John 1:1–18" */
+  ref: string
+  title: string
+  verses: { n: number; words: ReadingWord[] }[]
+}

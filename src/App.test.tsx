@@ -863,9 +863,9 @@ it('the nav splits the global screens from this chapter’s with a divider', () 
   render(<App />)
   pickChapter(20)
   const kids = [...document.querySelector('header nav')!.children]
-  expect(kids.findIndex((c) => c.classList.contains('nav-group'))).toBe(2)
-  expect(kids.slice(0, 2).map((c) => c.textContent)).toEqual(['Home', expect.stringMatching(/^Today/)])
-  expect(kids[3].textContent).toBe('Flashcards')
+  expect(kids.findIndex((c) => c.classList.contains('nav-group'))).toBe(3)
+  expect(kids.slice(0, 3).map((c) => c.textContent)).toEqual(['Home', expect.stringMatching(/^Today/), 'Read'])
+  expect(kids[4].textContent).toBe('Flashcards')
 })
 
 it('the bottom tab bar: Practice lists the chapter’s screens and stays lit inside one', () => {
@@ -1023,4 +1023,30 @@ it('Home reminds you to back up once there is progress, until you do or say not 
   }
   expect(created).toHaveLength(1)
   expect(screen.queryByText('Keep your progress safe')).toBeNull()
+})
+
+it('the reader: passages easiest first, and tapping a word shows its meaning and parsing', () => {
+  render(<App />)
+  pickChapter(20)
+  nav('Read')
+  const cards = [...document.querySelectorAll('.reading-card')]
+  expect(cards.length).toBeGreaterThanOrEqual(10)
+  expect(cards[0].querySelectorAll('.reading-known')).toHaveLength(2)
+  fireEvent.click(screen.getByText('In the beginning was the Word'))
+  expect(document.querySelector('.verse')!.textContent).toContain('Ἐν ἀρχῇ ἦν ὁ λόγος')
+  // ἦν: imperfect of εἰμί.
+  const en = [...document.querySelectorAll('.rw')].find((b) => b.textContent === 'ἦν')!
+  fireEvent.click(en)
+  expect(document.querySelector('.word-card-lemma')!.textContent).toContain('εἰμί')
+  expect(document.querySelector('.word-card-parse')!.textContent).toBe('verb: imperfect active indicative, 3rd person singular')
+  // Arrow keys step on to ὁ, the article.
+  fireEvent.keyDown(window, { key: 'ArrowRight' })
+  expect(document.querySelector('.rw.on')!.textContent).toBe('ὁ')
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(document.querySelector('.rw.on')).toBeNull()
+  // Punctuation stays outside the word: λόγος, not λόγος,
+  expect([...document.querySelectorAll('.rw')].some((b) => /[,.·]$/.test(b.textContent!))).toBe(false)
+  fireEvent.click(screen.getByText('Mark as read'))
+  fireEvent.click(screen.getAllByText('All passages', { selector: 'button' })[0])
+  expect(screen.getByText('In the beginning was the Word').closest('.reading-card')!.querySelector('.reading-read')).toBeTruthy()
 })

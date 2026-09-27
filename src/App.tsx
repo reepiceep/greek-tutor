@@ -39,8 +39,9 @@ const ParadigmDrill = lazyScreen(() => import('./components/ParadigmDrill').then
 const PrepositionDrills = lazyScreen(() => import('./components/PrepositionDrills').then((m) => m.PrepositionDrills))
 const PrepositionReview = lazyScreen(() => import('./components/PrepositionReview').then((m) => m.PrepositionReview))
 const VocabQuiz = lazyScreen(() => import('./components/VocabQuiz').then((m) => m.VocabQuiz))
+const Reader = lazyScreen(() => import('./components/Reader').then((m) => m.Reader))
 
-export type View = 'home' | 'today' | 'practice' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
+export type View = 'home' | 'today' | 'practice' | 'reader' | 'flashcards' | 'quiz' | 'review' | 'test' | TopicView
 
 export default function App() {
   const { settings, items } = useProgress()
@@ -82,6 +83,7 @@ export default function App() {
   const global: NavItem[] = [
     { view: 'home', label: 'Home' },
     { view: 'today', label: 'Today', badge: dueNow },
+    { view: 'reader', label: 'Read' },
   ]
   const local: NavItem[] = [
     // Chapters without vocabulary have no flashcards or vocab quiz.
@@ -97,11 +99,12 @@ export default function App() {
     </button>
   )
   // Phones get a bottom bar instead of the nav: every chapter screen is under Practice.
-  const tab: View = view === 'home' || view === 'today' || view === 'test' ? view : 'practice'
+  const tab: View = view === 'home' || view === 'today' || view === 'reader' || view === 'test' ? view : 'practice'
   const tabs: (NavItem & { glyph: string })[] = [
     { view: 'home', label: 'Home', glyph: 'Θ' },
     { view: 'today', label: 'Today', glyph: '★', badge: dueNow },
     { view: 'practice', label: 'Practice', glyph: 'α' },
+    { view: 'reader', label: 'Read', glyph: '¶' },
     ...(test ? [{ view: 'test' as View, label: 'Test', glyph: '✓' }] : []),
   ]
 
@@ -141,6 +144,7 @@ export default function App() {
             {view === 'home' && <Dashboard chapter={chapter} go={setView} />}
             {view === 'today' && <Today chapter={chapter} />}
             {view === 'practice' && <Practice chapter={chapter} go={setView} />}
+        {view === 'reader' && <Reader chapter={chapter} />}
             {view === 'flashcards' && <Flashcards chapter={chapter} />}
             {view === 'quiz' && <VocabQuiz chapter={chapter} />}
             {view === 'paradigm' && <ParadigmDrill chapter={chapter} />}

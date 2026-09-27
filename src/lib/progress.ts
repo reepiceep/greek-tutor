@@ -46,6 +46,8 @@ export interface Settings {
   lastBackup?: number
   /** The backup reminder stays hidden until this time ("Not now"). */
   backupSnoozedUntil?: number
+  /** Reader passages marked as read. */
+  readPassages?: string[]
 }
 
 export interface AreaScore {

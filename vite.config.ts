@@ -45,12 +45,13 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         // Home needs every chapter's data and question builders (for the review and the chapter map), so those load
-        // up front, in a few long-lived files; each screen is its own small file, fetched when first opened.
+        // up front, in a few long-lived files; each screen is its own small file, fetched when first opened. The
+        // reader's passages and code are left out of the groups so they load only with the Read screen.
         codeSplitting: {
           groups: [
             { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
-            { name: 'data', test: /src[\\/]data[\\/]/ },
-            { name: 'drills', test: /src[\\/]lib[\\/]/ },
+            { name: 'data', test: /src[\\/]data[\\/](?!readings)/ },
+            { name: 'drills', test: /src[\\/]lib[\\/](?!reader)/ },
           ],
         },
       },
