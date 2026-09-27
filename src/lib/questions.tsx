@@ -23,7 +23,7 @@ export function vocabQuestion(ch: Chapter, word: VocabWord, dir: Direction): Cho
     options: shuffle([word, ...vocabDistractors(ch, word, 3)]).map((w) => ({ key: w.id, label: label(w), greek: dir === 'e2g' })),
     answer: word.id,
     explain: <WordDetails word={word} autoPlay={dir === 'e2g'} />,
-    review: <><span className="greek">{word.lemma}</span> — {word.gloss}</>,
+    review: <><span className="greek">{displayForm(word)}</span> — {word.gloss}</>,
   }
 }
 

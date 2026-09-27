@@ -93,7 +93,7 @@ export function VocabQuiz({ chapter }: { chapter: Chapter }) {
               <ul className="word-list">
                 {missed.map((a) => (
                   <li key={a.q.word.id}>
-                    <span className="greek">{a.q.word.lemma}</span> — {a.q.word.gloss}
+                    <span className="greek">{displayForm(a.q.word)}</span> — {a.q.word.gloss}
                     {a.given && <span className="muted"> (you: {a.given})</span>}
                   </li>
                 ))}

@@ -144,7 +144,7 @@ export const chapter14: Chapter = {
     { id: 'eirene', lemma: 'εἰρήνη', lexical: 'εἰρήνη, -ης, ἡ', pos: 'noun', gloss: 'peace', hook: 'Irene: a name meaning “peace”; irenic: peaceable.', accept: ['peace'] },
     preposition('enopion'),
     { id: 'epangelia', lemma: 'ἐπαγγελία', lexical: 'ἐπαγγελία, -ας, ἡ', pos: 'noun', gloss: 'promise', hook: 'Same root as ἄγγελος and εὐαγγέλιον: to announce.', accept: ['promise'] },
-    { id: 'hepta', lemma: 'ἑπτά', pos: 'adjective', gloss: 'seven', hook: 'Heptagon: a seven-sided figure.', accept: ['seven', '7'] },
+    { id: 'hepta', lemma: 'ἑπτά', lexical: 'ἑπτά (indeclinable)', pos: 'adjective', gloss: 'seven', hook: 'Heptagon: a seven-sided figure.', accept: ['seven', '7'] },
     { id: 'thronos', lemma: 'θρόνος', lexical: 'θρόνος, -ου, ὁ', pos: 'noun', gloss: 'throne', hook: 'Throne.', accept: ['throne'] },
     { id: 'ierousalem', lemma: 'Ἰερουσαλήμ', lexical: 'Ἰερουσαλήμ, ἡ', pos: 'noun', gloss: 'Jerusalem', accept: ['jerusalem'] },
     preposition('kata'),

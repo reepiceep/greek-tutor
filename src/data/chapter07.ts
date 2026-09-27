@@ -168,7 +168,7 @@ export const chapter07: Chapter = {
     { id: 'kyrios', lemma: 'κύριος', lexical: 'κύριος, -ου, ὁ', pos: 'noun', gloss: 'Lord; lord, master, sir', hook: 'Kyrie eleison: “Lord, have mercy.”', accept: ['lord', 'master', 'sir'] },
     { id: 'me', lemma: 'μή', pos: 'adverb', gloss: 'not, lest', accept: ['not', 'lest'] },
     { id: 'ouranos', lemma: 'οὐρανός', lexical: 'οὐρανός, -οῦ, ὁ', pos: 'noun', gloss: 'heaven, sky', hook: 'Uranus, the planet, is named for the sky god.', accept: ['heaven', 'sky', 'heavens'] },
-    { id: 'houtos-pron', lemma: 'οὗτος', pos: 'pronoun', gloss: 'this (one); he, she, it; these (they)', accept: ['this', 'this one', 'these', 'he', 'she', 'it', 'they'] },
+    { id: 'houtos-pron', lemma: 'οὗτος', lexical: 'οὗτος, αὕτη, τοῦτο', pos: 'pronoun', gloss: 'this (one); he, she, it; these (they)', accept: ['this', 'this one', 'these', 'he', 'she', 'it', 'they'] },
     { id: 'sy', lemma: 'σύ', pos: 'pronoun', gloss: 'you (sg)', accept: ['you', 'you (sg)', 'thou'] },
     { id: 'huios-word', lemma: 'υἱός', lexical: 'υἱός, -οῦ, ὁ', pos: 'noun', gloss: 'son, descendant', accept: ['son', 'descendant'] },
     { id: 'hoste', lemma: 'ὥστε', pos: 'conjunction', gloss: 'therefore; so that', accept: ['therefore', 'so that', 'so'] },

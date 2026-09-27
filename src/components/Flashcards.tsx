@@ -99,7 +99,7 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
       setDeck((d) => d.slice(1))
     } else {
       const key = card.use ? `${card.word.id}:${card.use.case}` : card.word.id
-      const greek = card.use ? caseUseLabel(card.use) : card.word.lemma
+      const greek = card.use ? caseUseLabel(card.use) : displayForm(card.word)
       const gloss = card.use ? card.use.gloss : card.word.gloss
       setMissed((m) => (m.some((x) => x.key === key) ? m : [...m, { key, greek, gloss }]))
       // Missed cards come back at the end of the deck until you know them.

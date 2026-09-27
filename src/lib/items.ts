@@ -36,5 +36,8 @@ export function vocabDistractors(ch: Chapter, w: VocabWord, n: number): VocabWor
   return shuffle(ch.vocab.filter((o) => !synonyms(o, w))).slice(0, n)
 }
 
-/** How a word is shown when you're asked about it: nouns with genitive and article (θάνατος, -ου, ὁ), as in Mounce. */
-export const displayForm = (w: VocabWord) => (w.pos === 'noun' && w.lexical ? w.lexical : w.lemma)
+/**
+ * How a word is shown when you're asked about it, as in Mounce: nouns with genitive and article (θάνατος, -ου, ὁ), and
+ * adjectives and pronouns with their feminine and neuter (ἀγαθός, -ή, -όν), not the masculine alone.
+ */
+export const displayForm = (w: VocabWord) => w.lexical ?? w.lemma

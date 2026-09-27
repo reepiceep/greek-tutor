@@ -168,7 +168,7 @@ export const chapter13: Chapter = {
   vocab: [
     { id: 'gyne', lemma: 'γυνή', lexical: 'γυνή, γυναικός, ἡ', pos: 'noun', gloss: 'woman, wife', hook: 'Gynecology: medicine for women.', accept: ['woman', 'wife'] },
     { id: 'dikaiosyne', lemma: 'δικαιοσύνη', lexical: 'δικαιοσύνη, -ης, ἡ', pos: 'noun', gloss: 'righteousness', hook: 'Same root as δίκη, “justice”: theodicy, defending God’s justice.', accept: ['righteousness', 'justice'] },
-    { id: 'dodeka', lemma: 'δώδεκα', pos: 'adjective', gloss: 'twelve', hook: 'Dodecagon: a twelve-sided figure.', accept: ['twelve', '12'] },
+    { id: 'dodeka', lemma: 'δώδεκα', lexical: 'δώδεκα (indeclinable)', pos: 'adjective', gloss: 'twelve', hook: 'Dodecagon: a twelve-sided figure.', accept: ['twelve', '12'] },
     { id: 'heautou', lemma: 'ἑαυτοῦ', lexical: 'ἑαυτοῦ, -ῆς, -οῦ', pos: 'pronoun', gloss: 'singular: himself, herself, itself; plural: themselves', hook: 'Built on αὐτός, “self”: auto- (automatic, autograph).', accept: ['himself', 'herself', 'itself', 'themselves'] },
     { id: 'ekeinos', lemma: 'ἐκεῖνος', lexical: 'ἐκεῖνος, -η, -ο', pos: 'pronoun', gloss: 'singular: that (man/woman/thing); plural: those', accept: ['that', 'those', 'that one'] },
     { id: 'e', lemma: 'ἤ', pos: 'conjunction', gloss: 'or, than', accept: ['or', 'than'] },

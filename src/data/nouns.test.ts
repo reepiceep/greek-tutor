@@ -17,11 +17,41 @@ describe('noun lexical forms', () => {
     }
   })
 
-  it('nouns are shown in full when asked about; other words by their lemma', () => {
+  it('nouns and adjectives are shown in full when asked about; other words by their lemma', () => {
     const all = CHAPTERS.flatMap((c) => c.vocab)
     expect(displayForm(all.find((w) => w.lemma === 'θάνατος')!)).toBe('θάνατος, -ου, ὁ')
-    expect(displayForm(all.find((w) => w.lemma === 'ἀγαθός')!)).toBe('ἀγαθός')
+    expect(displayForm(all.find((w) => w.lemma === 'ἀγαθός')!)).toBe('ἀγαθός, -ή, -όν')
+    expect(displayForm(all.find((w) => w.lemma === 'οὗτος')!)).toBe('οὗτος, αὕτη, τοῦτο')
     expect(displayForm(all.find((w) => w.lemma === 'ἀλλά')!)).toBe('ἀλλά')
+  })
+})
+
+// Two-termination adjectives list only masculine/feminine and neuter (αἰώνιος, -ον), as in Mounce.
+const TWO_TERMINATION = new Set(['αἰώνιος', 'πλείων', 'μείζων'])
+// Pronouns with no gender forms to list.
+const GENDERLESS = new Set(['ἐγώ', 'σύ', 'ἡμεῖς', 'ὑμεῖς', 'μου', 'κἀγώ', 'ἀλλήλων', 'τίς', 'τις'])
+
+describe('adjective and pronoun lexical forms', () => {
+  it('every adjective shows its masculine, feminine and neuter (or is marked indeclinable)', () => {
+    for (const ch of CHAPTERS) {
+      for (const w of ch.vocab.filter((v) => v.pos === 'adjective')) {
+        expect(w.lexical, `${w.lemma}: has a lexical form`).toBeTruthy()
+        if (w.lexical!.endsWith('(indeclinable)')) continue
+        const parts = w.lexical!.split(', ')
+        expect(parts[0], w.lemma).toBe(w.lemma)
+        expect(parts.length, `${w.lemma}: ${w.lexical}`).toBe(TWO_TERMINATION.has(w.lemma) ? 2 : 3)
+      }
+    }
+  })
+
+  it('every pronoun with gender forms shows them', () => {
+    for (const ch of CHAPTERS) {
+      for (const w of ch.vocab.filter((v) => v.pos === 'pronoun' && !GENDERLESS.has(v.lemma))) {
+        const parts = w.lexical?.split(', ') ?? []
+        expect(parts[0], `${w.lemma}: ${w.lexical}`).toBe(w.lemma)
+        expect(parts.length, `${w.lemma}: ${w.lexical}`).toBe(3)
+      }
+    }
   })
 })
 
