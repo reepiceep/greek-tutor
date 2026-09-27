@@ -78,7 +78,7 @@ export default function App() {
   const dueNow = reviewPlan(items, now, chapter).totalDue
   const test = hasTest(chapter.number)
   type NavItem = { view: View; label: string; badge?: number }
-  // Global screens, then this chapter's own: the nav shows them as two groups.
+  // Global screens, then this chapter's own: the nav shows them as two groups, split by a divider.
   const global: NavItem[] = [
     { view: 'home', label: 'Home' },
     { view: 'today', label: 'Today', badge: dueNow },
@@ -131,7 +131,7 @@ export default function App() {
         </div>
         <nav ref={navRef} aria-label="Sections">
           {global.map(navButton)}
-          <span className="nav-group" aria-hidden="true">Ch {chapter.number}</span>
+          <span className="nav-group" aria-hidden="true" />
           {local.map(navButton)}
         </nav>
       </header>

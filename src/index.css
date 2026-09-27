@@ -152,11 +152,8 @@ header nav button {
 }
 header nav button:hover:not(:disabled) { color: var(--text); border-bottom-color: var(--border); }
 header nav button.on { color: var(--text); border-bottom-color: var(--accent); background: none; font-weight: 600; }
-/* Between the global screens and this chapter's: a divider with the chapter number. */
-header nav .nav-group {
-  display: flex; align-items: center; margin: 0 6px 0 10px; padding-left: 14px; border-left: 1px solid var(--border);
-  color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
-}
+/* Between the global screens and this chapter's: a divider. */
+header nav .nav-group { align-self: center; width: 1px; height: 22px; margin: 0 10px; background: var(--border); }
 
 /* Chapter sheet: a centered panel on wide screens, a sheet up from the bottom on phones. */
 .sheet-backdrop {
@@ -419,7 +416,7 @@ header nav .badge {
   .dash-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
   .dash-side { position: sticky; top: 16px; }
 }
-.dash-main h3:first-of-type { margin-top: 24px; }
+.dash-main h3:first-of-type { margin-top: 0; }
 .dash-side { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 16px 12px; box-shadow: var(--shadow); }
 .dash-side h3 { margin: 0 0 2px; }
 .progress-group h4 {
@@ -443,8 +440,6 @@ header nav .badge {
 .mode-text { display: grid; gap: 2px; }
 .mode-text span { color: var(--muted); font-size: 0.88rem; }
 .readiness { box-shadow: var(--shadow); }
-.mode-text .mode-progress { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.8rem; }
-.mode-progress .meter { flex: 1; max-width: 120px; height: 5px; }
 
 /* Home: Continue */
 .continue { display: grid; gap: 14px; margin-bottom: 28px; }
@@ -460,9 +455,13 @@ header nav .badge {
 .next-arrow { flex: none; font-size: 1.5rem; line-height: 1; transition: transform 0.12s; }
 .next-step:hover:not(:disabled) .next-arrow { transform: translateX(3px); }
 .continue-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.tile { display: grid; gap: 2px; text-align: left; padding: 12px 16px; box-shadow: var(--shadow); }
+.tile { display: grid; align-content: start; gap: 2px; text-align: left; padding: 12px 16px; box-shadow: var(--shadow); }
 .tile .muted { font-size: 0.88rem; }
-.tile.good { border-color: var(--good); background: var(--good-soft); }
+.continue .readiness { margin: 0; align-content: start; }
+.area-details > summary { cursor: pointer; font-size: 0.9rem; color: var(--accent); font-weight: 600; }
+.area-details[open] > summary { margin-bottom: 10px; }
+button.all-practice { justify-self: start; padding: 2px 0; text-decoration: none; font-weight: 600; }
+button.all-practice:hover { text-decoration: underline; }
 .practice h2 { font-size: var(--fs-display); margin: 2px 0 16px; }
 .settings-panel { margin-top: 36px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 12px 16px; }
 .settings-panel > summary { cursor: pointer; font-weight: 600; }
@@ -700,7 +699,7 @@ header nav .badge {
   .sheet-grip { display: block; width: 40px; height: 4px; margin: 6px 0 4px; border-radius: 2px; background: var(--border); }
   .sheet-close { position: absolute; right: 8px; top: 6px; }
   .next-step { padding: 14px 16px; }
-  .continue-tiles { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .continue-tiles { grid-template-columns: 1fr; gap: 8px; }
   .tile { padding: 10px 12px; }
   .header-top { flex-wrap: nowrap; gap: 8px; }
   .brand-text { display: none; }

@@ -217,15 +217,21 @@ it('shows the Theophilus brand, which returns to the home page', () => {
   expect(screen.getByText('Home', { selector: 'header nav button' }).className).toBe('on')
 })
 
+const openSheet = () => fireEvent.click(document.querySelector('.chapter-pick')!)
+
 it('the course map lists every chapter and switches chapter on click', () => {
   render(<App />)
   nav('Home')
+  // Home no longer repeats the map; it lives in the chapter sheet.
+  expect(document.querySelector('.course-map')).toBeNull()
+  openSheet()
   const stops = document.querySelectorAll('.course-map .stop')
   expect(stops.length).toBeGreaterThanOrEqual(7)
   const nouns = screen.getByText('Introduction and nouns').closest('button')!
   if (nouns.getAttribute('aria-expanded') === 'false') fireEvent.click(nouns)
   fireEvent.click(screen.getByText('Adjectives', { selector: '.stop-title' }))
   expect(screen.getByText('Chapter 9', { selector: '.eyebrow' })).toBeTruthy()
+  openSheet()
   expect(document.querySelector('.stop.current .stop-title')!.textContent).toBe('Adjectives')
 })
 
@@ -233,7 +239,7 @@ it('course map parts collapse and expand, remember it, and the current chapter�
   localStorage.clear()
   render(<App />)
   pickChapter(29)
-  nav('Home')
+  openSheet()
   const head = (title: string) => screen.getByText(title, { selector: '.part-title' }).closest('button')!
   const isOpen = (title: string) => head(title).getAttribute('aria-expanded') === 'true'
   expect(isOpen('Participles')).toBe(true)
@@ -254,9 +260,9 @@ it('course map parts collapse and expand, remember it, and the current chapter�
   expect(isOpen('Participles') && isOpen('Introduction and nouns')).toBe(true)
   fireEvent.click(screen.getByText('Collapse all'))
   expect(isOpen('Indicative verbs')).toBe(false)
-  // Picking a chapter in a closed part opens that part.
-  pickChapter(9)
-  nav('Home')
+  // Picking a chapter in a closed part: next time the map opens, that part is open.
+  fireEvent.click(document.querySelector('.sheet .stop button[aria-label^="Chapter 9:"]')!)
+  openSheet()
   expect(isOpen('Introduction and nouns')).toBe(true)
 })
 
@@ -814,7 +820,7 @@ it('flashcards can span a chapter range, and each card counts toward its own cha
 it('chapter 7: genitive and dative charts, and every quiz tab works', () => {
   render(<App />)
   pickChapter(7)
-  expect(screen.getByText(/15 new words/)).toBeTruthy()
+  expect(document.querySelector('.dash-hero .muted')!.textContent).toContain('15 words')
   expect(screen.queryByText('All prepositions', { selector: 'header nav button' })).toBeNull()
   nav('Genitive & dative')
   expect(document.querySelector('.article-table')!.textContent).toContain('τοῦ')
@@ -853,14 +859,13 @@ it('the chapter pill opens a sheet with the course map; Escape or picking a chap
   expect(document.querySelector('.sheet')).toBeNull()
 })
 
-it('the nav groups this chapter’s screens under its number', () => {
+it('the nav splits the global screens from this chapter’s with a divider', () => {
   render(<App />)
   pickChapter(20)
-  const nav = document.querySelector('header nav')!
-  expect(nav.querySelector('.nav-group')!.textContent).toBe('Ch 20')
-  const labels = [...nav.children].map((c) => c.textContent)
-  expect(labels.indexOf('Ch 20')).toBe(2)
-  expect(labels.slice(0, 2)).toEqual(['Home', expect.stringMatching(/^Today/)])
+  const kids = [...document.querySelector('header nav')!.children]
+  expect(kids.findIndex((c) => c.classList.contains('nav-group'))).toBe(2)
+  expect(kids.slice(0, 2).map((c) => c.textContent)).toEqual(['Home', expect.stringMatching(/^Today/)])
+  expect(kids[3].textContent).toBe('Flashcards')
 })
 
 it('the bottom tab bar: Practice lists the chapter’s screens and stays lit inside one', () => {
@@ -876,6 +881,18 @@ it('the bottom tab bar: Practice lists the chapter’s screens and stays lit ins
   fireEvent.click(tabBtn('Test'))
   expect(screen.getByText('Start the test')).toBeTruthy()
   expect(tabBtn('Test').className).toBe('on')
+})
+
+it('Home: the test’s readiness sits beside today’s review, and one link opens the practice list', () => {
+  render(<App />)
+  pickChapter(20)
+  nav('Home')
+  const tiles = document.querySelector('.continue-tiles')!
+  expect(tiles.querySelector('.tile strong')!.textContent).toBe('Today’s review')
+  expect(tiles.querySelector('.readiness strong')!.textContent).toMatch(/^(Chapter test|Ready for the next chapter|Not ready yet)$/)
+  expect(document.querySelector('.dashboard .modes')).toBeNull()
+  fireEvent.click(screen.getByText('All practice for chapter 20 →'))
+  expect(document.querySelector('.practice .mode strong')!.textContent).toBe('Flashcards')
 })
 
 it('Home suggests one next step, and its button goes there', () => {

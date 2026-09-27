@@ -58,16 +58,9 @@ export function CourseMap({ current, onPick, className = '' }: { current: Chapte
   const parts = PARTS
     .map((p) => ({ ...p, chapters: CHAPTERS.filter((c) => c.number >= p.from && c.number <= p.to).map((c) => chapterStatus(c, current, items, tests)) }))
     .filter((p) => p.chapters.length)
-  // The current chapter's part is always open when the map appears; the others are as the viewer left them.
+  // The current chapter's part is always open when the map appears (it lives in the chapter sheet, which opens afresh
+  // each time); the others are as the viewer left them.
   const [open, setOpen] = useState<Set<string>>(() => new Set([...(loadOpen() ?? []), partOf(current)]))
-
-  // Switching to a chapter in a closed part opens that part (adjusted during render, as React recommends for derived state).
-  const currentPart = partOf(current)
-  const [seenPart, setSeenPart] = useState(currentPart)
-  if (seenPart !== currentPart) {
-    setSeenPart(currentPart)
-    if (!open.has(currentPart)) setOpen(new Set(open).add(currentPart))
-  }
   useEffect(() => saveOpen(open), [open])
 
   const toggle = (title: string) => setOpen((o) => {

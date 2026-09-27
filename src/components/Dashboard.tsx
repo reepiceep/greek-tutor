@@ -7,58 +7,24 @@ import {
 } from '../lib/progress'
 import { type Skill, chapterSkills, weakestItems } from '../lib/skills'
 import { nextStep } from '../lib/nextStep'
-import { practiceCards } from '../lib/views'
 import { AreaBars } from './ChapterTest'
-import { CourseMap } from './CourseMap'
 import { reviewPlan, whenDue } from '../lib/review'
 import { useNow } from '../lib/useNow'
 
 export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) {
-  const { items, tests } = useProgress()
+  const { items } = useProgress()
   const skills = chapterSkills(chapter)
   const weak = weakestItems(skills, items, 5)
-  const chapterTests = tests.filter((t) => t.chapter === chapter.number)
-  const latest = chapterTests.at(-1)
-  const best = chapterTests.reduce((m, t) => Math.max(m, t.correct / t.total), 0)
-  const cards = practiceCards(chapter)
 
   return (
     <section className="dashboard">
       <Continue chapter={chapter} go={go} />
-      <CourseMap current={chapter} className="home-map" />
 
       <div className="dash-grid">
         <div className="dash-main">
-          {latest && <div className={`readiness ${latest.ready ? 'good' : ''}`}>
-            <div className="readiness-head">
-              <div>
-                <strong>{latest.ready ? 'Ready for the next chapter' : 'Not ready yet'}</strong>
-                <div className="muted">
-                  Last test {latest.correct}/{latest.total} in {formatTime(latest.seconds)}, {new Date(latest.date).toLocaleDateString()}
-                  {chapterTests.length > 1 && <> · best {Math.round(best * 100)}% · {chapterTests.length} tests</>}
-                </div>
-              </div>
-              <button onClick={() => go('test')}>Take the test again</button>
-            </div>
-            <AreaBars result={latest} />
-          </div>}
-
-          <h3>Practice</h3>
-          <div className="modes">
-            {cards.map((c) => (
-              <button key={c.view} className="mode" onClick={() => go(c.view)}>
-                <span className="mode-glyph greek" aria-hidden="true">{c.glyph}</span>
-                <span className="mode-text">
-                  <strong className={c.greekTitle ? 'greek' : ''}>{c.title}</strong>
-                  <span>{c.description}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {weak.length > 0 && (
+          <h3>Focus on these</h3>
+          {weak.length > 0 ? (
             <>
-              <h3>Focus on these</h3>
               <p className="muted">What you’ve missed most and haven’t learned yet.</p>
               <div className="skills">
                 {weak.map((w) => (
@@ -69,6 +35,8 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
                 ))}
               </div>
             </>
+          ) : (
+            <p className="muted">Nothing yet: the items you miss most in this chapter will show up here.</p>
           )}
         </div>
 
@@ -101,7 +69,9 @@ function Continue({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) 
   const allIds = skills.flatMap((s) => s.items.map((i) => i.id))
   const learnedPct = Math.round(learnedFraction(allIds, items) * 100)
   const started = allIds.some((id) => items[id])
-  const latest = tests.filter((t) => t.chapter === chapter.number).at(-1)
+  const chapterTests = tests.filter((t) => t.chapter === chapter.number)
+  const latest = chapterTests.at(-1)
+  const best = chapterTests.reduce((m, t) => Math.max(m, t.correct / t.total), 0)
   const step = nextStep(chapter, items, tests, plan.totalDue)
   const fresh = plan.fresh.length
 
@@ -134,14 +104,31 @@ function Continue({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) 
           </span>
         </button>
         {hasTest(chapter.number) && (
-          <button className={`tile ${latest?.ready ? 'good' : ''}`} onClick={() => go('test')}>
-            <strong>Chapter test</strong>
-            <span className="muted">
-              {latest ? `Last ${latest.correct}/${latest.total} · ${latest.ready ? 'passed' : 'not passed yet'}` : `30 questions · 90% in every area to pass`}
-            </span>
-          </button>
+          <div className={`readiness ${latest?.ready ? 'good' : ''}`}>
+            <div className="readiness-head">
+              <div>
+                <strong>{latest ? (latest.ready ? 'Ready for the next chapter' : 'Not ready yet') : 'Chapter test'}</strong>
+                <div className="muted">
+                  {latest ? (
+                    <>
+                      Last test {latest.correct}/{latest.total} in {formatTime(latest.seconds)}, {new Date(latest.date).toLocaleDateString()}
+                      {chapterTests.length > 1 && <> · best {Math.round(best * 100)}% · {chapterTests.length} tests</>}
+                    </>
+                  ) : <>30 questions. Score 90% in every area to be ready for chapter {chapter.number + 1}.</>}
+                </div>
+              </div>
+              <button onClick={() => go('test')}>{latest ? 'Take the test again' : 'Take the test'}</button>
+            </div>
+            {latest && (
+              <details className="area-details">
+                <summary>Scores by area</summary>
+                <AreaBars result={latest} />
+              </details>
+            )}
+          </div>
         )}
       </div>
+      <button className="link all-practice" onClick={() => go('practice')}>All practice for chapter {chapter.number} →</button>
     </div>
   )
 }
