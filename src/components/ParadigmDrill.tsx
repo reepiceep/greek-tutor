@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { ENCLITIC_FORMS, ENCLITIC_RULES } from '../data/chapter08Eimi'
 import type { Chapter, EncliticRule, Paradigm, ParadigmRow } from '../data/types'
 import {
@@ -51,9 +51,9 @@ export function ParadigmDrill({ chapter }: { chapter: Chapter }) {
 
 // --- Reference -------------------------------------------------------------------------
 
-/** The paradigm with its meanings, which can be hidden for self-testing (like the prepositions reference). */
+/** The paradigm with its meanings. Hide the Greek or the English to test yourself, and click a cell to check it. */
 function Reference({ chapter, paradigm }: { chapter: Chapter; paradigm: Paradigm }) {
-  const [hide, setHide] = useState(false)
+  const [hide, setHide] = useState<'none' | 'greek' | 'english'>('none')
   const [shown, setShown] = useState<Set<string>>(new Set())
   // ἦν is in the chapter's vocabulary rather than the present paradigm; show it under the chart.
   const past = chapter.vocab.find((w) => w.id === 'en')
@@ -67,32 +67,41 @@ function Reference({ chapter, paradigm }: { chapter: Chapter; paradigm: Paradigm
     else next.add(k)
     return next
   })
+  const choose = (h: typeof hide) => { setHide(h); setShown(new Set()) }
+  // A hidden cell is a button that reveals it; a revealed one hides again when clicked.
+  const cell = (k: string, content: ReactNode, hidden: boolean) =>
+    !hidden ? content
+      : shown.has(k)
+        ? <button className="revealed" onClick={() => toggle(k)} title="Hide again">{content}</button>
+        : <button className="reveal" onClick={() => toggle(k)}>show</button>
 
   return (
     <>
       <div className="reference-tools">
-        <label className="check">
-          <input type="checkbox" checked={hide} onChange={(e) => { setHide(e.target.checked); setShown(new Set()) }} />
-          Hide meanings (click a cell to show or hide it)
-        </label>
-        {hide && (
+        <div className="hide-choice" role="group" aria-label="Hide">
+          <span className="muted small">Hide</span>
+          <div className="seg small-seg">
+          <button className={hide === 'none' ? 'on' : ''} onClick={() => choose('none')}>Nothing</button>
+          <button className={hide === 'greek' ? 'on' : ''} onClick={() => choose('greek')}>Greek</button>
+          <button className={hide === 'english' ? 'on' : ''} onClick={() => choose('english')}>English</button>
+          </div>
+        </div>
+        {hide !== 'none' && (
           <div className="seg small-seg">
             <button onClick={() => setShown(new Set(rows.map((r) => r.key)))} disabled={shown.size === rows.length}>Show all</button>
             <button onClick={() => setShown(new Set())} disabled={shown.size === 0}>Hide all</button>
           </div>
         )}
       </div>
+      {hide !== 'none' && <p className="muted small">Say the hidden {hide === 'greek' ? 'Greek form' : 'meaning'}, then click to check it.</p>}
       <table className="reference">
         <thead><tr><th>Form</th><th>Person</th><th>Meaning</th></tr></thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.key}>
-              <th><span className="greek">{r.form}</span></th>
+              <th>{cell(r.key, <span className="greek">{r.form}</span>, hide === 'greek')}</th>
               <td className="muted">{r.label}</td>
-              {!hide ? <td>{r.gloss}</td>
-                : shown.has(r.key)
-                  ? <td><button className="revealed" onClick={() => toggle(r.key)} title="Hide again">{r.gloss}</button></td>
-                  : <td><button className="reveal" onClick={() => toggle(r.key)}>show</button></td>}
+              <td>{cell(r.key, r.gloss, hide === 'english')}</td>
             </tr>
           ))}
         </tbody>

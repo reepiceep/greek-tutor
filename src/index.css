@@ -567,6 +567,7 @@ button.all-practice:hover { text-decoration: underline; }
 .reference .revealed { padding: 0; border: none; background: none; box-shadow: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 .reference .revealed:hover:not(:disabled) { transform: none; text-decoration: underline dotted; text-underline-offset: 3px; }
 .reference-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 8px; }
+.hide-choice { display: flex; align-items: center; gap: 8px; }
 .reference caption { caption-side: top; text-align: left; font-weight: 600; padding: 18px 8px 6px; }
 .reference tr.focus th, .reference tr.focus td { background: var(--accent-soft); }
 .small { font-size: var(--fs-small); }

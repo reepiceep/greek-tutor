@@ -8,6 +8,7 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
 |---|---|---|
 | 8. Prepositions and εἰμί | 2026-09-27 | Gaps built (see below) |
 | 9. Adjectives | 2026-09-27 | Gaps built (see below) |
+| 10. Third declension | 2026-09-27 | Reviewed; plan written, waiting to build |
 
 ## Chapter 8: Prepositions and εἰμί
 
@@ -35,7 +36,9 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
 - Read verses is also in the All prepositions review.
 - The chapter 8 test's Phrases area now has 2 phrases and 2 verse questions.
 
-**Added later at the user's request (2026-09-27):** a *Reference* tab on the εἰμί screen. It shows the present forms and ἦν with their meanings, and the meanings can be hidden and revealed one at a time, like the prepositions reference.
+**Added later at the user's request (2026-09-27):**
+- A *Reference* tab on the εἰμί screen with the present forms and ἦν. You can choose to hide the Greek or the English, then click a cell to check it.
+- Flashcards get a card for each present form of εἰμί (ἐσμέν "we are"), in both directions, whenever chapter 8 is in the deck. They count as verbs for the word-type filter, can be switched off with "Forms of εἰμί," and share progress with the εἰμί identify/produce drills.
 
 **Not built (possible later):**
 - English → Greek phrases (Merkle & Plummer part D).
@@ -99,3 +102,46 @@ Details of what shipped:
 - Mounce's Exegesis section (seven ways the article is used): possibly a reference page.
 - Workbook Chapters 6–9 Review #2 (case functions, noun rules, the article and ending charts): possibly a review quiz.
 - English → Greek sentences (Merkle & Plummer part E).
+
+## Chapter 10: Third declension
+
+**Sources:**
+- Mounce §10.1–10.26;
+- workbook Exercise 10 (master chart from memory, parsing, warm-up α–η, translation 1–10, additional 11–20, summary), plus the Chapters 6–9 Review #2 passage (1 John 4:1–6);
+- Merkle & Plummer ch. 14 (third declension nouns), relevant parts only.
+
+**Already covered before the review:**
+- *Forms*: charts for σάρξ, ὄνομα, πᾶς, τίς and εἷς. The lesson covers the 3rd-declension endings, stem from the genitive, the Square of Stops, τ dropping, ντ + σ, and the -ος / -α look-alikes.
+- *Stops & stems*: stop + σ items and "find the stem" from the lexical form.
+- *Parse*: the five charts.
+- *πᾶς agreement*: πᾶς with nouns of all three declensions.
+- *τίς or τις?*: 16 verses.
+
+**Gaps found:**
+
+| # | Gap | Source |
+|---|---|---|
+| 1 | No full-sentence translation, as in chapters 8–9 before their reviews. | Workbook translation 1–10 and additional 11–20; Merkle & Plummer practice C |
+| 2 | Parsing lacks σῶμα, πνεῦμα (a previous word whose genitive must now be learned), Σίμων, the indefinite τις (accented differently from τίς) and οὐδείς. | Workbook parsing (σῶμα, πνεύματα, τινες…); Mounce vocabulary and previous words |
+| 3 | No drill telling 3rd-declension forms from 1st/2nd, or reading a form through its article (-ος: ὁ λόγος vs τῆς σαρκός vs τὸ ἔθνος). | Merkle & Plummer §14.5 #7 and practice B; Mounce §10.16 |
+| 4 | Gender of 3rd-declension nouns isn't drilled: learn the article with the lexical form; -μα nouns are always neuter. | Mounce §10.15; Merkle & Plummer §14.3 and §14.5 #6 |
+| 5 | The Master Case Ending Chart (1st/2nd beside 3rd) is never written out from memory. The lesson shows only the 3rd declension. | Mounce §10.14; workbook Exercise 10 opener |
+| 6 | πᾶς by position isn't taught beyond one line: without the article "every," before the article "all," after it "whole," alone "all (people/things)." | Mounce §10.23; Merkle & Plummer ch. 16 (set aside in the chapter 9 review) |
+| 7 | Look-alikes: εἷς/ἕν ("one") vs the prepositions εἰς/ἐν (breathing and accent), and εἰ ("if") vs εἶ ("you are"). | Mounce §10.12 and vocabulary notes |
+| 8 | Lesson points missing: all four hints spelled out (ν drops before σ: τιν + ς → τίς); the adjective categories 2-1-2, 3-1-3, 2-2, 3-3; ὁ δέ "but he"; the εἰ μή "except" idiom; double accusatives. | Mounce §10.6, §10.24–25, vocabulary; workbook summary |
+
+**Plan (not built yet):**
+1. **Read verses for chapter 10** (gaps 1, 7, 8): about 14 SBLGNT verses, mostly the workbook's and Merkle & Plummer's references. Candidates: Mk 9:37, Mt 19:5, Mt 12:48, Jn 3:26, Lk 1:49, Jn 2:21, Mk 10:18 (εἰ μή; double accusative), 1 Cor 12:3, Mt 16:13, 1 Cor 9:22, Lk 7:35, Rom 8:9, 1 Cor 2:12, Col 1:18, Eph 1:15. Each verse asks, in order: parse the highlighted third-declension word, say what it is doing (or which word πᾶς goes with), then translate the whole sentence.
+2. **More parsing** (gap 2): charts for σῶμα, πνεῦμα, Σίμων, τις and οὐδείς, plus a lexical-form question as in chapter 9.
+3. **Declension and gender drill** (gaps 3 and 4): "Which declension?" for mixed forms, "What case is it? Use the article" for -ος, -α and -ι look-alikes, and "What gender is ὄνομα / σάρξ / Σίμων?"
+4. **Master Case Ending Chart** (gap 5): fill it in from memory, 1st/2nd and 3rd side by side, like the εἰμί chart.
+5. **πᾶς uses** (gap 6): verses and phrases with πᾶς by position ("every," "all," "whole," "all things"), treated as a guideline, as both books say.
+6. **Look-alikes** (gap 7): quick questions on εἷς/εἰς, ἕν/ἐν, εἰ/εἶ (and the existing τίς/τις).
+7. **Lesson updates** (gap 8), and the **chapter 10 test** updated to include the new drills.
+8. *Optional:* add 1 John 4:1–6 (the workbook's Review #2 passage) to the Reader.
+
+**Left for later (from Merkle & Plummer ch. 14):**
+- Noun variations χάρις (acc χάριν), πίστις (-εως), liquid nouns (πατήρ, ἀνήρ) → chapter 11 review, where those nouns arrive.
+- ἔθνος (-ους, ἔθνη) and βασιλεύς (-έως) → the chapters where Mounce introduces them.
+- Merkle & Plummer's ch. 14 vocabulary (αἷμα, πούς, ὕδωρ, φῶς, χείρ…) is spread over later Mounce chapters.
+- English → Greek sentences (practice D).

@@ -32,6 +32,8 @@ export interface Settings {
   autoplay: boolean
   /** Flashcards: one card per preposition + case instead of one per preposition. */
   splitPrepositions?: boolean
+  /** Flashcards: a card for each form of a chapter's paradigm (εἰμί); on unless turned off. */
+  paradigmCards?: boolean
   /** Flashcards: only these parts of speech; empty or unset means every word. */
   flashcardTypes?: PartOfSpeech[]
   /** Set once the user changes autoplay themselves, so the default can change without overriding their choice. */

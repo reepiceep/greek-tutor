@@ -21,7 +21,11 @@ it('renders every view without crashing', () => {
   render(<StrictMode><App /></StrictMode>)
   pickChapter(8)
   nav('Flashcards')
+  // 20 words plus a card for each of εἰμί's six present forms.
+  expect(screen.getByText(/26 to go/)).toBeTruthy()
+  fireEvent.click(screen.getByText(/a card for each/))
   expect(screen.getByText(/20 to go/)).toBeTruthy()
+  fireEvent.click(screen.getByText(/a card for each/))
   nav('Vocab quiz')
   fireEvent.click(screen.getByText('Start'))
   expect(screen.getByText(/^1 of 10$/)).toBeTruthy()
@@ -45,8 +49,12 @@ it('renders every view without crashing', () => {
   nav('εἰμί')
   tab('Reference')
   expect(document.querySelectorAll('.reference tbody tr')).toHaveLength(7)
-  fireEvent.click(screen.getByText(/Hide meanings/))
-  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(7)
+  fireEvent.click(screen.getByText('Greek', { selector: '.reference-tools button' }))
+  expect(document.querySelectorAll('.reference th .reveal')).toHaveLength(7)
+  fireEvent.click(screen.getByText('English', { selector: '.reference-tools button' }))
+  expect(document.querySelectorAll('.reference td .reveal')).toHaveLength(7)
+  fireEvent.click(document.querySelector('.reference .reveal')!)
+  expect(document.querySelectorAll('.reference .revealed')).toHaveLength(1)
 })
 
 it('opens every tab of the all-prepositions review at each range', () => {
@@ -303,13 +311,15 @@ it('flashcards show a noun with its genitive and article', () => {
   pickChapter(8)
   nav('Flashcards')
   const fronts: string[] = []
-  for (let i = 0; i < 20; i++) {
+  // 20 words and εἰμί's six present forms.
+  for (let i = 0; i < 26; i++) {
     fronts.push(document.querySelector('.flashcard')!.textContent!)
     fireEvent.click(document.querySelector('.flashcard')!)
     fireEvent.click(screen.getByText('Got it', { exact: false }))
   }
   expect(fronts).toContain('θάνατος, -ου, ὁ')
   expect(fronts).toContain('ἀλλά')
+  expect(fronts).toContain('ἐσμέν')
 })
 
 it('flashcards can be filtered to one or more parts of speech, and the filter is remembered', () => {
@@ -818,11 +828,15 @@ it('flashcards can span a chapter range, and each card counts toward its own cha
   fireEvent.change(screen.getByLabelText('From chapter'), { target: { value: '8' } })
   fireEvent.change(screen.getByLabelText('To chapter'), { target: { value: '12' } })
   // Every word in chapters 8–12 is in the deck: no cap on a round.
-  const words = Number(screen.getByText(/\d+ words · \d+ cards/).textContent!.match(/(\d+) words/)![1])
+  const summary = screen.getByText(/\d+ words · \d+ cards/).textContent!
+  const words = Number(summary.match(/(\d+) words/)![1])
+  // Chapter 8 adds a card for each of εἰμί's six present forms.
+  const cards = Number(summary.match(/(\d+) cards/)![1])
+  expect(cards).toBe(words + 6)
   expect(screen.getByText('The ones you know least come first.')).toBeTruthy()
   expect(words).toBeGreaterThan(30)
-  expect(screen.getByText(new RegExp(`${words} to go`))).toBeTruthy()
-  for (let i = 0; i < words; i++) {
+  expect(screen.getByText(new RegExp(`${cards} to go`))).toBeTruthy()
+  for (let i = 0; i < cards; i++) {
     fireEvent.click(document.querySelector('.flashcard')!)
     fireEvent.click(screen.getByText('Got it', { exact: false, selector: 'button' }))
   }

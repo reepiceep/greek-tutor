@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { Chapter, PartOfSpeech, VocabWord } from '../data/types'
-import { type Direction, displayForm, prepItemId, vocabItemId } from '../lib/items'
+import type { Chapter, Paradigm, ParadigmRow, PartOfSpeech, VocabWord } from '../data/types'
+import { type Direction, displayForm, paradigmItemId, prepItemId, vocabItemId } from '../lib/items'
 import { rankWeakest, record, updateSettings, useProgress } from '../lib/progress'
 import { type CaseUse, caseUses, firstLetterHint } from '../lib/prepositions'
 import { caseUseLabel } from '../lib/prepGames'
@@ -20,6 +20,8 @@ interface Card {
   dir: Direction
   /** Set when a preposition is split into one card per case. */
   use?: CaseUse
+  /** Set for one form of a paradigm (ἐσμέν “we are”); `word` is then the paradigm's lexical word (εἰμί). */
+  form?: { paradigm: Paradigm; row: ParadigmRow }
 }
 
 type DirChoice = Direction | 'mixed'
@@ -29,16 +31,31 @@ type DirChoice = Direction | 'mixed'
  * Greek → English is "what does μετά + gen mean?", English → Greek is "which preposition + case means 'with'?".
  */
 /** One entry per word (or preposition + case) in the missed list, whichever way round the card was. */
-const missKey = (c: Card) => (c.use ? `${c.word.id}:${c.use.case}` : c.word.id)
+const missKey = (c: Card) => (c.form ? `${c.form.paradigm.id}:${c.form.row.key}` : c.use ? `${c.word.id}:${c.use.case}` : c.word.id)
+
+const formDisplay = (row: ParadigmRow) => row.display ?? row.forms[0]
 
 function cardId(c: Card): string {
+  if (c.form) return paradigmItemId(c.chapter, c.form.paradigm.id, c.form.row, c.dir === 'g2e' ? 'identify' : 'produce')
   return c.use
     ? prepItemId(c.chapter, c.word.id, c.use.case, c.dir === 'g2e' ? 'meaning' : 'case')
     : vocabItemId(c.chapter, c.word, c.dir)
 }
 
 /** Every card in the chosen chapters (of the chosen parts of speech, if any), the ones you know least first. */
-function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean, types: PartOfSpeech[] = []): Card[] {
+/** Paradigm form cards for these chapters (εἰμί in chapter 8), counted as verbs for the word-type filter. */
+function formCards(chapters: Chapter[], dirs: readonly Direction[], types: PartOfSpeech[]): Card[] {
+  if (types.length && !types.includes('verb')) return []
+  return chapters.flatMap((c) => c.paradigms.flatMap((paradigm) => {
+    const word = c.vocab.find((w) => w.id === paradigm.id.split('-')[0]) ?? c.vocab[0]
+    return paradigm.rows.flatMap((row) => dirs.map((dir) => ({ word, chapter: c.number, dir, form: { paradigm, row } })))
+  }))
+}
+
+/** Whether any of these chapters has paradigm forms to make cards from. */
+const hasParadigms = (chapters: Chapter[]) => chapters.some((c) => c.paradigms.length > 0)
+
+function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean, types: PartOfSpeech[] = [], forms = true): Card[] {
   const uses = chapters.flatMap(caseUses)
   const cards = vocabPool(chapters, types).flatMap(({ word, chapter }) => {
     const dirs = choice === 'mixed' ? (['g2e', 'e2g'] as const) : [choice]
@@ -47,7 +64,8 @@ function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean, types
       ? wordUses.flatMap((use) => dirs.map((dir) => ({ word, chapter, dir, use })))
       : dirs.map((dir) => ({ word, chapter, dir }))
   })
-  return rankWeakest(cards, cardId)
+  const dirs = choice === 'mixed' ? (['g2e', 'e2g'] as const) : [choice]
+  return rankWeakest([...cards, ...(forms ? formCards(chapters, dirs, types) : [])], cardId)
 }
 
 /** The back of a single preposition + case card: that case's meaning, with the other cases for comparison. */
@@ -74,23 +92,25 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
   const chapters = chaptersIn(range)
   const multiChapter = chapters.length > 1
   const split = !!settings.splitPrepositions
+  const paradigmCards = settings.paradigmCards !== false
   const allUses = chapters.flatMap(caseUses)
   const counts = countByPos(chapters)
   // A remembered filter only keeps the types these chapters have; none left means every word.
   const types = (settings.flashcardTypes ?? []).filter((t) => counts[t])
   const hasPrepositions = allUses.length > 0 && (!types.length || types.includes('preposition'))
-  const [deck, setDeck] = useState<Card[]>(() => buildDeck([chapter], 'g2e', split, types))
+  const [deck, setDeck] = useState<Card[]>(() => buildDeck([chapter], 'g2e', split, types, paradigmCards))
+  const showFormsToggle = hasParadigms(chapters) && (!types.length || types.includes('verb'))
   const [flipped, setFlipped] = useState(false)
   // Counts grades, so each new card (even the same word coming round again) slides in.
   const [turn, setTurn] = useState(0)
   const [known, setKnown] = useState(0)
   const [missed, setMissed] = useState<{ key: string; greek: string; gloss: string }[]>([])
 
-  const restart = (c: DirChoice, splitCards = split, r = range, t = settings.flashcardTypes ?? []) => {
+  const restart = (c: DirChoice, splitCards = split, r = range, t = settings.flashcardTypes ?? [], forms = paradigmCards) => {
     const rangeCounts = countByPos(chaptersIn(r))
     setChoice(c)
     setRange(r)
-    setDeck(buildDeck(chaptersIn(r), c, splitCards, t.filter((x) => rangeCounts[x])))
+    setDeck(buildDeck(chaptersIn(r), c, splitCards, t.filter((x) => rangeCounts[x]), forms))
     setFlipped(false)
     setKnown(0)
     setMissed([])
@@ -121,16 +141,16 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
       setDeck((d) => d.slice(1))
     } else {
       const key = missKey(card)
-      const greek = card.use ? caseUseLabel(card.use) : displayForm(card.word)
-      const gloss = card.use ? card.use.gloss : card.word.gloss
+      const greek = card.form ? formDisplay(card.form.row) : card.use ? caseUseLabel(card.use) : displayForm(card.word)
+      const gloss = card.form ? card.form.row.gloss : card.use ? card.use.gloss : card.word.gloss
       setMissed((m) => (m.some((x) => x.key === key) ? m : [...m, { key, greek, gloss }]))
       // Missed cards come back at the end of the deck until you know them.
       setDeck((d) => [...d.slice(1), d[0]])
     }
   }
 
-  // The Greek is on screen: the front of a Greek → English card, or any card once flipped.
-  const greekVisible = !!card && (card.dir === 'g2e' || flipped)
+  // The Greek is on screen: the front of a Greek → English card, or any card once flipped. Paradigm forms have no recording.
+  const greekVisible = !!card && !card.form && (card.dir === 'g2e' || flipped)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -189,6 +209,15 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
           <span>Prepositions: one card per case (<span className="greek">μετά</span> + gen, <span className="greek">μετά</span> + acc)</span>
         </label>
       )}
+      {showFormsToggle && (
+        <label className="check split-toggle">
+          <input type="checkbox" checked={paradigmCards} onChange={(e) => {
+            updateSettings({ paradigmCards: e.target.checked })
+            restart(choice, split, range, settings.flashcardTypes ?? [], e.target.checked)
+          }} />
+          <span>Forms of <span className="greek">εἰμί</span>: a card for each (<span className="greek">ἐσμέν</span> “we are”)</span>
+        </label>
+      )}
       </details>
 
       {card ? (
@@ -200,7 +229,16 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
           </p>
           <button key={turn} className={`flashcard ${flipped ? 'flipped' : ''}`} onClick={() => setFlipped((f) => !f)}>
             {!flipped ? (
-              card.use
+              card.form
+                ? card.dir === 'g2e'
+                  ? <span className="greek big">{formDisplay(card.form.row)}</span>
+                  : (
+                    <span className="case-front">
+                      <span className="big">{card.form.row.gloss}</span>
+                      <span className="muted">a form of <span className="greek">{card.word.lemma}</span></span>
+                    </span>
+                  )
+              : card.use
                 ? card.dir === 'g2e'
                   ? <span><span className="greek big">{card.word.lemma}</span> <span className="plus">+</span> <CaseTag c={card.use.case} /></span>
                   : (
@@ -215,6 +253,12 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
                 : card.dir === 'g2e'
                   ? <span className="greek big">{displayForm(card.word)}</span>
                   : <span className="big">{card.word.gloss}</span>
+            ) : card.form ? (
+              <span className="case-front">
+                <span className="greek big">{formDisplay(card.form.row)}</span>
+                <span className="big">{card.form.row.gloss}</span>
+                <span className="muted small">{card.form.row.label} of <span className="greek">{card.word.lemma}</span> ({card.form.paradigm.title.split('—').at(-1)?.trim()})</span>
+              </span>
             ) : card.use ? (
               <CaseCardBack word={card.word} use={card.use} />
             ) : (
