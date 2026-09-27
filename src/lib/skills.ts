@@ -37,7 +37,7 @@ import {
   contractionQuestion, inVoice, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
   redupItemId, redupQuestion, PASSIVE_RULES, passiveRuleItemId, passiveRuleQuestion, aoristFormItemId, aoristFormQuestion, augmentItemId, augmentQuestion, hasFutureForm, inTense, rootItemId, rootQuestion, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
-  verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
+  verseParseQuestion, voiceItemId, voicePairs, voiceQuestion, inMood, moodItemId, moodPairs, moodQuestion, subjUseItemId, subjUseQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
@@ -45,7 +45,7 @@ import { TOPIC_META } from './views'
 import { PARTICIPLE_AREAS, participleItemId, participleQuestion } from './participleIntroQuestions'
 import {
   parsingLabel, participleBuildId, participleBuildQuestion, participleCharts, participleParseId, participleParseQuestion, participleTenseId,
-  participleTenseQuestion, participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion, tenseChoices,
+  participleTenseQuestion, participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion, tenseChoices, absoluteId, absoluteQuestion, absoluteVerses,
 } from './participleQuestions'
 import { participleUseId, participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
@@ -310,8 +310,9 @@ function participleSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const charts = participleCharts(ch)
   if (!charts.length) return []
-  const aorist = charts.some((c) => c.tense === 'aorist')
-  const [topic, view]: [string, View] = aorist ? ['Aorist participles', 'ptcAorist'] : ['Present participles', 'ptcPresent']
+  const perfect = charts.some((c) => c.tense === 'perfect')
+  const aorist = !perfect && charts.some((c) => c.tense === 'aorist')
+  const [topic, view]: [string, View] = perfect ? ['Perfect participles', 'ptcPerfect'] : aorist ? ['Aorist participles', 'ptcAorist'] : ['Present participles', 'ptcPresent']
   const verses = ch.participles?.verses ?? []
   return [
     {
@@ -332,6 +333,10 @@ function participleSkills(ch: Chapter): Skill[] {
             id: participleTenseId(n, c, form), name: `${form}: ${c.tense}`, make: () => participleTenseQuestion(ch, c, form),
           }))
         : [],
+    },
+    {
+      label: `${topic}: genitive absolutes`, view,
+      items: absoluteVerses(ch).map((v) => ({ id: absoluteId(n, v), name: `${v.word} (${v.ref}): absolute?`, make: () => absoluteQuestion(ch, v) })),
     },
     {
       label: `${topic}: verses`, view,
@@ -424,6 +429,20 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'parse'), name: `${v.word} in ${v.ref} (person)`, make: () => verseParseQuestion(ch, v) },
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
+  }
+  if (pres.verbs.some((v) => v.mood === 'subjunctive')) {
+    const subjForms = { ...forms, label: 'Subjunctive: forms', view: 'subjunctive' as View }
+    const mood: Skill = {
+      label: 'Subjunctive: indicative or subjunctive', view: 'subjunctive',
+      items: moodPairs(ch).map(({ v, slot, mood: m }) => ({
+        id: moodItemId(n, v, slot, m), name: `${presentDisplay(inMood(v, m), slot)}: ${m} ${SLOT_LABEL[slot]}`, make: () => moodQuestion(ch, v, slot, m),
+      })),
+    }
+    const uses: Skill = {
+      label: 'Subjunctive: why subjunctive', view: 'subjunctive',
+      items: pres.verses.filter((v) => v.use).map((v) => ({ id: subjUseItemId(n, v), name: `${v.word} in ${v.ref}: ${v.use}`, make: () => subjUseQuestion(ch, v) })),
+    }
+    return [subjForms, mood, uses, { ...verses, label: 'Subjunctive: in verses', view: 'subjunctive' }]
   }
   const tenseSkill = (label: string): Skill => ({
     label: `${topic}: ${label}`, view,

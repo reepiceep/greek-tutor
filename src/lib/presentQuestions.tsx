@@ -1,5 +1,5 @@
 import type { ChoiceQuestion } from '../components/ChoiceQuiz'
-import type { Chapter, ContractVowel, Paradigm, PersonSlot, PresentVerb, PresentVerse, RootItem } from '../data/types'
+import type { Chapter, ContractVowel, Paradigm, PersonSlot, PresentVerb, PresentVerse, RootItem, SubjunctiveUse } from '../data/types'
 import { shuffle } from './progress'
 
 // Questions for chapters 16–19: the present and future indicative. Every form is generated from the verb's stem,
@@ -89,6 +89,12 @@ export const PERF_ENDINGS: Record<PersonSlot, string> = { '1s': 'α', '2s': 'α�
 /** Perfect middle/passive: the primary endings straight onto the stem, with no connecting vowel. */
 export const PERF_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'μαι', '2s': 'σαι', '3s': 'ται', '1p': 'μεθα', '2p': 'σθε', '3p': 'νται' }
 
+/** Subjunctive: the connecting vowel lengthens (ο → ω, ε → η; ει → ῃ) before the primary endings. */
+export const SUBJ_ENDINGS: Record<PersonSlot, string> = { '1s': 'ω', '2s': 'ῃς', '3s': 'ῃ', '1p': 'ωμεν', '2p': 'ητε', '3p': 'ωσι(ν)' }
+export const SUBJ_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'ωμαι', '2s': 'ῃ', '3s': 'ηται', '1p': 'ωμεθα', '2p': 'ησθε', '3p': 'ωνται' }
+/** The aorist passive subjunctive: θε + ω contracts, so the accent falls on the ending (λυθῶ). */
+export const SUBJ_PASSIVE_ENDINGS: Record<PersonSlot, string> = { '1s': 'ῶ', '2s': 'ῇς', '3s': 'ῇ', '1p': 'ῶμεν', '2p': 'ῆτε', '3p': 'ῶσι(ν)' }
+
 const DIPHTHONGS = new Set(['αι', 'ει', 'οι', 'υι', 'αυ', 'ευ', 'ου', 'ηυ'])
 const MARK = /[\u0300-\u036f]/
 
@@ -149,11 +155,13 @@ const secondary = (v: PresentVerb) => v.tense === 'imperfect' || v.tense === 'ao
 /** The future and aorist have separate passives (chapters 23–24), so their middle/passive endings are simply middle. */
 export const voiceName = (v: PresentVerb) => (v.passiveForm ? 'passive' : !v.voice ? 'active' : v.tense === 'future' || v.tense === 'aorist' ? 'middle' : 'middle/passive')
 export const tenseName = (v: PresentVerb) => v.tense ?? 'present'
+export const moodName = (v: PresentVerb) => v.mood ?? 'indicative'
 const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
 export const plainEndingsOf = (v: PresentVerb) =>
-  v.tense === 'perfect' ? (v.voice ? PERF_MP_ENDINGS : PERF_ENDINGS)
+  v.mood === 'subjunctive' ? (v.passiveForm ? SUBJ_PASSIVE_ENDINGS : v.voice ? SUBJ_MP_ENDINGS : SUBJ_ENDINGS)
+    : v.tense === 'perfect' ? (v.voice ? PERF_MP_ENDINGS : PERF_ENDINGS)
     : v.passiveForm && v.tense === 'aorist' ? AORP_ENDINGS
     : v.firstAorist && v.tense === 'aorist' ? (v.voice ? AOR1_MP_ENDINGS : AOR1_ENDINGS)
     : secondary(v) ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
@@ -161,7 +169,7 @@ const endingVowelOf = (v: PresentVerb) =>
   secondary(v) ? (v.voice ? IMPF_MP_VOWEL : IMPF_VOWEL) : v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL
 
 export const endingsOf = (v: PresentVerb) =>
-  !v.contract ? plainEndingsOf(v)
+  !v.contract || v.mood ? plainEndingsOf(v)
     : secondary(v) ? (v.voice ? CONTRACT_IMPF_MP : CONTRACT_IMPF)[v.contract]
       : (v.voice ? CONTRACT_MP_ENDINGS : CONTRACT_ENDINGS)[v.contract]
 
@@ -183,7 +191,15 @@ function accentLastVowel(w: string) {
  */
 function formParts(v: PresentVerb, slot: PersonSlot): [string, string] {
   const odd = v.irregular?.[slot]
-  if (odd) return [odd, '']
+  // An irregular form can end in a movable ν too (εἰμί's subjunctive ὦσι(ν)).
+  if (odd) return odd.endsWith('(ν)') ? [odd.slice(0, -3), '(ν)'] : [odd, '']
+  if (v.mood === 'subjunctive') {
+    const e = plainEndingsOf(v)[slot]
+    // λυθῶ carries its accent on the ending; λυώμεθα, like λυόμεθα, can't keep it on the stem.
+    if (v.passiveForm) return [unaccented(v.stem), e]
+    if (v.voice && slot === '1p') return [unaccented(v.stem), `ώ${e.slice(1)}`]
+    return [v.stem, e]
+  }
   if (secondary(v) || v.tense === 'perfect') return imperfectParts(v, slot)
   const e = endingsOf(v)[slot]
   if (v.voice && !v.contract && slot === '1p') return v.athematic ? [accentLastVowel(v.stem), e] : [unaccented(v.stem), `ό${e.slice(1)}`]
@@ -229,7 +245,8 @@ function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
 }
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.tense === 'perfect' ? `${PRONOUN[slot]} ${HAVE[slot]} ${v.voice === 'passive' ? 'been ' : ''}${v.pp}`
+  v.mood === 'subjunctive' ? `${PRONOUN[slot]} may ${v.voice === 'passive' ? `be ${v.pp}` : v.en}`
+    : v.tense === 'perfect' ? `${PRONOUN[slot]} ${HAVE[slot]} ${v.voice === 'passive' ? 'been ' : ''}${v.pp}`
     : v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.passiveForm && v.voice === 'passive' ? `${WAS[slot]} ${v.pp}` : v.past}`
     : v.tense === 'imperfect' ? imperfectEnglish(v, slot)
     : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.voice === 'passive' ? `be ${v.pp}` : v.en}`
@@ -239,7 +256,7 @@ export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
 export function presentParadigm(v: PresentVerb): Paradigm {
   return {
     id: `present-${v.id}`,
-    title: `${v.lemma}: ${tenseName(v)} ${voiceName(v)} indicative`,
+    title: `${v.lemma}: ${tenseName(v)} ${voiceName(v)} ${moodName(v)}`,
     rows: SLOTS.map((s) => ({
       key: s, label: SLOT_LABEL[s], forms: presentForms(v, s), gloss: presentEnglish(v, s),
       ...(s === '3p' ? { display: presentDisplay(v, s) } : {}),
@@ -263,6 +280,10 @@ export const presentVerb = (ch: Chapter, id: string) => verbsOf(ch).find((v) => 
 /** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου), or for a future βλεπ + σ + ω (π + σ → ψ). */
 const breakdown = (v: PresentVerb, slot: PersonSlot) => {
   if (v.irregular?.[slot]) return <>irregular, with no connecting vowel</>
+  if (v.mood === 'subjunctive') {
+    const why = v.passiveForm ? 'θη + ω contracts, so the accent is on the ending' : v.tense === 'aorist' ? 'no augment, and a lengthened connecting vowel' : 'a lengthened connecting vowel'
+    return <><span className="greek">{unaccented(v.stem)} + {plainEndingsOf(v)[slot]}</span> ({why})</>
+  }
   if (v.passiveForm && v.tense === 'aorist') {
     const rule = passiveRuleFor(v)
     return (
@@ -305,7 +326,7 @@ const breakdown = (v: PresentVerb, slot: PersonSlot) => {
 function explainForm(v: PresentVerb, slot: PersonSlot) {
   return (
     <p>
-      <span className="greek">{presentDisplay(v, slot)}</span> = {breakdown(v, slot)}: {SLOT_NAME[slot]}{v.tense && ` ${v.tense}`}{v.voice && ` ${voiceName(v)}`} of{' '}
+      <span className="greek">{presentDisplay(v, slot)}</span> = {breakdown(v, slot)}: {SLOT_NAME[slot]}{v.tense && ` ${v.tense}`}{v.voice && ` ${voiceName(v)}`}{v.mood && ` ${v.mood}`} of{' '}
       <span className="greek">{v.lemma}</span>, “{presentEnglish(v, slot)}.”{v.change && <> {v.change}</>}
     </p>
   )
@@ -414,7 +435,7 @@ function explainVerse(ch: Chapter, v: PresentVerse) {
   return (
     <>
       <p>
-        <span className="greek">{v.word}</span> = {breakdown(verb, v.slot)}: {SLOT_NAME[v.slot]}, {tenseName(verb)} {voiceName(verb)} indicative
+        <span className="greek">{v.word}</span> = {breakdown(verb, v.slot)}: {SLOT_NAME[v.slot]}, {tenseName(verb)} {voiceName(verb)} {moodName(verb)}
         of <span className="greek">{verb.lemma}</span>.
         {verb.voice === 'middle' && (verb.tense === 'future'
           ? <> Its future is middle in form but active in meaning.</>
@@ -752,6 +773,62 @@ export function tenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, ten
     { key: other, label: other, v: inTense(v, other) },
     slot, `${first[0].toUpperCase()}${first.slice(1)} or ${second}, and which person?`,
   )
+}
+
+// --- Subjunctive (chapter 31) ---
+
+export type MoodKey = 'indicative' | 'subjunctive'
+const MOODS = ['indicative', 'subjunctive'] as const
+
+/** The indicative a subjunctive is mistaken for: the present (λύει / λύῃ), or for a first aorist the future (λύσει / λύσῃ). */
+export const inMood = (v: PresentVerb, mood: MoodKey): PresentVerb =>
+  mood === 'subjunctive' ? v : { ...v, mood: undefined, firstAorist: undefined, tense: v.tense === 'aorist' ? 'future' : v.tense }
+
+const moodLabel = (v: PresentVerb, mood: MoodKey) =>
+  mood === 'subjunctive' ? `${tenseName(v)} subjunctive` : `${v.tense === 'aorist' ? 'future' : 'present'} indicative`
+
+/** Only present and first aorist (not liquid) subjunctives have a look-alike indicative, and only forms with one parse. */
+const canContrast = (v: PresentVerb) =>
+  v.mood === 'subjunctive' && !v.passiveForm && !v.irregular && !v.liquid && !v.contract && (!v.tense || !!v.firstAorist)
+
+export const askMood = (v: PresentVerb, slot: PersonSlot, mood: MoodKey) => canContrast(v) && oneParse((m) => inMood(v, m), MOODS, slot, mood)
+export const moodPairs = (ch: Chapter) =>
+  verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => MOODS.filter((mood) => askMood(v, slot, mood)).map((mood) => ({ v, slot, mood }))))
+export const moodItemId = (ch: number, v: PresentVerb, slot: PersonSlot, mood: MoodKey) => `ch${ch}:mood:${v.id}:${slot}:${mood}`
+
+/** λύῃ or λύει? λύσῃ or λύσει? */
+export function moodQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, mood: MoodKey): ChoiceQuestion {
+  const other: MoodKey = mood === 'subjunctive' ? 'indicative' : 'subjunctive'
+  return contrastQuestion(
+    moodItemId(ch.number, v, slot, mood),
+    { key: mood, label: moodLabel(v, mood), v: inMood(v, mood) },
+    { key: other, label: moodLabel(v, other), v: inMood(v, other) },
+    slot, 'Indicative or subjunctive, and which person?',
+  )
+}
+
+export const SUBJUNCTIVE_USES: Record<SubjunctiveUse, { label: string; explain: string }> = {
+  purpose: { label: 'After ἵνα: purpose, “so that …”', explain: 'ἵνα takes the subjunctive: “so that …, in order that ….” After verbs of asking or commanding it gives the content: “that ….”' },
+  condition: { label: 'After ἐάν: a condition, “if …”', explain: 'ἐάν (εἰ + ἄν) takes the subjunctive for a condition that may or may not happen: “if ….”' },
+  hortatory: { label: 'Hortatory: “let us …”', explain: 'A 1st person plural subjunctive on its own urges the speaker and hearers: “let us ….”' },
+  deliberative: { label: 'Deliberative: a real question, “should we …?”', explain: 'A subjunctive in a question asks what to do: “what should we do?”' },
+  emphatic: { label: 'οὐ μή: “never, certainly not”', explain: 'οὐ μή with an aorist subjunctive is the strongest negation: “will never ….”' },
+  indefinite: { label: 'After ὃς ἄν, ὅταν: “whoever …, whenever …”', explain: 'A relative (or ὅταν, “when-ever”) with ἄν makes an indefinite clause with the subjunctive: “whoever …, whenever ….”' },
+}
+
+export const subjUseItemId = (ch: number, v: PresentVerse) => `ch${ch}:subj-use:${v.id}`
+
+/** Why is the highlighted verb subjunctive? */
+export function subjUseQuestion(ch: Chapter, v: PresentVerse): ChoiceQuestion {
+  const use = v.use!
+  return {
+    id: subjUseItemId(ch.number, v),
+    prompt: <>{highlighted(v)}<p className="muted">Why is the highlighted verb subjunctive?</p></>,
+    options: shuffle((Object.keys(SUBJUNCTIVE_USES) as SubjunctiveUse[]).map((u) => ({ key: u, label: SUBJUNCTIVE_USES[u].label }))),
+    answer: use,
+    explain: <><p>{SUBJUNCTIVE_USES[use].explain}</p>{explainVerse(ch, v)}</>,
+    review: <><span className="greek">{v.word}</span> ({v.ref}): {SUBJUNCTIVE_USES[use].label}</>,
+  }
 }
 
 // --- Second aorist (chapter 22) ---

@@ -18,10 +18,11 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import { PARTICIPLE_AREAS, participleQuestion } from './participleIntroQuestions'
 import {
   participleBuildQuestion, participleCharts, participleParseQuestion, participleTenseQuestion, participleVerseParseQuestion,
-  participleVerseTranslateQuestion, tenseChoices, translatableVerses,
+  participleVerseTranslateQuestion, tenseChoices, translatableVerses, absoluteQuestion, absoluteVerses,
 } from './participleQuestions'
 import { participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
+  moodPairs, moodQuestion, subjUseQuestion,
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
   redupQuestion, PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
@@ -636,6 +637,53 @@ const SPECS: Record<number, TestSpec> = {
         ...tag('Use', items.slice(0, 10).map((u) => participleUseQuestion(ch, u))),
         ...tag('Translation', items.slice(10, 18).map((u) => participleUseTranslateQuestion(ch, u))),
         ...tag('Parsing', items.slice(18, 25).map((u) => participleVerseParseQuestion(ch, u))),
+      ]
+    },
+  },
+  30: {
+    areas: [
+      { name: 'Vocabulary', count: 2, covers: 'μηδέ and πρεσβύτερος, both directions' },
+      { name: 'Perfect forms', count: 10, covers: 'parsing perfect participles, and choosing the form for a parsing' },
+      { name: 'Genitive absolutes', count: 8, covers: 'spotting a genitive absolute, and translating it' },
+      { name: 'Verses', count: 10, covers: 'parsing participles of every tense in the New Testament' },
+    ],
+    build: (ch) => {
+      const charts = participleCharts(ch)
+      const absolutes = shuffle(absoluteVerses(ch))
+      const translatable = absolutes.filter((v) => v.absolute && v.wrong?.length)
+      return [
+        ...vocabArea(ch),
+        ...tag('Perfect forms', [
+          ...take(charts.flatMap((c) => distinctForms(c.p).map((form) => ({ c, form }))), 6).map(({ c, form }) => participleParseQuestion(ch, c, form)),
+          ...take(charts.flatMap((c) => slotsOf(c.p).map((s) => ({ c, s }))), 4).map(({ c, s }) => participleBuildQuestion(ch, c, s)),
+        ]),
+        ...tag('Genitive absolutes', [
+          ...absolutes.slice(0, 5).map((v) => absoluteQuestion(ch, v)),
+          ...translatable.filter((v) => !absolutes.slice(0, 5).includes(v)).slice(0, 3).map((v) => participleVerseTranslateQuestion(ch, v)),
+        ]),
+        ...tag('Verses', take(ch.participles!.verses, 10).map((v) => participleVerseParseQuestion(ch, v))),
+      ]
+    },
+  },
+  31: {
+    areas: [
+      { name: 'Vocabulary', count: 2, covers: 'λίθος and τοιοῦτος, both directions' },
+      { name: 'Subjunctive forms', count: 10, covers: 'parsing, translating and choosing present and aorist subjunctives' },
+      { name: 'Indicative or subjunctive', count: 6, covers: 'telling λύει from λύῃ and λύσει from λύσῃ' },
+      { name: 'Why subjunctive', count: 6, covers: 'ἵνα, ἐάν, “let us,” questions, οὐ μή, ὃς ἄν' },
+      { name: 'Verses', count: 6, covers: 'subjunctives in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 10)
+      const withUse = shuffle(pr.verses.filter((v) => v.use))
+      const rest = withUse.slice(6)
+      return [
+        ...vocabArea(ch),
+        ...tag('Subjunctive forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Indicative or subjunctive', take(moodPairs(ch), 6).map(({ v, slot, mood }) => moodQuestion(ch, v, slot, mood))),
+        ...tag('Why subjunctive', withUse.slice(0, 6).map((v) => subjUseQuestion(ch, v))),
+        ...tag('Verses', take(rest.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 6).map(({ v, f }) => f(ch, v))),
       ]
     },
   },

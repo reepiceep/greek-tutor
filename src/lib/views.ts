@@ -14,6 +14,8 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   ptcPresent: { nav: 'Present participles', title: 'Present adverbial participles', description: 'λύων and λυόμενος: ντ and μενο/η, agreement, “while,” and verses', glyph: 'ων' },
   ptcAorist: { nav: 'Aorist participles', title: 'Aorist adverbial participles', description: 'λύσας, λαβών, λυθείς: σα, second aorists, θε, “after,” and present or aorist', glyph: 'σας' },
   ptcAdjectival: { nav: 'Adjectival participles', title: 'Adjectival participles', description: 'ὁ πιστεύων: the article, attributive or substantival, and “the one who …”', glyph: 'ὁ' },
+  ptcPerfect: { nav: 'Perfect participles', title: 'Perfect participles and genitive absolutes', description: 'λελυκώς and λελυμένος: reduplication, οτ and υια, and genitive absolutes', glyph: 'κώς' },
+  subjunctive: { nav: 'Subjunctive', title: 'Subjunctive', description: 'λύω, λύῃς, λύῃ: lengthened vowels, no augment, and ἵνα, ἐάν, “let us”', glyph: 'ῃ' },
   present: { nav: 'Present tense', title: 'Present active indicative', description: 'λύω and its endings: form, parse and translate, in charts and in verses', glyph: 'ω' },
   contract: { nav: 'Contract verbs', title: 'Contract verbs', description: 'ἀγαπάω, ποιέω, πληρόω: the contraction rules, forms, and verses', glyph: 'ῶ' },
   middle: { nav: 'Middle/passive', title: 'Present middle/passive', description: 'λύομαι and middle-only verbs like ἔρχομαι: endings, forms, active or passive, and verses', glyph: 'μαι' },

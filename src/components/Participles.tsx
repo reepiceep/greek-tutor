@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import type { Chapter, TopicView } from '../data/types'
+import type { Chapter } from '../data/types'
 import { distinctForms, slotsOf } from '../lib/declensionQuestions'
 import {
   participleBuildId, participleBuildQuestion, participleCharts, participleParadigm, participleParseId, participleParseQuestion,
   participleTenseId, participleTenseQuestion, participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion, tenseChoices,
+  absoluteId, absoluteQuestion, absoluteVerses,
 } from '../lib/participleQuestions'
 import { pickWeakest } from '../lib/progress'
 import { TOPIC_META } from '../lib/views'
@@ -11,18 +12,21 @@ import { ChoiceQuiz } from './ChoiceQuiz'
 import { DeclensionTable } from './DeclensionTable'
 import { Lesson } from './Lesson'
 
-type Tab = 'lesson' | 'parse' | 'build' | 'tense' | 'verses'
+type Tab = 'lesson' | 'parse' | 'build' | 'tense' | 'absolute' | 'verses'
 
-const TABS: { tab: Tab; label: string; aoristOnly?: boolean }[] = [
+type ParticipleView = 'ptcPresent' | 'ptcAorist' | 'ptcPerfect'
+
+const TABS: { tab: Tab; label: string; views?: ParticipleView[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
   { tab: 'parse', label: 'Parse' },
   { tab: 'build', label: 'Build the form' },
-  { tab: 'tense', label: 'Present or aorist?', aoristOnly: true },
+  { tab: 'tense', label: 'Present or aorist?', views: ['ptcAorist'] },
+  { tab: 'absolute', label: 'Genitive absolutes', views: ['ptcPerfect'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
-/** Chapters 27 (present) and 28 (aorist) adverbial participles: the same drills on different charts. */
-export function Participles({ chapter, view }: { chapter: Chapter; view: TopicView }) {
+/** Chapters 27 (present), 28 (aorist) and 30 (perfect) participles: the same drills on different charts. */
+export function Participles({ chapter, view }: { chapter: Chapter; view: ParticipleView }) {
   const [tab, setTab] = useState<Tab>('lesson')
   const [round, setRound] = useState(0)
   const restart = () => setRound((r) => r + 1)
@@ -34,16 +38,17 @@ export function Participles({ chapter, view }: { chapter: Chapter; view: TopicVi
       <div className="toolbar">
         <h2>{TOPIC_META[view].nav}</h2>
         <div className="seg">
-          {TABS.filter((t) => aorist || !t.aoristOnly).map((t) => (
+          {TABS.filter((t) => !t.views || t.views.includes(view)).map((t) => (
             <button key={t.tab} className={tab === t.tab ? 'on' : ''} onClick={() => { setTab(t.tab); restart() }}>{t.label}</button>
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (aorist ? <AoristLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (view === 'ptcPerfect' ? <PerfectLesson chapter={chapter} /> : aorist ? <AoristLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'parse' && <Parse key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'build' && <Build key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'tense' && <Tense key={key} chapter={chapter} onRestart={restart} />}
-      {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} aorist={aorist} />}
+      {tab === 'absolute' && <Absolute key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} hint={view === 'ptcAorist' ? '“after …,” “having …”' : view === 'ptcPerfect' ? 'as a completed state: “having …,” “written,” “gone”' : '“while …”'} />}
     </section>
   )
 }
@@ -147,6 +152,54 @@ function AoristLesson({ chapter }: { chapter: Chapter }) {
   )
 }
 
+function PerfectLesson({ chapter }: { chapter: Chapter }) {
+  const pt = chapter.participles
+  if (!pt) return null
+  const verb = (id: string) => pt.verbs.find((v) => v.id === id)!
+  return (
+    <>
+      <Lesson title="Perfect participles and genitive absolutes">
+        <p>
+          The perfect participle keeps the perfect’s <strong>reduplication</strong> and its meaning: a completed action with a
+          continuing result. <span className="greek">εὗρεν … τὸ δαιμόνιον ἐξεληλυθός</span>, “she found the demon gone” (gone out, and still gone).
+        </p>
+        <ul>
+          <li>
+            <strong>Active:</strong> reduplicated stem + κ + <span className="greek">οτ</span>, feminine <span className="greek">υια</span>, always accented on the ending:
+            <span className="greek"> λελυκώς, λελυκότος · λελυκυῖα, λελυκυίας · λελυκός, λελυκότος</span>. Second perfects have no κ:
+            <span className="greek"> γεγονώς, ἐληλυθώς</span>, and <span className="greek">εἰδώς</span> (from <span className="greek">οἶδα</span>) means “knowing.”
+          </li>
+          <li>
+            <strong>Middle/passive:</strong> reduplicated stem + <span className="greek">μενο/η</span>, with no connecting vowel and the accent on μέν:
+            <span className="greek"> λελυμένος, -η, -ον</span>; <span className="greek">γεγραμμένος</span>, “written.”
+          </li>
+          <li>
+            <strong>Genitive absolute:</strong> a participle and a noun or pronoun, both genitive, that are not part of the main clause’s grammar.
+            Translate with “while,” “when” or “after” and make the genitive the subject: <span className="greek">ἐσθιόντων αὐτῶν</span>, “while they were eating.”
+            The genitive “subject” is usually not the subject of the main verb.
+          </li>
+          <li>
+            You will also meet <strong>periphrastic</strong> forms, <span className="greek">εἰμί</span> + a participle for one idea:
+            <span className="greek"> χάριτί ἐστε σεσῳσμένοι</span>, “by grace you have been saved.”
+          </li>
+        </ul>
+      </Lesson>
+      <table className="reference terms-table">
+        <thead><tr><th /><th>Active</th><th>Middle/passive</th></tr></thead>
+        <tbody>
+          <tr><th>Present</th><td className="greek">ο + ντ · λύων</td><td className="greek">ο + μενο/η · λυόμενος</td></tr>
+          <tr><th>Aorist</th><td className="greek">σα + ντ · λύσας</td><td className="greek">σα + μενο/η · λυσάμενος; θε + ντ · λυθείς</td></tr>
+          <tr><th>Perfect</th><td className="greek">κ + οτ · λελυκώς</td><td className="greek">μενο/η · λελυμένος</td></tr>
+        </tbody>
+      </table>
+      <div className="adj-tables">
+        <DeclensionTable p={participleParadigm(verb('lyo'), 'active')} />
+        <DeclensionTable p={participleParadigm(verb('lyo-mp'), 'middle/passive')} />
+      </div>
+    </>
+  )
+}
+
 interface QuizProps {
   chapter: Chapter
   onRestart: () => void
@@ -187,7 +240,23 @@ function Tense({ chapter, onRestart }: QuizProps) {
   )
 }
 
-function Verses({ chapter, onRestart, aorist }: QuizProps & { aorist: boolean }) {
+function Absolute({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = absoluteVerses(chapter).flatMap((v) => [
+      { id: absoluteId(chapter.number, v), make: () => absoluteQuestion(chapter, v) },
+      ...(v.wrong?.length ? [{ id: participleVerseId(chapter.number, v, 'translate'), make: () => participleVerseTranslateQuestion(chapter, v) }] : []),
+    ])
+    return pickWeakest(pool, (x) => x.id, 12).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">A genitive participle with its own genitive noun or pronoun, not tied to anything in the main clause, is absolute: “while/when they …”.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} />
+    </>
+  )
+}
+
+function Verses({ chapter, onRestart, hint }: QuizProps & { hint: string }) {
   const [questions] = useState(() => {
     const pool = (chapter.participles?.verses ?? []).flatMap((v) => [
       { id: participleVerseId(chapter.number, v, 'parse'), make: () => participleVerseParseQuestion(chapter, v) },
@@ -197,7 +266,7 @@ function Verses({ chapter, onRestart, aorist }: QuizProps & { aorist: boolean })
   })
   return (
     <>
-      <p className="muted">Find the word the participle agrees with (same case, number and gender); that is who is doing it. Then translate it: {aorist ? '“after …,” “having …”' : '“while …”'}.</p>
+      <p className="muted">Find the word the participle agrees with (same case, number and gender); that is who is doing it. Then translate it {hint}.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} />
     </>
   )

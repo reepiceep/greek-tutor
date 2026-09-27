@@ -106,10 +106,10 @@ export default function App() {
         {view === 'relative' && <RelativePronoun chapter={chapter} />}
         {view === 'verbs' && <VerbIntro chapter={chapter} />}
         {view === 'participles' && <ParticipleIntro chapter={chapter} />}
-        {(view === 'ptcPresent' || view === 'ptcAorist') && <Participles key={view} chapter={chapter} view={view} />}
+        {(view === 'ptcPresent' || view === 'ptcAorist' || view === 'ptcPerfect') && <Participles key={view} chapter={chapter} view={view} />}
         {view === 'ptcAdjectival' && <AdjectivalParticiple chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
-        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect') && <PresentTense key={view} chapter={chapter} />}
+        {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect' || view === 'subjunctive') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}
         {view === 'test' && <ChapterTest chapter={chapter} />}
       </main>

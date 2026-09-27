@@ -413,7 +413,7 @@ export interface ParticipleIntroSection {
 
 /** Present participles have one middle/passive form; aorist participles have separate middle and passive forms. */
 export type ParticipleVoice = 'active' | 'middle/passive' | 'middle' | 'passive'
-export type ParticipleTense = 'present' | 'aorist'
+export type ParticipleTense = 'present' | 'aorist' | 'perfect'
 
 /**
  * A verb whose participles are generated. Present: stem + ο + ντ (3-1-3) or ο + μενο/η (2-1-2). First aorist:
@@ -428,7 +428,8 @@ export interface ParticipleVerb {
    * accent there when it can. A second aorist stem is unaccented (λαβ), since its accent falls on the ending.
    */
   stem: string
-  tense?: 'aorist'
+  /** Perfect (chapter 30): `stem` is reduplicated with its κ (λελυκ) or without for a second perfect (γεγον, εἰδ); the middle/passive has no κ (λελυ). */
+  tense?: 'aorist' | 'perfect'
   /** Second aorist (λαβών, γενόμενος) rather than first (λύσας, λυσάμενος). */
   second?: boolean
   /** The aorist passive stem, ending in θ (λυθ) or not (γραφ for γραφείς). */
@@ -453,7 +454,7 @@ export interface ParsedParticiple {
   /** The participle exactly as it appears in `text`. */
   word: string
   lemma: string
-  tense?: 'aorist'
+  tense?: 'aorist' | 'perfect'
   voice: ParticipleVoice
   case: NounCase
   number: GrammaticalNumber
@@ -470,6 +471,8 @@ export interface ParticipleVerse extends ParsedParticiple {
   agrees: string
   /** Wrong translations; the translation question is only asked when these are given. */
   wrong?: string[]
+  /** Chapter 30: a genitive participle that is (true) or isn't (false) a genitive absolute. */
+  absolute?: boolean
 }
 
 export interface ParticipleSection {
@@ -537,6 +540,11 @@ export interface PresentVerb {
    * worked out for each form.
    */
   tense?: 'future' | 'imperfect' | 'aorist' | 'perfect'
+  /**
+   * Chapter 31: the subjunctive. Endings lengthen the connecting vowel (ω, ῃς, ῃ, ωμεν, ητε, ωσι(ν)); an aorist has no
+   * augment, so `stem` is the unaugmented aorist stem (λύσ, λάβ), and an aorist passive contracts (λυθ + ῶ).
+   */
+  mood?: 'subjunctive'
   /** A compound verb's preposition as it appears before the augment (συν, ἐξ, περι): the accent can't go back past it. */
   prefix?: string
   /** English -ing form for the imperfect ("loosing"); empty for εἰμί ("I was"). */
@@ -601,7 +609,12 @@ export interface PresentVerse {
   translation: string
   help?: string
   note?: string
+  /** Chapter 31: why the verb is subjunctive. */
+  use?: SubjunctiveUse
 }
+
+/** Why a verb is subjunctive (chapter 31): after ἵνα, after ἐάν, “let us,” a real question, οὐ μή, or after ὃς ἄν. */
+export type SubjunctiveUse = 'purpose' | 'condition' | 'hortatory' | 'deliberative' | 'emphatic' | 'indefinite'
 
 /** A verb and its verbal root, e.g. ἀποστέλλω, *στελ (chapter 20). */
 export interface RootItem {
@@ -626,7 +639,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'ptcPerfect' | 'subjunctive' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number

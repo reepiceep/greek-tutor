@@ -233,8 +233,9 @@ it('course map parts collapse and expand, remember it, and the current chapter�
   expect(isOpen('Indicative verbs')).toBe(false)
   // A closed part is inert: its chapters stay in the page (for the animation) but can't be reached.
   expect(document.getElementById(head('Indicative verbs').getAttribute('aria-controls')!)!.hasAttribute('inert')).toBe(true)
-  expect(head('Participles').textContent).toContain('ch. 26–29')
-  expect(head('Participles').querySelectorAll('.pip')).toHaveLength(4)
+  const range = head('Participles').querySelector('.part-range')!.textContent!.match(/ch\. (\d+)–(\d+)/)!
+  expect(range[1]).toBe('26')
+  expect(head('Participles').querySelectorAll('.pip')).toHaveLength(Number(range[2]) - 25)
   fireEvent.click(head('Indicative verbs'))
   expect(isOpen('Indicative verbs')).toBe(true)
   fireEvent.click(head('Participles'))
@@ -587,6 +588,45 @@ it('chapter 29: adjectival participle lesson, every quiz tab, and the test', () 
   nav('Adjectival participles')
   expect(document.querySelector('.terms-table')!.textContent).toContain('ὁ πατὴρ ὁ πέμψας με')
   for (const t of ['How is it used?', 'Translate', 'Parse']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
+it('chapter 30: perfect participle lesson, charts, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(30)
+  nav('Perfect participles')
+  const charts = [...document.querySelectorAll('.adj-table')].map((t) => t.textContent)
+  for (const form of ['λελυκυῖα', 'λελυμένης']) expect(charts.some((t) => t!.includes(form)), form).toBe(true)
+  for (const t of ['Parse', 'Build the form', 'Genitive absolutes', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
+it('chapter 31: subjunctive lesson, chart, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(31)
+  nav('Subjunctive')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λυθῶμεν')
+  tab('Fill the chart')
+  expect(screen.getByText('lu/h|')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('λύωμεν')
+  for (const t of ['Parse & translate', 'Indicative or subjunctive?', 'Why subjunctive?', 'In verses']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

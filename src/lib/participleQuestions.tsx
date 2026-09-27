@@ -45,6 +45,13 @@ const AORIST_PASSIVE: Endings = {
   neuter: { sg: ['έν', 'έντος', 'έντι', 'έν'], pl: ['έντα', 'έντων', 'εῖσι(ν)', 'έντα'] },
 }
 
+/** Perfect active: οτ after the reduplicated stem (and κ), feminine υια; always accented on the ending (λελυκώς, λελυκότος). */
+const PERFECT: Endings = {
+  masculine: { sg: ['ώς', 'ότος', 'ότι', 'ότα'], pl: ['ότες', 'ότων', 'όσι(ν)', 'ότας'] },
+  feminine: { sg: ['υῖα', 'υίας', 'υίᾳ', 'υῖαν'], pl: ['υῖαι', 'υιῶν', 'υίαις', 'υίας'] },
+  neuter: { sg: ['ός', 'ότος', 'ότι', 'ός'], pl: ['ότα', 'ότων', 'όσι(ν)', 'ότα'] },
+}
+
 /** The 2-1-2 endings after μενο/η. */
 const MP: Endings = {
   masculine: { sg: ['ος', 'ου', 'ῳ', 'ον'], pl: ['οι', 'ων', 'οις', 'ους'] },
@@ -95,10 +102,12 @@ const mapEndings = (e: Endings, f: (ending: string) => string) =>
   }])) as DeclensionParadigm['forms']
 
 export const VOICE_SHORT: Record<ParticipleVoice, string> = { active: 'act', 'middle/passive': 'mid/pass', middle: 'mid', passive: 'pass' }
-export const TENSE_SHORT: Record<ParticipleTense, string> = { present: 'pres', aorist: 'aor' }
-export const tenseOf = (x: { tense?: 'aorist' }): ParticipleTense => x.tense ?? 'present'
+export const TENSE_SHORT: Record<ParticipleTense, string> = { present: 'pres', aorist: 'aor', perfect: 'perf' }
+export const tenseOf = (x: { tense?: 'aorist' | 'perfect' }): ParticipleTense => x.tense ?? 'present'
 
 function formsOf(v: ParticipleVerb, voice: ParticipleVoice): DeclensionParadigm['forms'] {
+  // The perfect middle/passive has no connecting vowel and keeps the accent on μέν: λελυμένος, λελυμένοι.
+  if (v.tense === 'perfect') return voice === 'active' ? mapEndings(PERFECT, (e) => unaccented(v.stem) + e) : mapEndings(MP, (e) => `${unaccented(v.stem)}μέν${e}`)
   if (voice === 'passive' && v.tense === 'aorist') return mapEndings(AORIST_PASSIVE, (e) => unaccented(v.passiveStem!) + e)
   if (voice !== 'active') return mapEndings(MP, (e) => mpForm(v, e))
   if (v.tense === 'aorist' && v.second) return mapEndings(SECOND_AORIST, (e) => unaccented(v.stem) + e)
@@ -107,8 +116,8 @@ function formsOf(v: ParticipleVerb, voice: ParticipleVoice): DeclensionParadigm[
 
 /** Chapter 27's ids (lyo-act, lyo-mp) are kept; aorist charts are lyo-aor-act, lyo-aor-mid, lyo-aor-pass. */
 function chartId(v: ParticipleVerb, voice: ParticipleVoice) {
-  if (v.tense !== 'aorist') return `${v.id}-${voice === 'active' ? 'act' : 'mp'}`
-  return `${v.id}-aor-${VOICE_SHORT[voice]}`
+  if (!v.tense) return `${v.id}-${voice === 'active' ? 'act' : 'mp'}`
+  return `${v.id}-${TENSE_SHORT[v.tense]}-${VOICE_SHORT[voice]}`
 }
 
 /** The verb's participle in one voice, as a declension chart. */
@@ -129,7 +138,7 @@ export function participleParadigm(v: ParticipleVerb, voice: ParticipleVoice): D
 export function participleEnglish(v: ParticipleVerb, voice: ParticipleVoice) {
   if (voice === 'active' || v.middleOnly || !v.pp) return voice === 'middle' && !v.middleOnly ? `${v.ing} (for oneself)` : v.ing
   if (voice === 'middle') return `${v.ing} (for oneself)`
-  return `${v.tense === 'aorist' ? 'having been' : 'being'} ${v.pp}`
+  return `${v.tense ? 'having been' : 'being'} ${v.pp}`
 }
 
 export interface ParticipleChart {
@@ -166,10 +175,11 @@ const optionKey = (x: Parsing, s: Slot) => `${x.tense}:${x.voice}:${slotKey(s)}`
 const option = (x: Parsing, s: Slot) => ({ key: optionKey(x, s), label: parsingLabel(x.tense, x.voice, s) })
 
 /** Tense/voice combinations to offer as a wrong parsing: the other voices of this tense, and the other tense if the chapter has it. */
-function otherParsings(x: Parsing, aorist: boolean): Parsing[] {
+function otherParsings(x: Parsing, ch: Chapter): Parsing[] {
   const all: Parsing[] = [
     { tense: 'present', voice: 'active' }, { tense: 'present', voice: 'middle/passive' },
-    ...(aorist ? [{ tense: 'aorist' as const, voice: 'active' as const }, { tense: 'aorist' as const, voice: 'middle' as const }, { tense: 'aorist' as const, voice: 'passive' as const }] : []),
+    ...(ch.number >= 28 ? [{ tense: 'aorist' as const, voice: 'active' as const }, { tense: 'aorist' as const, voice: 'middle' as const }, { tense: 'aorist' as const, voice: 'passive' as const }] : []),
+    ...(ch.number >= 30 ? [{ tense: 'perfect' as const, voice: 'active' as const }, { tense: 'perfect' as const, voice: 'middle/passive' as const }] : []),
   ]
   return all.filter((y) => y.tense !== x.tense || y.voice !== x.voice)
 }
@@ -191,6 +201,11 @@ function breakdown(c: ParticipleChart) {
   const passive = c.voice === 'passive' && c.tense === 'aorist'
   const stem = <span className="greek">{unaccented(passive ? c.v.passiveStem! : c.v.stem)}</span>
   if (!c.v.stem) return <>no stem, just <span className="greek">ντ</span> + case ending, the same endings as <span className="greek">λύων</span></>
+  if (c.tense === 'perfect') {
+    return c.voice === 'active'
+      ? <>reduplicated perfect stem {stem} + <span className="greek">οτ</span> (feminine <span className="greek">υια</span>) + case ending</>
+      : <>reduplicated perfect stem {stem} + <span className="greek">μενο/η</span>, with no connecting vowel, + case ending</>
+  }
   const marker = c.tense === 'present'
     ? (c.voice === 'active' ? 'ο + ντ' : `${c.v.athematic ? '' : 'ο + '}μενο/η`)
     : passive ? 'ε + ντ'
@@ -211,6 +226,7 @@ function formExplain(c: ParticipleChart, form: string) {
       </p>
       {c.v.middleOnly && <p>{c.voice === 'passive' ? 'Passive' : 'Middle'} in form, active in meaning.</p>}
       {c.tense === 'aorist' && <p>No augment: the augment belongs to the indicative only.</p>}
+      {c.tense === 'perfect' && <p>The reduplication stays (it isn’t an augment); the accent is always on the ending (<span className="greek">-ώς, -ότος</span>) or on <span className="greek">μέν</span>.</p>}
       {form.endsWith('σι(ν)') && <p>The dative plural looks just like a 3rd plural indicative (<span className="greek">{form.replace('(ν)', '')}</span>); the sentence tells you which.</p>}
     </>
   )
@@ -230,7 +246,10 @@ export function participleParseQuestion(ch: Chapter, c: ParticipleChart, form: s
   const answer = shuffle(valid)[0]
   const x = { tense: c.tense, voice: c.voice }
   const others = c.v.voices.filter((y) => y !== c.voice).map((voice) => ({ tense: c.tense, voice }))
-  if (hasAorist(ch) && c.voice === 'active') others.push({ tense: c.tense === 'aorist' ? 'present' : 'aorist', voice: 'active' })
+  if (hasAorist(ch) && c.voice === 'active') {
+    const tenses: ParticipleTense[] = ch.number >= 30 ? ['present', 'aorist', 'perfect'] : ['present', 'aorist']
+    others.push({ tense: shuffle(tenses.filter((t) => t !== c.tense))[0], voice: 'active' })
+  }
   return {
     id: participleParseId(ch.number, c, form),
     prompt: <><span className="greek big">{form}</span><p className="muted">from <span className="greek">{c.v.lemma}</span> — parse it</p></>,
@@ -311,7 +330,7 @@ export function participleVerseParseQuestion(ch: Chapter, v: ParsedParticiple): 
   return {
     id: participleVerseId(ch.number, v, 'parse'),
     prompt: <>{highlighted(v)}<p className="muted">Parse the highlighted participle</p></>,
-    options: parseOptions(x, s, [s], ALL_SLOTS, otherParsings(x, hasAorist(ch))),
+    options: parseOptions(x, s, [s], ALL_SLOTS, otherParsings(x, ch)),
     answer: optionKey(x, s),
     explain: verseExplain(v),
     review: <><span className="greek">{v.word}</span> ({v.ref ?? 'practice'}) = {parsingLabel(x.tense, x.voice, s)}</>,
@@ -339,6 +358,33 @@ export function tenseChoices(ch: Chapter) {
   const present = participleCharts(chapter27).filter((c) => lemmas.has(c.v.lemma))
   return [...aorist, ...present].flatMap((c) => distinctForms(c.p).map((form) => ({ c, form })))
 }
+
+export const absoluteId = (ch: number, v: ParticipleVerse) => `ch${ch}:ptc-absolute:${v.id}`
+
+const ABSOLUTE_OPTIONS = [
+  { key: 'yes', label: <>Genitive absolute — it and its own genitive “subject” stand apart from the main clause: “while/when …”</> },
+  { key: 'no', label: <>Not absolute — it agrees with a genitive word the sentence needs (“of …,” after a preposition)</> },
+]
+
+/** Chapter 30: is this genitive participle a genitive absolute? */
+export function absoluteQuestion(ch: Chapter, v: ParticipleVerse): ChoiceQuestion {
+  return {
+    id: absoluteId(ch.number, v),
+    prompt: <>{highlighted(v)}<p className="muted">Is the highlighted participle a genitive absolute?</p></>,
+    options: ABSOLUTE_OPTIONS,
+    answer: v.absolute ? 'yes' : 'no',
+    explain: (
+      <>
+        {v.absolute && <p>Its “subject,” {v.agrees}, is genitive too, and neither is part of the main clause: <span className="greek">{v.word}</span> sets the scene.</p>}
+        {verseExplain(v)}
+      </>
+    ),
+    review: <><span className="greek">{v.word}</span> ({v.ref}) {v.absolute ? 'is' : 'is not'} a genitive absolute</>,
+  }
+}
+
+/** Genitive participles marked absolute or not, for chapter 30's drill. */
+export const absoluteVerses = (ch: Chapter) => (ch.participles?.verses ?? []).filter((v) => v.absolute !== undefined)
 
 /** The translation question only exists for verses with wrong translations written. */
 export const translatableVerses = (ch: Chapter) => (ch.participles?.verses ?? []).filter((v) => v.wrong?.length)

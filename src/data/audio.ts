@@ -336,4 +336,10 @@ export const RECORDINGS: Record<string, Recording> = {
   'ἐσθίω': { mounce: B + 'chpt29/words/esqiw.mp3', modern: B + 'chpt29/modern/esqiw.mp3' },
   'πέμπω': { mounce: B + 'chpt29/words/pempw.mp3', modern: B + 'chpt29/modern/pempw.mp3' },
   'φέρω': { mounce: B + 'chpt29/words/ferw.mp3', modern: B + 'chpt29/modern/ferw.mp3' },
+  // Chapter 30. πρεσβύτερος's page links words/presby.mp3, which is 403; words/presbu.mp3 is its Erasmian recording.
+  'μηδέ': { mounce: B + 'chpt30/words/mhde.mp3', modern: B + 'chpt30/modern/mhde.mp3' },
+  'πρεσβύτερος': { mounce: B + 'chpt30/words/presbu.mp3', modern: B + 'chpt30/modern/presby.mp3' },
+  // Chapter 31
+  'λίθος': { mounce: B + 'chpt31/words/liqos.mp3', modern: B + 'chpt31/modern/liqos.mp3' },
+  'τοιοῦτος': { mounce: B + 'chpt31/words/toiout.mp3', modern: B + 'chpt31/modern/toiout.mp3' },
 }

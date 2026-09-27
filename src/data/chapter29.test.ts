@@ -7,7 +7,7 @@ import { chapterSkills } from '../lib/skills'
 import { chapter27 } from './chapter27'
 import { chapter28 } from './chapter28'
 import { chapter29 as ch } from './chapter29'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 
 const items = ch.participleUses!
 
@@ -19,9 +19,8 @@ function dictionaryForm(word: string) {
 }
 
 describe('chapter 29 data', () => {
-  it('is the latest chapter, with the 5 vocabulary words, each with audio', () => {
-    expect(LATEST_CHAPTER).toBe(29)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with the 5 vocabulary words, each with audio', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(5)
     for (const w of ch.vocab) expect(recordingFor(w.lemma), w.lemma).toBeTruthy()
   })
