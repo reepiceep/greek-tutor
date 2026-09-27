@@ -473,6 +473,23 @@ it('chapter 24: passive lesson, θη chart, and every quiz tab works', () => {
   }
 })
 
+it('chapter 25: perfect lesson, reduplicated chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(25)
+  nav('Perfect')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λέλυμαι')
+  tab('Fill the chart')
+  expect(screen.getByText('le/luka')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('λελύκαμεν')
+  for (const t of ['Parse & translate', 'Reduplication', 'Aorist or perfect?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)

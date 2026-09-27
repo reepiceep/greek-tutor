@@ -18,7 +18,7 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
-  PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
+  redupQuestion, PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -539,6 +539,31 @@ const SPECS: Record<number, TestSpec> = {
           ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 2).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
         ]),
         ...tag('Aorist or future', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  25: {
+    areas: [
+      { name: 'Vocabulary', count: 3, covers: 'the chapter’s three words, both directions' },
+      { name: 'Perfect forms', count: 12, covers: 'parsing, translating and choosing perfect active and middle/passive forms' },
+      { name: 'Reduplication', count: 6, covers: 'how verbs reduplicate, choosing the perfect, and the lexical form' },
+      { name: 'Aorist or perfect', count: 4, covers: 'telling ἔλυσα from λέλυκα' },
+      { name: 'Verses', count: 5, covers: 'perfects in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 12)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 5)
+      return [
+        ...vocabArea(ch),
+        ...tag('Perfect forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Reduplication', [
+          ...take(pr.reduplications ?? [], 2).map((r) => redupQuestion(ch, r)),
+          ...take(pr.verbs, 2).map((v) => aoristFormQuestion(ch, v)),
+          ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 2).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
+        ]),
+        ...tag('Aorist or perfect', take(tensePairs(ch), 4).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },

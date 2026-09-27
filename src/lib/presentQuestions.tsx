@@ -84,6 +84,11 @@ export const AOR1_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'αμην', '
 /** Aorist passive endings after the θη (or η): the secondary active endings, with σαν in the 3rd plural. */
 export const AORP_ENDINGS: Record<PersonSlot, string> = { '1s': 'ν', '2s': 'ς', '3s': '', '1p': 'μεν', '2p': 'τε', '3p': 'σαν' }
 
+/** Perfect active endings after the κ (or a second perfect's stem); the New Testament also has -αν in the 3rd plural. */
+export const PERF_ENDINGS: Record<PersonSlot, string> = { '1s': 'α', '2s': 'ας', '3s': 'ε(ν)', '1p': 'αμεν', '2p': 'ατε', '3p': 'ασι(ν)' }
+/** Perfect middle/passive: the primary endings straight onto the stem, with no connecting vowel. */
+export const PERF_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'μαι', '2s': 'σαι', '3s': 'ται', '1p': 'μεθα', '2p': 'σθε', '3p': 'νται' }
+
 const DIPHTHONGS = new Set(['αι', 'ει', 'οι', 'υι', 'αυ', 'ευ', 'ου', 'ηυ'])
 const MARK = /[\u0300-\u036f]/
 
@@ -115,7 +120,9 @@ function syllables(word: string) {
 export function recessive(word: string, earliest = 0): string {
   const { letters, nuclei } = syllables(word)
   const n = nuclei.length
-  const ultimaLong = nuclei[n - 1].long
+  // A final -αι or -οι counts as short for the accent (λέλυμαι).
+  const finalShort = /(αι|οι)$/.test(letters.map((l) => l.ch).join(''))
+  const ultimaLong = nuclei[n - 1].long && !finalShort
   let t = n === 1 ? 0 : ultimaLong ? n - 2 : Math.max(0, n - 3)
   t = Math.max(t, Math.min(earliest, n - 1))
   const circumflex = n === 1 ? ultimaLong : t === n - 2 && nuclei[t].long && !ultimaLong
@@ -146,7 +153,8 @@ const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
 export const plainEndingsOf = (v: PresentVerb) =>
-  v.passiveForm && v.tense === 'aorist' ? AORP_ENDINGS
+  v.tense === 'perfect' ? (v.voice ? PERF_MP_ENDINGS : PERF_ENDINGS)
+    : v.passiveForm && v.tense === 'aorist' ? AORP_ENDINGS
     : v.firstAorist && v.tense === 'aorist' ? (v.voice ? AOR1_MP_ENDINGS : AOR1_ENDINGS)
     : secondary(v) ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
 const endingVowelOf = (v: PresentVerb) =>
@@ -176,7 +184,7 @@ function accentLastVowel(w: string) {
 function formParts(v: PresentVerb, slot: PersonSlot): [string, string] {
   const odd = v.irregular?.[slot]
   if (odd) return [odd, '']
-  if (secondary(v)) return imperfectParts(v, slot)
+  if (secondary(v) || v.tense === 'perfect') return imperfectParts(v, slot)
   const e = endingsOf(v)[slot]
   if (v.voice && !v.contract && slot === '1p') return v.athematic ? [accentLastVowel(v.stem), e] : [unaccented(v.stem), `ό${e.slice(1)}`]
   return [v.stem, e]
@@ -201,12 +209,18 @@ export const PRONOUN: Record<PersonSlot, string> = {
 /** Accepted spellings: the active 3rd plural has a movable ν. The first is canonical. */
 export function presentForms(v: PresentVerb, slot: PersonSlot): string[] {
   const [stem, e] = formParts(v, slot)
-  return e.endsWith('(ν)') ? [stem + e.slice(0, -3), `${stem + e.slice(0, -3)}ν`] : [stem + e]
+  const forms = e.endsWith('(ν)') ? [stem + e.slice(0, -3), `${stem + e.slice(0, -3)}ν`] : [stem + e]
+  // The perfect active 3rd plural also appears with -αν in the New Testament (ἔγνωκαν).
+  if (v.tense === 'perfect' && !v.voice && slot === '3p' && !v.irregular?.['3p']) {
+    forms.push(recessive(`${v.stem}αν`, v.prefix ? syllables(v.prefix).nuclei.length : 0))
+  }
+  return forms
 }
 
 export const presentDisplay = (v: PresentVerb, slot: PersonSlot) => formParts(v, slot).join('')
 
 const BE: Record<PersonSlot, string> = { '1s': 'am', '2s': 'are', '3s': 'is', '1p': 'are', '2p': 'are', '3p': 'are' }
+const HAVE: Record<PersonSlot, string> = { '1s': 'have', '2s': 'have', '3s': 'has', '1p': 'have', '2p': 'have', '3p': 'have' }
 const WAS: Record<PersonSlot, string> = { '1s': 'was', '2s': 'were', '3s': 'was', '1p': 'were', '2p': 'were', '3p': 'were' }
 
 function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
@@ -215,7 +229,8 @@ function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
 }
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.passiveForm && v.voice === 'passive' ? `${WAS[slot]} ${v.pp}` : v.past}`
+  v.tense === 'perfect' ? `${PRONOUN[slot]} ${HAVE[slot]} ${v.voice === 'passive' ? 'been ' : ''}${v.pp}`
+    : v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.passiveForm && v.voice === 'passive' ? `${WAS[slot]} ${v.pp}` : v.past}`
     : v.tense === 'imperfect' ? imperfectEnglish(v, slot)
     : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.voice === 'passive' ? `be ${v.pp}` : v.en}`
     : v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
@@ -652,6 +667,12 @@ export function futureFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion 
 
 export const rootItemId = (ch: number, r: RootItem) => `ch${ch}:root:${r.lemma}`
 export const augmentItemId = (ch: number, r: RootItem) => `ch${ch}:augment:${r.lemma}`
+export const redupItemId = (ch: number, r: RootItem) => `ch${ch}:redup:${r.lemma}`
+
+/** λύω → λέλυκα. */
+export function redupQuestion(ch: Chapter, r: RootItem): ChoiceQuestion {
+  return ruleChoice(redupItemId(ch.number, r), r, 'Perfect, 1st singular?', '')
+}
 
 /** ἀποστέλλω → *στελ. */
 export function rootQuestion(ch: Chapter, r: RootItem): ChoiceQuestion {
@@ -687,12 +708,12 @@ export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonS
   }
 }
 
-export type TenseKey = 'present' | 'future' | 'imperfect' | 'aorist'
+export type TenseKey = 'present' | 'future' | 'imperfect' | 'aorist' | 'perfect'
 /** The two tenses a verb is contrasted in: present and future or imperfect, or imperfect and aorist. */
 const tensesOf = (v: PresentVerb): TenseKey[] =>
-  v.passiveForm ? ['aorist', 'future'] : v.tense === 'aorist' ? ['imperfect', 'aorist'] : ['present', v.tense ?? 'future']
+  v.tense === 'perfect' ? ['aorist', 'perfect'] : v.passiveForm ? ['aorist', 'future'] : v.tense === 'aorist' ? ['imperfect', 'aorist'] : ['present', v.tense ?? 'future']
 const hasTense = (v: PresentVerb, t: TenseKey) =>
-  t === v.tense || (t === 'present' ? !!v.present : t === 'imperfect' ? !!v.imperfect : t === 'future' && !!v.futurePassive)
+  t === v.tense || (t === 'present' ? !!v.present : t === 'imperfect' ? !!v.imperfect : t === 'future' ? !!v.futurePassive : t === 'aorist' && !!v.aorist)
 
 /** The same verb in the present or the future. */
 export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
@@ -700,6 +721,10 @@ export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
     : tense === 'imperfect' ? {
       ...v, tense: 'imperfect', irregular: undefined, past: undefined,
       stem: v.imperfect!.stem, prefix: v.imperfect!.prefix, contract: v.imperfect!.contract, voice: v.imperfect!.voice,
+    }
+    : tense === 'aorist' && v.aorist ? {
+      ...v, tense: 'aorist', stem: v.aorist.stem, prefix: v.aorist.prefix, firstAorist: v.aorist.firstAorist, passiveForm: v.aorist.passiveForm,
+      liquid: v.aorist.liquid, irregular: v.aorist.irregular, voice: v.aorist.voice ?? v.voice, from: undefined,
     }
     : tense === 'future' && v.futurePassive ? {
       ...v, tense: 'future', stem: v.futurePassive.stem, prefix: undefined, from: undefined, irregular: undefined, voice: v.voice ?? 'middle',
@@ -738,10 +763,16 @@ export function aoristFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion 
   const answer = presentDisplay(v, '1s')
   const imperfect = v.imperfect ? [presentDisplay(inTense(v, 'imperfect'), '1s')] : []
   const others = distinctLemmas(verbsOf(ch).filter((o) => o.lemma !== v.lemma)).map((o) => presentDisplay(o, '1s'))
-  const forms = [...new Set([answer, ...imperfect, ...(v.future1s ? [v.future1s] : []), ...(v.alt1s ?? []), ...others])].slice(0, 4)
+  const aorist = v.tense === 'perfect' && v.aorist ? [presentDisplay(inTense(v, 'aorist'), '1s')] : []
+  const forms = [...new Set([answer, ...imperfect, ...aorist, ...(v.future1s ? [v.future1s] : []), ...(v.alt1s ?? []), ...others])].slice(0, 4)
   return {
     id: aoristFormItemId(ch.number, v),
-    prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Aorist{v.passiveForm && ' passive'}, 1st singular?</p></>,
+    prompt: (
+      <>
+        <span className="greek big">{v.lemma}</span>
+        <p className="muted">{tenseName(v)[0].toUpperCase()}{tenseName(v).slice(1)}{v.passiveForm ? ' passive' : v.tense === 'perfect' && v.voice ? ' middle/passive' : ''}, 1st singular?</p>
+      </>
+    ),
     options: shuffle(forms).map((f) => ({ key: f, label: f, greek: true })),
     answer,
     explain: (

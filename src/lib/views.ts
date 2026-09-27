@@ -19,6 +19,7 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   aorist: { nav: 'Second aorist', title: 'Second aorist', description: 'ἔλαβον and ἐγενόμην: aorist stems, simple past, and imperfect or aorist', glyph: 'ον' },
   aorist1: { nav: 'First aorist', title: 'First aorist', description: 'ἔλυσα and ἐλυσάμην: the σα, stops and lengthened vowels, liquid aorists, and imperfect or aorist', glyph: 'σα' },
   passive: { nav: 'Passive', title: 'Aorist and future passive', description: 'ἐλύθην and λυθήσομαι: θη, stops before θ, second aorist passives, deponents, and aorist or future', glyph: 'θη' },
+  perfect: { nav: 'Perfect', title: 'Perfect indicative', description: 'λέλυκα and λέλυμαι: reduplication, κα, second perfects, and aorist or perfect', glyph: 'λε' },
   cases: { nav: 'Genitive & dative', title: 'Genitive and dative', description: 'The endings, and what each case does in a sentence', glyph: 'γ' },
   declension: { nav: '3rd declension', title: 'Third declension', description: 'Square of Stops, stems, parsing, πᾶς, τίς vs τις', glyph: 'σ' },
 }

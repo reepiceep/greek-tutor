@@ -443,7 +443,7 @@ export interface PresentVerb {
    * Chapter 21: the imperfect, and `stem` is the augmented stem without an accent (ἐλυ, ἠκου, συνηγ); the accent is
    * worked out for each form.
    */
-  tense?: 'future' | 'imperfect' | 'aorist'
+  tense?: 'future' | 'imperfect' | 'aorist' | 'perfect'
   /** A compound verb's preposition as it appears before the augment (συν, ἐξ, περι): the accent can't go back past it. */
   prefix?: string
   /** English -ing form for the imperfect ("loosing"); empty for εἰμί ("I was"). */
@@ -467,6 +467,11 @@ export interface PresentVerb {
   passiveForm?: boolean
   /** The future passive stem with its θησ and accent (λυθήσ), for telling aorist from future passive. */
   futurePassive?: { stem: string }
+  /** Chapter 25: the aorist, for telling it from the perfect (ἔλυσα, λέλυκα). Its fields replace the verb's own. */
+  aorist?: {
+    stem: string; prefix?: string; firstAorist?: boolean; passiveForm?: boolean; liquid?: boolean; voice?: 'passive' | 'middle'
+    irregular?: Partial<Record<PersonSlot, string>>
+  }
   /** Chapter 22: the imperfect, for telling it from the aorist (ἐλάμβανον, ἔλαβον). */
   imperfect?: { stem: string; prefix?: string; contract?: ContractVowel; voice?: 'passive' | 'middle' }
   /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
@@ -522,11 +527,13 @@ export interface PresentSection {
   roots?: RootItem[]
   /** Chapter 21: how verbs take the augment (ἀκούω → ἤκουον). */
   augments?: RootItem[]
+  /** Chapter 25: how verbs reduplicate in the perfect (λύω → λέλυκα). */
+  reduplications?: RootItem[]
 }
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
