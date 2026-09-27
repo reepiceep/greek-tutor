@@ -221,10 +221,32 @@ export interface AdjectiveUseItem {
   wrong?: string[]
 }
 
+/** A verse to take apart: which word the adjective describes, how it is used, then the whole sentence. */
+export interface AdjReading {
+  id: string
+  ref: string
+  /** Greek text (SBLGNT), possibly an excerpt of the verse. */
+  text: string
+  /** The adjective (or article-led phrase) exactly as in `text`; the first occurrence is highlighted. */
+  adjective: string
+  use: AdjectiveUse
+  /** The noun it describes, or the subject it says something about; absent when it stands as a noun. */
+  head?: string
+  /** Other words from `text`, offered as wrong answers. */
+  decoys: string[]
+  help?: string
+  translation: string
+  wrong: string[]
+  note?: string
+}
+
 export interface AdjectiveSection {
   paradigms: DeclensionParadigm[]
+  /** The chapter's other adjectives: parsed and asked for their lexical form, but not used for agreement. */
+  more?: DeclensionParadigm[]
   nouns: NounPhrase[]
   uses: AdjectiveUseItem[]
+  readings?: AdjReading[]
 }
 
 // --- Third declension (chapter 10) ---

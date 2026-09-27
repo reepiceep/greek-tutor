@@ -5,6 +5,9 @@ import {
 import { buildChapterTest } from '../lib/chapterTest'
 import { vocabDistractors } from '../lib/items'
 import { chapter09 as ch } from './chapter09'
+import {
+  ADJ_READING_SKILLS, NO_HEAD, adjReadingQuestion, allAdjectives, lexicalFormQuestion, lexicalForms, substEnglish, substItems, substQuestion,
+} from '../lib/adjReadingQuestions'
 
 const adj = ch.adjectives!
 
@@ -100,6 +103,89 @@ describe('chapter 9 test', () => {
       expect([count('Vocabulary'), count('Adjective forms'), count('Adjective use'), count('Chapter 8 review')]).toEqual([10, 8, 8, 4])
       expect(new Set(qs.map((q) => q.id)).size).toBe(30)
       for (const q of qs) expect(q.options.map((o) => o.key)).toContain(q.answer)
+    }
+  })
+})
+
+describe('chapter 9 verses to read', () => {
+  const readings = adj.readings ?? []
+  const words = (text: string) => text.split(/[\s,.·;]+/).filter(Boolean)
+
+  it('have unique ids, the highlighted words in the text, and a head word only when not substantival', () => {
+    expect(readings.length).toBeGreaterThanOrEqual(15)
+    expect(new Set(readings.map((r) => r.id)).size).toBe(readings.length)
+    for (const r of readings) {
+      expect(r.text, r.id).toContain(r.adjective)
+      expect(!!r.head, r.id).toBe(r.use !== 'substantival')
+      if (r.head) expect(words(r.text), r.id).toContain(r.head)
+    }
+  })
+
+  it('offer decoys from the verse, never the right word, and three distinct wrong translations', () => {
+    for (const r of readings) {
+      expect(r.decoys.length, r.id).toBeGreaterThanOrEqual(2)
+      for (const d of r.decoys) {
+        expect(words(r.text), `${r.id}: ${d}`).toContain(d)
+        expect(d, r.id).not.toBe(r.head)
+      }
+      expect(new Set(r.wrong).size, r.id).toBe(3)
+      expect(r.wrong, r.id).not.toContain(r.translation)
+    }
+  })
+
+  it('build every question with the answer among distinct options', () => {
+    for (const r of readings) {
+      for (const skill of ADJ_READING_SKILLS) {
+        const q = adjReadingQuestion(ch, r, skill)
+        const keys = q.options.map((o) => o.key)
+        expect(keys, `${r.id} ${skill}`).toContain(q.answer)
+        expect(new Set(keys).size, `${r.id} ${skill}`).toBe(keys.length)
+      }
+      expect(adjReadingQuestion(ch, r, 'head').answer === NO_HEAD, r.id).toBe(r.use === 'substantival')
+    }
+  })
+})
+
+describe('chapter 9 extra adjectives', () => {
+  it('match the lexical forms in the vocabulary lists', () => {
+    const vocab = [...ch.vocab, { lemma: 'ἄλλος', lexical: 'ἄλλος, -η, -ο' }, { lemma: 'ἔσχατος', lexical: 'ἔσχατος, -η, -ον' }]
+    for (const p of adj.more ?? []) expect(vocab.find((w) => w.lemma === p.lemma)?.lexical, p.lemma).toBe(p.lexical)
+  })
+
+  it('have the lemma as the masculine nominative singular, and follow α after ε, ι, ρ', () => {
+    for (const p of adj.more ?? []) {
+      expect(formAt(p, { case: 'nominative', number: 'sg', gender: 'masculine' })).toBe(p.lemma)
+      const fem = formAt(p, { case: 'nominative', number: 'sg', gender: 'feminine' })
+      expect(fem.normalize('NFD').replace(/[\u0300-\u036f]/g, '').endsWith('α'), p.lemma).toBe(/[ειρ]ος$/.test(p.lemma.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))
+    }
+  })
+
+  it('ask for lexical forms with the lemma among the options', () => {
+    for (const p of allAdjectives(ch)) {
+      for (const f of lexicalForms(p)) {
+        const q = lexicalFormQuestion(ch, p, f)
+        expect(q.options).toHaveLength(4)
+        expect(q.options.map((o) => o.key)).toContain(p.lemma)
+      }
+    }
+  })
+})
+
+describe('substantival adjectives', () => {
+  it('add man, woman or thing by gender and number', () => {
+    expect(substEnglish('good', 'masculine', 'sg', false)).toBe('a good man')
+    expect(substEnglish('evil', 'masculine', 'sg', false)).toBe('an evil man')
+    expect(substEnglish('good', 'feminine', 'pl', false)).toBe('good women')
+    expect(substEnglish('good', 'neuter', 'pl', true)).toBe('the good things')
+  })
+
+  it('give four distinct options with the answer among them', () => {
+    const items = substItems(ch)
+    expect(items.length).toBeGreaterThan(20)
+    for (const s of items) {
+      const q = substQuestion(ch, s)
+      expect(q.options).toHaveLength(4)
+      expect(q.options.map((o) => o.key)).toContain(q.answer)
     }
   })
 })

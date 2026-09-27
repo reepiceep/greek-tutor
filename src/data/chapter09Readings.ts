@@ -1,0 +1,252 @@
+import type { AdjReading, DeclensionParadigm } from './types'
+
+// Verses to take apart the way the workbook's chapter 9 exercises do: which word the adjective goes with, how it is used,
+// then the whole sentence. Text is SBLGNT, checked word for word against MorphGNT.
+export const ADJ_READINGS: AdjReading[] = [
+  {
+    id: 'john-12-48', ref: 'John 12:48', text: 'ὁ λόγος ὃν ἐλάλησα ἐκεῖνος κρινεῖ αὐτὸν ἐν τῇ ἐσχάτῃ ἡμέρᾳ·',
+    adjective: 'ἐσχάτῃ', use: 'attributive', head: 'ἡμέρᾳ', decoys: ['λόγος', 'αὐτὸν'],
+    help: 'ὃν ἐλάλησα which I spoke · ἐκεῖνος that (word) · κρινεῖ will judge',
+    translation: 'The word that I spoke will judge him on the last day.',
+    wrong: [
+      'The last word that I spoke will judge him on that day.',
+      'The word that I spoke will judge him after the last day.',
+      'He will judge the word that I spoke on the last day.',
+    ],
+    note: 'τῇ comes right before ἐσχάτῃ, which agrees with ἡμέρᾳ (dative singular feminine): the first attributive position.',
+  },
+  {
+    id: 'mark-15-25', ref: 'Mark 15:25', text: 'Ἦν δὲ ὥρα τρίτη καὶ ἐσταύρωσαν αὐτόν.',
+    adjective: 'τρίτη', use: 'attributive', head: 'ὥρα', decoys: ['αὐτόν', 'Ἦν'], help: 'ὥρα hour · ἐσταύρωσαν they crucified',
+    translation: 'It was the third hour, and they crucified him.',
+    wrong: [
+      'It was three hours, and they crucified him.',
+      'It was the third hour, and he crucified them.',
+      'In the third hour they will crucify him.',
+    ],
+    note: 'Neither word has the article, so context decides. Ἦν means “it was,” and ὥρα τρίτη is one idea: “the third hour.”',
+  },
+  {
+    id: 'john-5-21', ref: 'John 5:21', text: 'ὥσπερ γὰρ ὁ πατὴρ ἐγείρει τοὺς νεκροὺς καὶ ζῳοποιεῖ,',
+    adjective: 'νεκροὺς', use: 'substantival', decoys: ['πατὴρ', 'ἐγείρει'],
+    help: 'ὥσπερ just as · πατήρ father · ἐγείρει raises · ζῳοποιεῖ gives life',
+    translation: 'For just as the Father raises the dead and gives them life,',
+    wrong: [
+      'For just as the dead Father raises and gives life,',
+      'For just as the Father raises the dead one and gives him life,',
+      'For just as the Father is raised from the dead and lives,',
+    ],
+    note: 'τοὺς νεκρούς has the article and no noun to go with: “the dead (people).” It is accusative because it is the object of ἐγείρει.',
+  },
+  {
+    id: 'matt-20-16', ref: 'Matt 20:16', text: 'οὕτως ἔσονται οἱ ἔσχατοι πρῶτοι καὶ οἱ πρῶτοι ἔσχατοι.',
+    adjective: 'πρῶτοι', use: 'predicate', head: 'ἔσχατοι', decoys: ['ἔσονται', 'οὕτως'], help: 'οὕτως so · ἔσονται they will be',
+    translation: 'So the last will be first, and the first last.',
+    wrong: [
+      'So the first will be last, and the last first.',
+      'So the last and the first will be the same.',
+      'So there will be a last first one and a first last one.',
+    ],
+    note: 'οἱ ἔσχατοι has the article and no noun: “the last (people),” the subject. πρῶτοι has no article, so it says something about them: “will be first.”',
+  },
+  {
+    id: 'rom-12-21', ref: 'Rom 12:21', text: 'μὴ νικῶ ὑπὸ τοῦ κακοῦ, ἀλλὰ νίκα ἐν τῷ ἀγαθῷ τὸ κακόν.',
+    adjective: 'ἀγαθῷ', use: 'substantival', decoys: ['νίκα', 'νικῶ'], help: 'μὴ νικῶ do not be conquered · νίκα conquer',
+    translation: 'Do not be conquered by evil, but conquer evil with good.',
+    wrong: [
+      'Do not conquer evil, but be conquered by good.',
+      'Do not be conquered by evil, but conquer good with evil.',
+      'Evil does not conquer, but good conquers evil.',
+    ],
+    note: 'τὸ κακόν and τῷ ἀγαθῷ are neuter, with the article and no noun: “evil” and “good.” English leaves out “the” with ideas like these. ἐν here means “with” (by means of).',
+  },
+  {
+    id: 'john-15-9', ref: 'John 15:9', text: 'καθὼς ἠγάπησέν με ὁ πατήρ, κἀγὼ ὑμᾶς ἠγάπησα, μείνατε ἐν τῇ ἀγάπῃ τῇ ἐμῇ.',
+    adjective: 'ἐμῇ', use: 'attributive', head: 'ἀγάπῃ', decoys: ['πατήρ', 'μείνατε', 'ὑμᾶς'],
+    help: 'ἠγάπησεν loved · κἀγώ and I · μείνατε remain!',
+    translation: 'As the Father loved me, I also loved you; remain in my love.',
+    wrong: [
+      'As the Father loved me, I also loved you; remain in love with me.',
+      'As I loved the Father, he also loved you; remain in my love.',
+      'As the Father loved me, you also loved me; remain in his love.',
+    ],
+    note: 'τῇ ἀγάπῃ τῇ ἐμῇ is article–noun–article–adjective, the second attributive position. ἐμός is an adjective meaning “my,” so it agrees with ἀγάπῃ.',
+  },
+  {
+    id: 'eph-2-10', ref: 'Eph 2:10', text: 'κτισθέντες ἐν Χριστῷ Ἰησοῦ ἐπὶ ἔργοις ἀγαθοῖς',
+    adjective: 'ἀγαθοῖς', use: 'attributive', head: 'ἔργοις', decoys: ['Χριστῷ', 'κτισθέντες'], help: 'κτισθέντες created · ἐπί for',
+    translation: 'created in Christ Jesus for good works',
+    wrong: [
+      'created in Christ Jesus, the good one, for works',
+      'created in Christ Jesus because works are good',
+      'created by good works in Christ Jesus',
+    ],
+    note: 'No article: ἀγαθοῖς agrees with ἔργοις (dative plural neuter), and an “is” would make no sense here, so it is attributive: “good works.”',
+  },
+  {
+    id: 'matt-12-35', ref: 'Matt 12:35',
+    text: 'ὁ ἀγαθὸς ἄνθρωπος ἐκ τοῦ ἀγαθοῦ θησαυροῦ ἐκβάλλει ἀγαθά, καὶ ὁ πονηρὸς ἄνθρωπος ἐκ τοῦ πονηροῦ θησαυροῦ ἐκβάλλει πονηρά.',
+    adjective: 'ἀγαθά', use: 'substantival', decoys: ['ἄνθρωπος', 'θησαυροῦ', 'ἐκβάλλει'], help: 'θησαυροῦ treasure · ἐκβάλλει brings out',
+    translation: 'The good man brings good things out of his good treasure, and the evil man brings evil things out of his evil treasure.',
+    wrong: [
+      'The good man brings a good treasure out of good things, and the evil man brings evil out of the evil treasure.',
+      'The man who brings good things out of the treasure is good, and the man who brings evil things is evil.',
+      'The good man brings good men out of his good treasure, and the evil man brings evil men out of his evil treasure.',
+    ],
+    note: 'ἀγαθά has no article and no noun. It is neuter plural and the object of ἐκβάλλει: “good things.” A substantival adjective without the article is unusual; context shows it here.',
+  },
+  {
+    id: '1john-2-18', ref: '1 John 2:18', text: 'Παιδία, ἐσχάτη ὥρα ἐστίν,',
+    adjective: 'ἐσχάτη', use: 'attributive', head: 'ὥρα', decoys: ['Παιδία', 'ἐστίν'], help: 'Παιδία children',
+    translation: 'Children, it is the last hour,',
+    wrong: [
+      'Children, the hour is last,',
+      'Children, the last one is an hour,',
+      'Children, it was the last hour,',
+    ],
+    note: 'No article: context decides. ἐστίν means “it is,” and ἐσχάτη goes with ὥρα as one idea, “the last hour” (English adds “the”). “The hour is last” would be the predicate reading, which doesn’t fit here.',
+  },
+  {
+    id: 'john-18-36', ref: 'John 18:36', text: 'Ἡ βασιλεία ἡ ἐμὴ οὐκ ἔστιν ἐκ τοῦ κόσμου τούτου·',
+    adjective: 'ἐμὴ', use: 'attributive', head: 'βασιλεία', decoys: ['κόσμου', 'ἔστιν'], help: 'βασιλεία kingdom · τούτου this',
+    translation: 'My kingdom is not of this world.',
+    wrong: [
+      'The kingdom is mine, not of this world.',
+      'My kingdom is not with this world.',
+      'This world is not my kingdom.',
+    ],
+    note: 'ἡ βασιλεία ἡ ἐμή is the second attributive position: “my kingdom.” Here ἐκ means “of” in the sense of where it comes from.',
+  },
+  {
+    id: 'john-14-15', ref: 'John 14:15', text: 'Ἐὰν ἀγαπᾶτέ με, τὰς ἐντολὰς τὰς ἐμὰς τηρήσετε·',
+    adjective: 'ἐμὰς', use: 'attributive', head: 'ἐντολὰς', decoys: ['ἀγαπᾶτέ', 'τηρήσετε'],
+    help: 'ἀγαπᾶτε you love · με me · τηρήσετε you will keep',
+    translation: 'If you love me, you will keep my commandments.',
+    wrong: [
+      'If you love me, my commandments will keep you.',
+      'If I love you, you will keep my commandments.',
+      'If you love my commandments, you will keep me.',
+    ],
+    note: 'ἐάν starts a dependent clause (“if…”), so the main verb is τηρήσετε. τὰς ἐντολὰς τὰς ἐμάς is the second attributive position.',
+  },
+  {
+    id: 'john-3-36', ref: 'John 3:36', text: 'ὁ πιστεύων εἰς τὸν υἱὸν ἔχει ζωὴν αἰώνιον·',
+    adjective: 'αἰώνιον', use: 'attributive', head: 'ζωὴν', decoys: ['υἱὸν', 'ἔχει'], help: 'ὁ πιστεύων the one who believes · ἔχει has',
+    translation: 'The one who believes in the Son has eternal life.',
+    wrong: [
+      'The one who believes in the eternal Son has life.',
+      'The Son has eternal life in the one who believes.',
+      'The one who believes in the Son is eternal life.',
+    ],
+    note: 'αἰώνιος is a 2-2 adjective, so αἰώνιον here is feminine, agreeing with ζωήν (accusative singular), even though it looks masculine.',
+  },
+  {
+    id: 'mark-12-6', ref: 'Mark 12:6', text: 'ἔτι ἕνα εἶχεν, υἱὸν ἀγαπητόν·',
+    adjective: 'ἀγαπητόν', use: 'attributive', head: 'υἱὸν', decoys: ['ἕνα', 'εἶχεν'], help: 'ἔτι still · ἕνα one · εἶχεν he had',
+    translation: 'He still had one, a beloved son.',
+    wrong: [
+      'He still had one beloved, the son.',
+      'The beloved son still had one.',
+      'He still had one: the son is beloved.',
+    ],
+    note: 'Neither word has the article. υἱὸν ἀγαπητόν is “a beloved son”; an “is” doesn’t fit, so it is attributive.',
+  },
+  {
+    id: '1cor-10-13', ref: '1 Cor 10:13', text: 'πειρασμὸς ὑμᾶς οὐκ εἴληφεν εἰ μὴ ἀνθρώπινος· πιστὸς δὲ ὁ θεός,',
+    adjective: 'πιστὸς', use: 'predicate', head: 'θεός', decoys: ['πειρασμὸς', 'ἀνθρώπινος'],
+    help: 'πειρασμός temptation · ὑμᾶς you · οὐκ εἴληφεν has not seized · εἰ μή except · ἀνθρώπινος human',
+    translation: 'No temptation has seized you except what is common to people; but God is faithful,',
+    wrong: [
+      'No temptation has seized you except what is common to people; but the faithful God,',
+      'No temptation has seized you except God, who is faithful,',
+      'Temptation has seized you, but not the faithful God,',
+    ],
+    note: 'The noun has the article (ὁ θεός) but πιστός does not, so it is a predicate: supply “is.” This is the first predicate position, with the adjective before the noun.',
+  },
+  {
+    id: 'john-14-27', ref: 'John 14:27', text: 'εἰρήνην ἀφίημι ὑμῖν, εἰρήνην τὴν ἐμὴν δίδωμι ὑμῖν·',
+    adjective: 'ἐμὴν', use: 'attributive', head: 'εἰρήνην', decoys: ['ὑμῖν', 'δίδωμι'], help: 'εἰρήνην peace · ἀφίημι I leave · δίδωμι I give',
+    translation: 'Peace I leave with you; my peace I give to you.',
+    wrong: [
+      'Peace I leave with you; I give you to my peace.',
+      'My peace I leave with you; peace you give to me.',
+      'Peace I leave with you; the peace is mine, and I give it to you.',
+    ],
+    note: 'εἰρήνην τὴν ἐμήν is a noun without the article, then article + adjective: the third attributive position. It still means “my peace.”',
+  },
+  {
+    id: 'matt-2-16', ref: 'Matt 2:16', text: 'ἀνεῖλεν πάντας τοὺς παῖδας τοὺς ἐν Βηθλέεμ',
+    adjective: 'ἐν Βηθλέεμ', use: 'attributive', head: 'παῖδας', decoys: ['ἀνεῖλεν', 'πάντας'],
+    help: 'ἀνεῖλεν he killed · πάντας all · παῖδας children · Βηθλέεμ Bethlehem',
+    translation: 'he killed all the children who were in Bethlehem',
+    wrong: [
+      'he killed all the children and those in Bethlehem',
+      'all the children in Bethlehem killed him',
+      'he killed all the children on the way to Bethlehem',
+    ],
+    note: 'The second τούς ties the phrase to παῖδας, like an attributive adjective (article–noun–article–modifier). Translate it as a relative clause: “who were in Bethlehem.”',
+  },
+  {
+    id: '1john-4-1', ref: '1 John 4:1', text: 'Ἀγαπητοί, μὴ παντὶ πνεύματι πιστεύετε, ἀλλὰ δοκιμάζετε τὰ πνεύματα εἰ ἐκ τοῦ θεοῦ ἐστιν,',
+    adjective: 'Ἀγαπητοί', use: 'substantival', decoys: ['πνεύματι', 'πιστεύετε', 'πνεύματα'],
+    help: 'παντί every · πνεύματι spirit · πιστεύετε believe · δοκιμάζετε test · εἰ whether',
+    translation: 'Beloved, do not believe every spirit, but test the spirits to see whether they are from God,',
+    wrong: [
+      'Beloved spirits, do not believe everyone, but test whether it is from God,',
+      'Believe every beloved spirit, and test whether the spirits are from God,',
+      'Beloved, do not believe every spirit, but test the spirits whether it is from God,',
+    ],
+    note: 'Ἀγαπητοί has no noun: “beloved (ones),” addressing the readers. Also, τὰ πνεύματα is neuter plural, and Greek gives it a singular verb (ἐστιν); English needs “they are.”',
+  },
+]
+
+const adj = (id: string, lemma: string, lexical: string, gloss: string, m: string[], f: string[], n: string[]): DeclensionParadigm => ({
+  id, lemma, lexical, gloss, pattern: '2-1-2',
+  forms: {
+    masculine: { sg: [m[0], m[1], m[2], m[3]], pl: [m[4], m[5], m[6], m[7]] },
+    feminine: { sg: [f[0], f[1], f[2], f[3]], pl: [f[4], f[5], f[6], f[7]] },
+    neuter: { sg: [n[0], n[1], n[2], n[3]], pl: [n[4], n[5], n[6], n[7]] },
+  },
+})
+const w = (s: string) => s.split(' ')
+
+// The chapter's other adjectives (and ἄλλος, ἔσχατος from earlier chapters, which Mounce lists here as previous words).
+export const MORE_ADJECTIVES: DeclensionParadigm[] = [
+  adj('agapetos', 'ἀγαπητός', 'ἀγαπητός, -ή, -όν', 'beloved',
+    w('ἀγαπητός ἀγαπητοῦ ἀγαπητῷ ἀγαπητόν ἀγαπητοί ἀγαπητῶν ἀγαπητοῖς ἀγαπητούς'),
+    w('ἀγαπητή ἀγαπητῆς ἀγαπητῇ ἀγαπητήν ἀγαπηταί ἀγαπητῶν ἀγαπηταῖς ἀγαπητάς'),
+    w('ἀγαπητόν ἀγαπητοῦ ἀγαπητῷ ἀγαπητόν ἀγαπητά ἀγαπητῶν ἀγαπητοῖς ἀγαπητά')),
+  adj('emos', 'ἐμός', 'ἐμός, ἐμή, ἐμόν', 'my',
+    w('ἐμός ἐμοῦ ἐμῷ ἐμόν ἐμοί ἐμῶν ἐμοῖς ἐμούς'),
+    w('ἐμή ἐμῆς ἐμῇ ἐμήν ἐμαί ἐμῶν ἐμαῖς ἐμάς'),
+    w('ἐμόν ἐμοῦ ἐμῷ ἐμόν ἐμά ἐμῶν ἐμοῖς ἐμά')),
+  adj('kakos', 'κακός', 'κακός, -ή, -όν', 'bad',
+    w('κακός κακοῦ κακῷ κακόν κακοί κακῶν κακοῖς κακούς'),
+    w('κακή κακῆς κακῇ κακήν κακαί κακῶν κακαῖς κακάς'),
+    w('κακόν κακοῦ κακῷ κακόν κακά κακῶν κακοῖς κακά')),
+  adj('nekros', 'νεκρός', 'νεκρός, -ά, -όν', 'dead',
+    w('νεκρός νεκροῦ νεκρῷ νεκρόν νεκροί νεκρῶν νεκροῖς νεκρούς'),
+    w('νεκρά νεκρᾶς νεκρᾷ νεκράν νεκραί νεκρῶν νεκραῖς νεκράς'),
+    w('νεκρόν νεκροῦ νεκρῷ νεκρόν νεκρά νεκρῶν νεκροῖς νεκρά')),
+  adj('pistos', 'πιστός', 'πιστός, -ή, -όν', 'faithful',
+    w('πιστός πιστοῦ πιστῷ πιστόν πιστοί πιστῶν πιστοῖς πιστούς'),
+    w('πιστή πιστῆς πιστῇ πιστήν πισταί πιστῶν πισταῖς πιστάς'),
+    w('πιστόν πιστοῦ πιστῷ πιστόν πιστά πιστῶν πιστοῖς πιστά')),
+  adj('protos', 'πρῶτος', 'πρῶτος, -η, -ον', 'first',
+    w('πρῶτος πρώτου πρώτῳ πρῶτον πρῶτοι πρώτων πρώτοις πρώτους'),
+    w('πρώτη πρώτης πρώτῃ πρώτην πρῶται πρώτων πρώταις πρώτας'),
+    w('πρῶτον πρώτου πρώτῳ πρῶτον πρῶτα πρώτων πρώτοις πρῶτα')),
+  adj('tritos', 'τρίτος', 'τρίτος, -η, -ον', 'third',
+    w('τρίτος τρίτου τρίτῳ τρίτον τρίτοι τρίτων τρίτοις τρίτους'),
+    w('τρίτη τρίτης τρίτῃ τρίτην τρίται τρίτων τρίταις τρίτας'),
+    w('τρίτον τρίτου τρίτῳ τρίτον τρίτα τρίτων τρίτοις τρίτα')),
+  adj('eschatos', 'ἔσχατος', 'ἔσχατος, -η, -ον', 'last',
+    w('ἔσχατος ἐσχάτου ἐσχάτῳ ἔσχατον ἔσχατοι ἐσχάτων ἐσχάτοις ἐσχάτους'),
+    w('ἐσχάτη ἐσχάτης ἐσχάτῃ ἐσχάτην ἔσχαται ἐσχάτων ἐσχάταις ἐσχάτας'),
+    w('ἔσχατον ἐσχάτου ἐσχάτῳ ἔσχατον ἔσχατα ἐσχάτων ἐσχάτοις ἔσχατα')),
+  // No -ν in the neuter nominative/accusative singular: ἄλλο, like the article's τό.
+  adj('allos', 'ἄλλος', 'ἄλλος, -η, -ο', 'other',
+    w('ἄλλος ἄλλου ἄλλῳ ἄλλον ἄλλοι ἄλλων ἄλλοις ἄλλους'),
+    w('ἄλλη ἄλλης ἄλλῃ ἄλλην ἄλλαι ἄλλων ἄλλαις ἄλλας'),
+    w('ἄλλο ἄλλου ἄλλῳ ἄλλο ἄλλα ἄλλων ἄλλοις ἄλλα')),
+]

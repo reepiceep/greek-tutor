@@ -1,4 +1,5 @@
 import type { DeclensionParadigm, Chapter, NounPhrase, AdjectiveUseItem } from './types'
+import { ADJ_READINGS, MORE_ADJECTIVES } from './chapter09Readings'
 
 // Mounce, Basics of Biblical Greek (4th ed.), ch. 9: Adjectives.
 // Verse excerpts are from the SBLGNT (CC BY 4.0); other phrases and all English are written for this app.
@@ -104,6 +105,18 @@ const USES: AdjectiveUseItem[] = [
     id: 'practice-4', text: 'τὰ ἔργα τὰ ἀγαθά', adjective: 'ἀγαθά', use: 'attributive',
     translation: 'the good works', wrong: ['the works are good', 'the good ones are works', 'the good work'],
   },
+  // Third attributive position (Mounce 9.20): noun without the article, then article + adjective.
+  {
+    id: 'john-14-27', ref: 'John 14:27', text: 'εἰρήνην τὴν ἐμὴν δίδωμι ὑμῖν·', adjective: 'ἐμὴν', use: 'attributive',
+    help: 'εἰρήνη = peace · δίδωμι = I give · ὑμῖν = to you',
+    note: 'Third attributive position: the noun has no article, but τήν comes right before the adjective. It still means “my peace.”',
+    translation: 'my peace I give to you', wrong: ['peace is mine, I give it to you', 'I give you to my peace', 'you give me peace'],
+  },
+  {
+    id: 'practice-9', text: 'δοῦλος ὁ πιστός', adjective: 'πιστός', use: 'attributive',
+    note: 'Third attributive position: noun, then article + adjective. Rare with adjectives, more common with phrases.',
+    translation: 'the faithful slave', wrong: ['the slave is faithful', 'a slave of the faithful one', 'the faithful one is a slave'],
+  },
   // Predicate
   {
     id: 'rom-7-12a', ref: 'Rom 7:12', text: 'ὁ μὲν νόμος ἅγιος,', adjective: 'ἅγιος', use: 'predicate',
@@ -199,5 +212,5 @@ export const chapter09: Chapter = {
     { id: 'tritos', lemma: 'τρίτος', lexical: 'τρίτος, -η, -ον', pos: 'adjective', gloss: 'third', hook: 'From τρία, “three”: triangle, trio.', accept: ['third'] },
   ],
   paradigms: [],
-  adjectives: { paradigms: PARADIGMS, nouns: NOUNS, uses: USES },
+  adjectives: { paradigms: PARADIGMS, more: MORE_ADJECTIVES, nouns: NOUNS, uses: USES, readings: ADJ_READINGS },
 }

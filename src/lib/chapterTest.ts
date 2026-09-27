@@ -1,5 +1,6 @@
 import type { ChoiceQuestion, ChoiceResult } from '../components/ChoiceQuiz'
 import { readingModifiesQuestion, readingTranslateQuestion } from './prepReadingQuestions'
+import { ADJ_READING_SKILLS, adjReadingQuestion, allAdjectives, lexicalFormQuestion, lexicalForms } from './adjReadingQuestions'
 import { chapter08 } from '../data/chapter08'
 import { chapter09 } from '../data/chapter09'
 import { chapter10 } from '../data/chapter10'
@@ -154,26 +155,30 @@ const SPECS: Record<number, TestSpec> = {
   9: {
     areas: [
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
-      { name: 'Adjective forms', count: 8, covers: 'parsing and agreement' },
-      { name: 'Adjective use', count: 8, covers: 'attributive, predicate, substantival; translation' },
+      { name: 'Adjective forms', count: 8, covers: 'parsing, lexical forms and agreement' },
+      { name: 'Adjective use', count: 8, covers: 'attributive, predicate, substantival; translating phrases and verses' },
       { name: 'Chapter 8 review', count: 4, covers: 'prepositions and the predicate nominative' },
     ],
     build: (ch) => {
       const adj = ch.adjectives!
-      const parse = take(adj.paradigms.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 4)
+      const parse = take(allAdjectives(ch).flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 3)
+      const lexical = take(allAdjectives(ch).flatMap((p) => lexicalForms(p).map((f) => ({ p, f }))), 1)
       const agree = take(adj.paradigms.flatMap((p) => adj.nouns.map((n) => ({ p, n }))), 4)
-      const useItems = take(adj.uses, 5)
-      const translateItems = take(adj.uses.filter(translatable), 3)
+      const useItems = take(adj.uses, 3)
+      const translateItems = take(adj.uses.filter(translatable), 2)
+      const readings = take(adj.readings ?? [], 3)
       const ch8 = chapter08
       return [
         ...vocabArea(ch),
         ...tag('Adjective forms', [
           ...parse.map(({ p, f }) => adjParseQuestion(ch, p, f)),
+          ...lexical.map(({ p, f }) => lexicalFormQuestion(ch, p, f)),
           ...agree.map(({ p, n }) => adjAgreeQuestion(ch, p, n)),
         ]),
         ...tag('Adjective use', [
           ...useItems.map((u) => adjUseQuestion(ch, u)),
           ...translateItems.map((u) => adjTranslateQuestion(ch, u)),
+          ...readings.map((r, i) => adjReadingQuestion(ch, r, ADJ_READING_SKILLS[i % ADJ_READING_SKILLS.length])),
         ]),
         // Review questions use chapter 8's own items, so they also count toward chapter 8 progress.
         ...tag('Chapter 8 review', [

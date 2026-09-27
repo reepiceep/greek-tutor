@@ -12,9 +12,10 @@ import { Lesson } from './Lesson'
 import { GreekInput } from './GreekInput'
 import { paradigmIdentifyQuestion } from '../lib/questions'
 
-type Mode = 'chart' | 'identify' | 'predicate' | 'enclitics'
+type Mode = 'reference' | 'chart' | 'identify' | 'predicate' | 'enclitics'
 
 const MODES: { mode: Mode; label: string; available: (ch: Chapter) => boolean }[] = [
+  { mode: 'reference', label: 'Reference', available: () => true },
   { mode: 'chart', label: 'Fill the chart', available: () => true },
   { mode: 'identify', label: 'Identify forms', available: () => true },
   { mode: 'predicate', label: 'Subject & predicate', available: (ch) => !!ch.predicates?.length },
@@ -38,12 +39,65 @@ export function ParadigmDrill({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {(mode === 'chart' || mode === 'identify') && <EimiLesson />}
+      {(mode === 'reference' || mode === 'chart' || mode === 'identify') && <EimiLesson />}
+      {mode === 'reference' && <Reference key={key} chapter={chapter} paradigm={paradigm} />}
       {mode === 'chart' && <ChartDrill key={key} chapter={chapter} paradigm={paradigm} onRestart={restart} />}
       {mode === 'identify' && <IdentifyDrill key={key} chapter={chapter} paradigm={paradigm} onRestart={restart} />}
       {mode === 'predicate' && <PredicateDrill key={key} chapter={chapter} onRestart={restart} />}
       {mode === 'enclitics' && <EncliticDrill key={key} chapter={chapter} onRestart={restart} />}
     </section>
+  )
+}
+
+// --- Reference -------------------------------------------------------------------------
+
+/** The paradigm with its meanings, which can be hidden for self-testing (like the prepositions reference). */
+function Reference({ chapter, paradigm }: { chapter: Chapter; paradigm: Paradigm }) {
+  const [hide, setHide] = useState(false)
+  const [shown, setShown] = useState<Set<string>>(new Set())
+  // ἦν is in the chapter's vocabulary rather than the present paradigm; show it under the chart.
+  const past = chapter.vocab.find((w) => w.id === 'en')
+  const rows = [
+    ...paradigm.rows.map((r) => ({ key: r.key, label: r.label, form: r.display ?? r.forms[0], gloss: r.gloss })),
+    ...(past ? [{ key: 'past', label: 'past, 3rd sg', form: past.lemma, gloss: past.gloss }] : []),
+  ]
+  const toggle = (k: string) => setShown((s) => {
+    const next = new Set(s)
+    if (next.has(k)) next.delete(k)
+    else next.add(k)
+    return next
+  })
+
+  return (
+    <>
+      <div className="reference-tools">
+        <label className="check">
+          <input type="checkbox" checked={hide} onChange={(e) => { setHide(e.target.checked); setShown(new Set()) }} />
+          Hide meanings (click a cell to show or hide it)
+        </label>
+        {hide && (
+          <div className="seg small-seg">
+            <button onClick={() => setShown(new Set(rows.map((r) => r.key)))} disabled={shown.size === rows.length}>Show all</button>
+            <button onClick={() => setShown(new Set())} disabled={shown.size === 0}>Hide all</button>
+          </div>
+        )}
+      </div>
+      <table className="reference">
+        <thead><tr><th>Form</th><th>Person</th><th>Meaning</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key}>
+              <th><span className="greek">{r.form}</span></th>
+              <td className="muted">{r.label}</td>
+              {!hide ? <td>{r.gloss}</td>
+                : shown.has(r.key)
+                  ? <td><button className="revealed" onClick={() => toggle(r.key)} title="Hide again">{r.gloss}</button></td>
+                  : <td><button className="reveal" onClick={() => toggle(r.key)}>show</button></td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   )
 }
 

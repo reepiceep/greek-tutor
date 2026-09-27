@@ -41,6 +41,10 @@ import {
   tenseVoiceLabel, whichTenseItemId, whichTensePairs, whichTenseQuestion, whichVerbItemId, whichVerbPairs, whichVerbQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
+import {
+  ADJ_READING_SKILLS, adjReadingItemId, adjReadingQuestion, allAdjectives, lexicalFormQuestion, lexicalForms, lexicalItemId, substItemId,
+  substItems, substQuestion,
+} from './adjReadingQuestions'
 import { nounPrepForms, nounPrepItemId, nounPrepQuestion, readingItemId, readingQuestion, readingSkills } from './prepReadingQuestions'
 import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDeclensionQuestions'
 import { TOPIC_META } from './views'
@@ -184,7 +188,21 @@ function buildSkills(ch: Chapter): Skill[] {
         ...elidedForms(ch).map((f) => ({ id: elidedFormItemId(n, f.form), name: `${f.form} = ?`, make: () => elidedFormQuestion(ch, f.form, f.word) })),
       ],
     },
-    { label: 'Adjectives: parsing', view: 'adjectives', items: parseItems(adj?.paradigms ?? []) },
+    { label: 'Adjectives: parsing', view: 'adjectives', items: parseItems(allAdjectives(ch)) },
+    {
+      label: 'Adjectives: lexical form', view: 'adjectives',
+      items: allAdjectives(ch).flatMap((ap) => lexicalForms(ap).map((f) => ({ id: lexicalItemId(n, ap, f), name: `${f} → lexical form`, make: () => lexicalFormQuestion(ch, ap, f) }))),
+    },
+    {
+      label: 'Adjectives: as nouns', view: 'adjectives',
+      items: substItems(ch).map((si) => ({ id: substItemId(n, si), name: `${si.p.lemma} as a noun (${si.gender} ${si.number})`, make: () => substQuestion(ch, si) })),
+    },
+    {
+      label: 'Adjectives: reading verses', view: 'adjectives',
+      items: (adj?.readings ?? []).flatMap((r) => ADJ_READING_SKILLS.map((skill) => ({
+        id: adjReadingItemId(n, r, skill), name: `${r.ref}: ${skill === 'head' ? 'which word' : skill}`, make: () => adjReadingQuestion(ch, r, skill),
+      }))),
+    },
     {
       label: 'Adjectives: agreement', view: 'adjectives',
       items: (adj?.paradigms ?? []).flatMap((ap) => (adj?.nouns ?? []).map((nn) => ({

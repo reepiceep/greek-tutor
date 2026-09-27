@@ -42,6 +42,11 @@ it('renders every view without crashing', () => {
   expect(document.querySelectorAll('.spatial-grid figure')).toHaveLength(7)
   tab('Quiz me')
   expect(screen.getByText('1 of 7')).toBeTruthy()
+  nav('εἰμί')
+  tab('Reference')
+  expect(document.querySelectorAll('.reference tbody tr')).toHaveLength(7)
+  fireEvent.click(screen.getByText(/Hide meanings/))
+  expect(document.querySelectorAll('.reference .reveal')).toHaveLength(7)
 })
 
 it('opens every tab of the all-prepositions review at each range', () => {
@@ -96,8 +101,10 @@ it('chapter 9: every adjectives tab works and the test adds up to 30', () => {
   pickChapter(9)
   expect(screen.queryByText('εἰμί', { selector: 'header nav button' })).toBeNull()
   nav('Adjectives')
-  expect(document.querySelectorAll('.adj-table')).toHaveLength(4)
-  for (const t of ['Parse', 'Agreement', 'Uses']) {
+  // Four main charts, and the chapter's other nine adjectives in a collapsed section.
+  expect(document.querySelectorAll('.adj-tables > .adj-table')).toHaveLength(13)
+  expect(document.querySelectorAll('details .adj-table')).toHaveLength(9)
+  for (const t of ['Parse', 'Agreement', 'Uses', 'As nouns', 'Read verses']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)
