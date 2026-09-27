@@ -5,7 +5,7 @@ import {
   ACTIVE_VOWELS, CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, MP_ENDINGS, MP_PRIMARY, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
   contractTypeQuestion, contractionItemId, contractionPairs, contractionQuestion, endingFormQuestion, endingItemId, endingPersonQuestion,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
-  aoristFormItemId, aoristFormQuestion, CONTRACT_IMPF, IMPF_ENDINGS, IMPF_MP_ENDINGS, SECONDARY, SECONDARY_MP, augmentItemId, augmentQuestion, hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
+  AORP_ENDINGS, PASSIVE_RULES, aoristFormItemId, aoristFormQuestion, passiveRuleFor, passiveRuleItemId, passiveRuleQuestion, CONTRACT_IMPF, IMPF_ENDINGS, IMPF_MP_ENDINGS, SECONDARY, SECONDARY_MP, augmentItemId, augmentQuestion, hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
   presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
@@ -15,7 +15,7 @@ import { ChartDrill } from './ParadigmDrill'
 type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'augment' | 'stems' | 'forming' | 'tense' | 'contractions' | 'verses'
 
 /** Chapter 16: present active; 17: contract verbs; 18: middle/passive; 19: future; 20: other futures; 21: imperfect; 22: second aorist. */
-type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist'
+type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive'
 
 const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
@@ -30,16 +30,19 @@ const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'tense', label: 'Present or future?', modes: ['future', 'roots'] },
   { tab: 'tense', label: 'Present or imperfect?', modes: ['imperfect'] },
   { tab: 'stems', label: 'Aorist stems', modes: ['aorist'] },
-  { tab: 'tense', label: 'Imperfect or aorist?', modes: ['aorist'] },
+  { tab: 'stems', label: 'Forming the aorist', modes: ['aorist1'] },
+  { tab: 'tense', label: 'Imperfect or aorist?', modes: ['aorist', 'aorist1'] },
+  { tab: 'stems', label: 'Forming the passive', modes: ['passive'] },
+  { tab: 'tense', label: 'Aorist or future?', modes: ['passive'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
 const modeOf = (ch: Chapter): Mode => {
   const verbs = ch.present?.verbs ?? []
-  return verbs.some((v) => v.tense === 'aorist') ? 'aorist' : verbs.some((v) => v.tense === 'imperfect') ? 'imperfect' : verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+  return verbs.some((v) => v.passiveForm) ? 'passive' : verbs.some((v) => v.firstAorist) ? 'aorist1' : verbs.some((v) => v.tense === 'aorist') ? 'aorist' : verbs.some((v) => v.tense === 'imperfect') ? 'imperfect' : verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
 }
 
-const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures', imperfect: 'Imperfect indicative', aorist: 'Second aorist active/middle indicative' }
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures', imperfect: 'Imperfect indicative', aorist: 'Second aorist active/middle indicative', aorist1: 'First aorist active/middle indicative', passive: 'Aorist and future passive indicative' }
 
 /** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
@@ -59,7 +62,7 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (mode === 'aorist' ? <AoristLesson chapter={chapter} /> : mode === 'imperfect' ? <ImperfectLesson chapter={chapter} /> : mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'passive' ? <PassiveLesson chapter={chapter} /> : mode === 'aorist1' ? <FirstAoristLesson chapter={chapter} /> : mode === 'aorist' ? <AoristLesson chapter={chapter} /> : mode === 'imperfect' ? <ImperfectLesson chapter={chapter} /> : mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
@@ -183,6 +186,121 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
         Each cell: stem + contract vowel + ending, e.g. <span className="greek">ἀγαπα + {ENDINGS['1p']}</span>{' '}
         (<span className="greek">α + {ENDING_VOWEL['1p']} → {CONTRACTIONS.α[ENDING_VOWEL['1p']]}</span>) = <span className="greek">ἀγαπῶμεν</span>.
       </p>
+    </>
+  )
+}
+
+function PassiveLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const luo = verbs[0]
+  const deponents = verbs.filter((v) => v.passiveForm && v.voice !== 'passive')
+  const secondPassive = verbs.filter((v) => v.passiveForm && !v.stem.includes('θη'))
+  if (!luo) return null
+  const future = inTense(luo, 'future')
+  return (
+    <>
+      <Lesson title="The aorist and future passive">
+        <p>
+          The aorist and future have their own passive forms, marked by <strong>θη</strong>. The <strong>aorist passive</strong> is augment + stem + θη +
+          secondary active endings: <span className="greek">ἐ-λύ-θη-ν</span>, “I was loosed.” The <strong>future passive</strong> is stem + θη + σ +
+          middle/passive endings, with no augment: <span className="greek">λυ-θή-σ-ομαι</span>, “I will be loosed.”
+        </p>
+        <ul>
+          <li>Aorist passive endings: <span className="greek">{SLOTS.map((s) => AORP_ENDINGS[s] || '–').join(', ')}</span> (the 3rd plural is <span className="greek">σαν</span>): <span className="greek">{SLOTS.map((s) => presentDisplay(luo, s)).join(', ')}</span>.</li>
+          <li>Future passive: <span className="greek">{SLOTS.map((s) => presentDisplay(future, s)).join(', ')}</span>.</li>
+          <li>Before θ, stops change: π, β → φθ (<span className="greek">ὤφθην</span>, from the root *ὀπ); κ, γ → χθ (<span className="greek">ἤχθην, ἐκηρύχθην</span>); τ, δ, ζ → σθ (<span className="greek">ἐβαπτίσθην</span>). Contract vowels lengthen: <span className="greek">ἠγαπήθην, ἐπληρώθην</span>. Some verbs insert a σ: <span className="greek">ἐγνώσθην</span>.</li>
+          {secondPassive.length > 0 && <li>A <strong>second aorist passive</strong> has η without θ: {secondPassive.map((v, i) => <span key={v.id}>{i > 0 && ', '}<span className="greek">{presentDisplay(v, '1s')}</span></span>)}.</li>}
+          {deponents.length > 0 && (
+            <li>
+              Some verbs have passive forms but an active meaning (traditionally “deponent”):{' '}
+              {deponents.map((v, i) => <span key={v.id}>{i > 0 && ', '}<span className="greek">{presentDisplay(v, '3s')}</span> “{presentEnglish(v, '3s')}”</span>)}. <span className="greek">ἀπεκρίθη</span> is one of the commonest verbs in the Gospels.
+            </li>
+          )}
+          <li>Translate the aorist passive as a simple past, “was loosed”: often with <span className="greek">ὑπό</span> + genitive for the agent (<span className="greek">ἐβαπτίσθη … ὑπὸ Ἰωάννου</span>, “he was baptized by John”).</li>
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th>Aorist passive</th><th /><th>Future passive</th></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek">{presentDisplay(luo, s)}</td>
+              <td className="muted">{presentEnglish(luo, s)}</td>
+              <td className="greek">{presentDisplay(future, s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table className="reference future-table">
+        <caption>This chapter’s aorist passives</caption>
+        <thead><tr><th>Present</th><th>Aorist passive</th><th /></tr></thead>
+        <tbody>
+          {verbs.map((v) => (
+            <tr key={v.id}>
+              <td className="greek">{v.lemma}</td>
+              <td className="greek">{presentDisplay(v, '1s')}</td>
+              <td className="muted small">{presentEnglish(v, '1s')}{passiveRuleFor(v) ? ` · ${passiveRuleFor(v)!.from} + θ → ${passiveRuleFor(v)!.to}` : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
+
+function FirstAoristLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const luo = verbs[0]
+  const middle = verbs.find((v) => v.voice === 'middle' && v.firstAorist)
+  const first = verbs.filter((v) => v.firstAorist)
+  const second = verbs.filter((v) => !v.firstAorist)
+  if (!luo) return null
+  const luoMiddle = { ...luo, voice: 'middle' as const }
+  return (
+    <>
+      <Lesson title="The first aorist">
+        <p>
+          Most verbs form their aorist with a <strong>σα</strong> added to the stem: <strong>augment + stem + σα + secondary ending</strong>.
+          <span className="greek"> ἔ-λυ-σα</span>, “I loosed.” Like the second aorist, it is usually a simple past.
+        </p>
+        <ul>
+          <li>Active: <span className="greek">{SLOTS.map((s) => presentDisplay(luo, s)).join(', ')}</span>. The 3rd singular has ε, not α: <span className="greek">ἔλυσε(ν)</span>.</li>
+          <li>Middle: <span className="greek">{SLOTS.map((s) => presentDisplay(luoMiddle, s)).join(', ')}</span>.</li>
+          <li>The σ behaves as in the future: π, β, φ + σ → ψ (<span className="greek">ἔγραψα</span>); κ, γ, χ + σ → ξ (<span className="greek">ἐκήρυξα</span>, from the root *κηρυγ); τ, δ, θ, ζ drop out (<span className="greek">ἐδόξασα</span>); contract vowels lengthen (<span className="greek">ἠγάπησα, ἐποίησα, ἐπλήρωσα</span>).</li>
+          <li><strong>Liquid aorists</strong> (stems in λ, μ, ν, ρ) have no σ, and the stem vowel often lengthens: <span className="greek">μένω → ἔμεινα, ἀποστέλλω → ἀπέστειλα, αἴρω → ἦρα, κρίνω → ἔκρινα</span>.</li>
+          <li>Future or aorist? Both have a σ, but the aorist has the augment and the α: <span className="greek">λύσει</span>, “he will loose,” but <span className="greek">ἔλυσε</span>, “he loosed.”</li>
+          {middle && <li><span className="greek">{middle.lemma}</span>, “I begin,” has a middle aorist: <span className="greek">ἤρξατο</span>, “he began,” usually followed by an infinitive.</li>}
+          {second.length > 0 && <li>Not every verb has a first aorist. This chapter’s {second.map((v, i) => <span key={v.id}>{i > 0 && ' and '}<span className="greek">{v.lemma} → {presentDisplay(v, '1s')}</span></span>)} are second aorists.</li>}
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th>Imperfect</th><th>First aorist</th><th /><th>Middle</th></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek muted">{luo.imperfect ? presentDisplay(inTense(luo, 'imperfect'), s) : ''}</td>
+              <td className="greek">{presentDisplay(luo, s)}</td>
+              <td className="muted">{presentEnglish(luo, s)}</td>
+              <td className="greek">{presentDisplay(luoMiddle, s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table className="reference future-table">
+        <caption>This chapter’s aorists</caption>
+        <thead><tr><th>Present</th><th>Aorist</th><th /></tr></thead>
+        <tbody>
+          {[...first, ...second].map((v) => (
+            <tr key={v.id}>
+              <td className="greek">{v.lemma}</td>
+              <td className="greek">{presentDisplay(v, '1s')}</td>
+              <td className="muted small">{!v.firstAorist ? 'second aorist' : v.liquid ? 'liquid' : ruleFor(v) ? `${ruleFor(v)!.from} + σ → ${ruleFor(v)!.to}` : '+ σα'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   )
 }
@@ -497,7 +615,7 @@ interface QuizProps {
   onRestart: () => void
 }
 
-const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'], imperfect: ['e)/luon', 'ἔλυον'], aorist: ['e)/labon', 'ἔλαβον'] }
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'], imperfect: ['e)/luon', 'ἔλυον'], aorist: ['e)/labon', 'ἔλαβον'], aorist1: ['e)/lusa', 'ἔλυσα'], passive: ['e)lu/qhn', 'ἐλύθην'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -581,7 +699,13 @@ function Forming({ chapter, onRestart }: QuizProps) {
 function AoristStems({ chapter, onRestart }: QuizProps) {
   const [questions] = useState(() => {
     const verbs = chapter.present?.verbs ?? []
+    // First aorists add the σ rules (stop + σ, lengthened vowels); passives the θ rules.
+    const passive = verbs.some((v) => v.passiveForm)
+    const rules = passive
+      ? PASSIVE_RULES.map((r) => ({ id: passiveRuleItemId(chapter.number, r), make: () => passiveRuleQuestion(chapter, r) }))
+      : verbs.some((v) => v.firstAorist) ? FUTURE_RULES.map((r) => ({ id: futureRuleItemId(chapter.number, r), make: () => futureRuleQuestion(chapter, r) })) : []
     const pool = [
+      ...rules,
       ...verbs.map((v) => ({ id: aoristFormItemId(chapter.number, v), make: () => aoristFormQuestion(chapter, v) })),
       ...verbs.flatMap((v) => SLOTS.map((s) => ({ id: futureLexicalItemId(chapter.number, v, s), make: () => futureLexicalQuestion(chapter, v, s) }))),
     ]
@@ -589,7 +713,13 @@ function AoristStems({ chapter, onRestart }: QuizProps) {
   })
   return (
     <>
-      <p className="muted">Pick each verb’s aorist, and work back from an aorist to its lexical form. The aorist stem is often quite unlike the present.</p>
+      <p className="muted">
+        {chapter.present?.verbs.some((v) => v.passiveForm)
+          ? 'What θ does to a stem, which form is the aorist passive (not the aorist active or the future passive), and which verb a passive comes from.'
+          : chapter.present?.verbs.some((v) => v.firstAorist)
+          ? 'What the σ does to a stem, which form is the aorist (not the imperfect or the future), and which verb an aorist comes from.'
+          : 'Pick each verb’s aorist, and work back from an aorist to its lexical form. The aorist stem is often quite unlike the present.'}
+      </p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )
@@ -627,6 +757,8 @@ const TENSE_HINTS: Partial<Record<Mode, ReactNode>> = {
   future: <>Present and future forms side by side. Look for the σ (or ψ, ξ, or a lengthened vowel) before the ending: <span className="greek">λύει</span> / <span className="greek">λύσει</span>, <span className="greek">βλέπεις</span> / <span className="greek">βλέψεις</span>.</>,
   roots: <>Present and future forms side by side. Watch the stem and the accent: <span className="greek">μένει</span> / <span className="greek">μενεῖ</span>, <span className="greek">αἴρει</span> / <span className="greek">ἀρεῖ</span>.</>,
   imperfect: <>Present and imperfect forms side by side. Look for the augment and the secondary ending: <span className="greek">λύει</span> / <span className="greek">ἔλυε</span>, <span className="greek">ποιοῦμεν</span> / <span className="greek">ἐποιοῦμεν</span>.</>,
+  passive: <>Aorist and future passive side by side. Both have θη; the aorist has the augment and secondary endings, the future a σ and middle endings: <span className="greek">ἐλύθη</span> / <span className="greek">λυθήσεται</span>, <span className="greek">ἐσώθης</span> / <span className="greek">σωθήσῃ</span>.</>,
+  aorist1: <>Imperfect and aorist forms side by side. Look for the σα (or ψα, ξα, or a liquid stem + α): <span className="greek">ἔλυον</span> / <span className="greek">ἔλυσα</span>, <span className="greek">ἔγραφον</span> / <span className="greek">ἔγραψα</span>, <span className="greek">ἔμενον</span> / <span className="greek">ἔμεινα</span>.</>,
   aorist: <>Imperfect and aorist forms side by side. They share the augment and the endings, so look at the stem: <span className="greek">ἐλάμβανον</span> / <span className="greek">ἔλαβον</span>, <span className="greek">ἔβαλλον</span> / <span className="greek">ἔβαλον</span>.</>,
 }
 
@@ -673,7 +805,7 @@ function Verses({ chapter, onRestart }: QuizProps) {
   })
   return (
     <>
-      <p className="muted">Present-tense verbs in the New Testament: find the person from the ending, and the verb from the stem.</p>
+      <p className="muted">This chapter’s verb forms in the New Testament: find the person from the ending, and the verb from the stem.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )

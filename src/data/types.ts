@@ -450,6 +450,23 @@ export interface PresentVerb {
   ing?: string
   /** Chapter 22: English simple past for the aorist ("took"). `stem` is then the augmented second aorist stem (ἐλαβ). */
   past?: string
+  /**
+   * Chapter 23: a first aorist. `stem` then includes the σ (ἐλυσ, ἐγραψ; a liquid aorist has none: ἐμειν), and the
+   * endings are α, ας, ε(ν), αμεν, ατε, αν.
+   */
+  firstAorist?: boolean
+  /** The future 1st singular, offered as a wrong answer when choosing the aorist (λύσω for ἔλυσα). */
+  future1s?: string
+  /** More wrong answers when choosing the aorist, e.g. the aorist active ἔλυσα for the passive ἐλύθην. */
+  alt1s?: string[]
+  /**
+   * Chapter 24: passive forms. `stem` is then the augmented aorist passive stem with its θη (ἐλυθη) or η (ἐγραφη), and
+   * the endings are ν, ς, –, μεν, τε, σαν. A verb with `voice: 'passive'` is translated as a passive; one without is a
+   * deponent with an active meaning (ἀπεκρίθη, “he answered”).
+   */
+  passiveForm?: boolean
+  /** The future passive stem with its θησ and accent (λυθήσ), for telling aorist from future passive. */
+  futurePassive?: { stem: string }
   /** Chapter 22: the imperfect, for telling it from the aorist (ἐλάμβανον, ἔλαβον). */
   imperfect?: { stem: string; prefix?: string; contract?: ContractVowel; voice?: 'passive' | 'middle' }
   /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
@@ -481,6 +498,8 @@ export interface PresentVerse {
   slot: PersonSlot
   /** PresentVerb id. */
   verb: string
+  /** When the verse has the verb in a different tense from the chapter's drills (a future passive in chapter 24). */
+  tense?: 'future'
   translation: string
   help?: string
   note?: string
@@ -507,7 +526,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'cases'
 
 export interface Chapter {
   number: number

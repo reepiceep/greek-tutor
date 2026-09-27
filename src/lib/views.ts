@@ -17,6 +17,8 @@ export const TOPIC_META: Record<TopicView, { nav: string; title: string; descrip
   roots: { nav: 'Other futures', title: 'Verbal roots and other futures', description: 'Roots and present stems; liquid futures (μενῶ, ἀποστελῶ) and changed stems (ὄψομαι, γνώσομαι)', glyph: 'ῶ' },
   imperfect: { nav: 'Imperfect', title: 'Imperfect indicative', description: 'ἔλυον and ἐλυόμην: the augment, secondary endings, contract verbs, and present or imperfect', glyph: 'ἐ' },
   aorist: { nav: 'Second aorist', title: 'Second aorist', description: 'ἔλαβον and ἐγενόμην: aorist stems, simple past, and imperfect or aorist', glyph: 'ον' },
+  aorist1: { nav: 'First aorist', title: 'First aorist', description: 'ἔλυσα and ἐλυσάμην: the σα, stops and lengthened vowels, liquid aorists, and imperfect or aorist', glyph: 'σα' },
+  passive: { nav: 'Passive', title: 'Aorist and future passive', description: 'ἐλύθην and λυθήσομαι: θη, stops before θ, second aorist passives, deponents, and aorist or future', glyph: 'θη' },
   cases: { nav: 'Genitive & dative', title: 'Genitive and dative', description: 'The endings, and what each case does in a sentence', glyph: 'γ' },
   declension: { nav: '3rd declension', title: 'Third declension', description: 'Square of Stops, stems, parsing, πᾶς, τίς vs τις', glyph: 'σ' },
 }

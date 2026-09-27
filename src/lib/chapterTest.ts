@@ -18,7 +18,7 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
-  aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
+  PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -489,6 +489,56 @@ const SPECS: Record<number, TestSpec> = {
           ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 3).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
         ]),
         ...tag('Imperfect or aorist', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  23: {
+    areas: [
+      { name: 'Vocabulary', count: 8, covers: 'the chapter’s eight words, both directions' },
+      { name: 'Aorist forms', count: 10, covers: 'parsing, translating and choosing first aorist forms' },
+      { name: 'Forming the aorist', count: 5, covers: 'what σ does to a stem, liquid aorists, and the lexical form of an aorist' },
+      { name: 'Imperfect or aorist', count: 3, covers: 'telling ἔλυον from ἔλυσα' },
+      { name: 'Verses', count: 4, covers: 'first aorists in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 10)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
+      return [
+        ...vocabArea(ch),
+        ...tag('Aorist forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Forming the aorist', [
+          ...take(FUTURE_RULES, 1).map((r) => futureRuleQuestion(ch, r)),
+          ...take(pr.verbs, 2).map((v) => aoristFormQuestion(ch, v)),
+          ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 2).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
+        ]),
+        ...tag('Imperfect or aorist', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  24: {
+    areas: [
+      { name: 'Vocabulary', count: 8, covers: 'the chapter’s eight words, both directions' },
+      { name: 'Passive forms', count: 10, covers: 'parsing, translating and choosing aorist passive forms, including deponents' },
+      { name: 'Forming the passive', count: 5, covers: 'what θ does to a stem, choosing the aorist passive, and the lexical form' },
+      { name: 'Aorist or future', count: 3, covers: 'telling ἐλύθη from λυθήσεται' },
+      { name: 'Verses', count: 4, covers: 'aorist and future passives in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 10)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
+      return [
+        ...vocabArea(ch),
+        ...tag('Passive forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Forming the passive', [
+          ...take(PASSIVE_RULES, 1).map((r) => passiveRuleQuestion(ch, r)),
+          ...take(pr.verbs, 2).map((v) => aoristFormQuestion(ch, v)),
+          ...take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 2).map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
+        ]),
+        ...tag('Aorist or future', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]
     },

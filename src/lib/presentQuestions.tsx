@@ -77,6 +77,13 @@ export const CONTRACT_IMPF_MP: Record<ContractVowel, Record<PersonSlot, string>>
   ο: { '1s': 'ούμην', '2s': 'οῦ', '3s': 'οῦτο', '1p': 'ούμεθα', '2p': 'οῦσθε', '3p': 'οῦντο' },
 }
 
+/** First aorist endings after the σ (or a liquid stem): the α is the tense formative. */
+export const AOR1_ENDINGS: Record<PersonSlot, string> = { '1s': 'α', '2s': 'ας', '3s': 'ε(ν)', '1p': 'αμεν', '2p': 'ατε', '3p': 'αν' }
+export const AOR1_MP_ENDINGS: Record<PersonSlot, string> = { '1s': 'αμην', '2s': 'ω', '3s': 'ατο', '1p': 'αμεθα', '2p': 'ασθε', '3p': 'αντο' }
+
+/** Aorist passive endings after the θη (or η): the secondary active endings, with σαν in the 3rd plural. */
+export const AORP_ENDINGS: Record<PersonSlot, string> = { '1s': 'ν', '2s': 'ς', '3s': '', '1p': 'μεν', '2p': 'τε', '3p': 'σαν' }
+
 const DIPHTHONGS = new Set(['αι', 'ει', 'οι', 'υι', 'αυ', 'ευ', 'ου', 'ηυ'])
 const MARK = /[\u0300-\u036f]/
 
@@ -133,13 +140,15 @@ function imperfectParts(v: PresentVerb, slot: PersonSlot): [string, string] {
 const secondary = (v: PresentVerb) => v.tense === 'imperfect' || v.tense === 'aorist'
 
 /** The future and aorist have separate passives (chapters 23–24), so their middle/passive endings are simply middle. */
-export const voiceName = (v: PresentVerb) => (!v.voice ? 'active' : v.tense === 'future' || v.tense === 'aorist' ? 'middle' : 'middle/passive')
+export const voiceName = (v: PresentVerb) => (v.passiveForm ? 'passive' : !v.voice ? 'active' : v.tense === 'future' || v.tense === 'aorist' ? 'middle' : 'middle/passive')
 export const tenseName = (v: PresentVerb) => v.tense ?? 'present'
 const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
 export const plainEndingsOf = (v: PresentVerb) =>
-  secondary(v) ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
+  v.passiveForm && v.tense === 'aorist' ? AORP_ENDINGS
+    : v.firstAorist && v.tense === 'aorist' ? (v.voice ? AOR1_MP_ENDINGS : AOR1_ENDINGS)
+    : secondary(v) ? (v.voice ? IMPF_MP_ENDINGS : IMPF_ENDINGS) : !v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS
 const endingVowelOf = (v: PresentVerb) =>
   secondary(v) ? (v.voice ? IMPF_MP_VOWEL : IMPF_VOWEL) : v.voice ? MP_ENDING_VOWEL : ENDING_VOWEL
 
@@ -206,9 +215,9 @@ function imperfectEnglish(v: PresentVerb, slot: PersonSlot) {
 }
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.past}`
+  v.tense === 'aorist' ? `${PRONOUN[slot]} ${v.passiveForm && v.voice === 'passive' ? `${WAS[slot]} ${v.pp}` : v.past}`
     : v.tense === 'imperfect' ? imperfectEnglish(v, slot)
-    : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.en}`
+    : v.tense === 'future' ? `${PRONOUN[slot]} will ${v.voice === 'passive' ? `be ${v.pp}` : v.en}`
     : v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
 
 /** The verb's present chart, in the shape the chart drill expects. */
@@ -239,6 +248,24 @@ export const presentVerb = (ch: Chapter, id: string) => verbsOf(ch).find((v) => 
 /** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου), or for a future βλεπ + σ + ω (π + σ → ψ). */
 const breakdown = (v: PresentVerb, slot: PersonSlot) => {
   if (v.irregular?.[slot]) return <>irregular, with no connecting vowel</>
+  if (v.passiveForm && v.tense === 'aorist') {
+    const rule = passiveRuleFor(v)
+    return (
+      <>
+        <span className="greek">{v.stem} + {plainEndingsOf(v)[slot] || '(no ending)'}</span>
+        {rule && <> (<span className="greek">{rule.from} + θ → {rule.to}</span>)</>}
+      </>
+    )
+  }
+  if (v.firstAorist && v.tense === 'aorist') {
+    const rule = ruleFor(v)
+    return (
+      <>
+        <span className="greek">{v.stem} + {plainEndingsOf(v)[slot]}</span>
+        {v.liquid ? <> (a liquid aorist: no σ)</> : rule && <> (<span className="greek">{rule.from} + σ → {rule.to}</span>)</>}
+      </>
+    )
+  }
   if (v.liquid) {
     return <><span className="greek">{v.stem} + (ε)σ + {plainEndingsOf(v)[slot]}</span> (a liquid future: the σ drops out and the ε contracts)</>
   }
@@ -364,8 +391,11 @@ function highlighted(v: PresentVerse) {
   )
 }
 
+/** The verse's verb in the tense the verse has it in (a future passive in chapter 24, where the drills are aorist). */
+export const verseVerb = (ch: Chapter, v: PresentVerse) => (v.tense ? inTense(presentVerb(ch, v.verb), v.tense) : presentVerb(ch, v.verb))
+
 function explainVerse(ch: Chapter, v: PresentVerse) {
-  const verb = presentVerb(ch, v.verb)
+  const verb = verseVerb(ch, v)
   return (
     <>
       <p>
@@ -570,7 +600,7 @@ export function futureRuleQuestion(ch: Chapter, r: FutureRule): ChoiceQuestion {
   const examples = verbsOf(ch).filter((v) => ruleFor(v) === r)
   return {
     id: futureRuleItemId(ch.number, r),
-    prompt: <><span className="greek big">{r.from} + σ</span><p className="muted">What does it become in the future?</p></>,
+    prompt: <><span className="greek big">{r.from} + σ</span><p className="muted">What does it become when the σ is added?</p></>,
     options: r.options.map((o) => ({ key: o, label: o, greek: true })),
     answer: r.to,
     explain: <p>{r.why}{examples.length > 0 && <> {examples.map((v, i) => <span key={v.id}>{i > 0 && ', '}{verbExample(v)}</span>)}.</>}</p>,
@@ -659,8 +689,10 @@ export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonS
 
 export type TenseKey = 'present' | 'future' | 'imperfect' | 'aorist'
 /** The two tenses a verb is contrasted in: present and future or imperfect, or imperfect and aorist. */
-const tensesOf = (v: PresentVerb): TenseKey[] => (v.tense === 'aorist' ? ['imperfect', 'aorist'] : ['present', v.tense ?? 'future'])
-const hasTense = (v: PresentVerb, t: TenseKey) => t === v.tense || (t === 'present' ? !!v.present : t === 'imperfect' && !!v.imperfect)
+const tensesOf = (v: PresentVerb): TenseKey[] =>
+  v.passiveForm ? ['aorist', 'future'] : v.tense === 'aorist' ? ['imperfect', 'aorist'] : ['present', v.tense ?? 'future']
+const hasTense = (v: PresentVerb, t: TenseKey) =>
+  t === v.tense || (t === 'present' ? !!v.present : t === 'imperfect' ? !!v.imperfect : t === 'future' && !!v.futurePassive)
 
 /** The same verb in the present or the future. */
 export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
@@ -668,6 +700,9 @@ export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
     : tense === 'imperfect' ? {
       ...v, tense: 'imperfect', irregular: undefined, past: undefined,
       stem: v.imperfect!.stem, prefix: v.imperfect!.prefix, contract: v.imperfect!.contract, voice: v.imperfect!.voice,
+    }
+    : tense === 'future' && v.futurePassive ? {
+      ...v, tense: 'future', stem: v.futurePassive.stem, prefix: undefined, from: undefined, irregular: undefined, voice: v.voice ?? 'middle',
     }
     : tense !== 'present' ? v : {
     ...v, tense: undefined, from: undefined, irregular: undefined, liquid: undefined, change: undefined, prefix: undefined,
@@ -703,10 +738,10 @@ export function aoristFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion 
   const answer = presentDisplay(v, '1s')
   const imperfect = v.imperfect ? [presentDisplay(inTense(v, 'imperfect'), '1s')] : []
   const others = distinctLemmas(verbsOf(ch).filter((o) => o.lemma !== v.lemma)).map((o) => presentDisplay(o, '1s'))
-  const forms = [...new Set([answer, ...imperfect, ...others])].slice(0, 4)
+  const forms = [...new Set([answer, ...imperfect, ...(v.future1s ? [v.future1s] : []), ...(v.alt1s ?? []), ...others])].slice(0, 4)
   return {
     id: aoristFormItemId(ch.number, v),
-    prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Aorist, 1st singular?</p></>,
+    prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Aorist{v.passiveForm && ' passive'}, 1st singular?</p></>,
     options: shuffle(forms).map((f) => ({ key: f, label: f, greek: true })),
     answer,
     explain: (
@@ -716,5 +751,42 @@ export function aoristFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion 
       </>
     ),
     review: <><span className="greek">{v.lemma} → {answer}</span></>,
+  }
+}
+
+// --- Aorist and future passive (chapter 24) ---
+
+const PLABIAL = 'Labials (π, β) become φ before θ: φθ.'
+const PVELAR = 'Velars (κ, γ) become χ before θ: χθ.'
+const PDENTAL = 'Dentals (τ, δ, θ) and ζ become σ before θ: σθ.'
+const PLENGTHEN = 'A contract vowel lengthens before θη: α and ε → η, ο → ω.'
+
+/** What θ does to the end of a stem in the aorist and future passive. */
+export const PASSIVE_RULES: FutureRule[] = [
+  // φ, χ and θ are already aspirated, so φθ, χθ and σθ (from θ) need no rule of their own.
+  ...['π', 'β'].map((from) => ({ from, to: 'φθ', options: ['φθ', 'χθ', 'σθ', `${from}θ`], why: PLABIAL })),
+  ...['κ', 'γ'].map((from) => ({ from, to: 'χθ', options: ['χθ', 'φθ', 'σθ', `${from}θ`], why: PVELAR })),
+  ...['τ', 'δ', 'ζ'].map((from) => ({ from, to: 'σθ', options: ['σθ', 'φθ', 'χθ', `${from}θ`], why: PDENTAL })),
+  { from: 'α', to: 'ηθ', options: ['ηθ', 'ωθ', 'αθ'], why: PLENGTHEN },
+  { from: 'ε', to: 'ηθ', options: ['ηθ', 'ωθ', 'εθ'], why: PLENGTHEN },
+  { from: 'ο', to: 'ωθ', options: ['ωθ', 'ηθ', 'οθ'], why: PLENGTHEN },
+]
+
+export function passiveRuleFor(v: PresentVerb): FutureRule | undefined {
+  return v.from ? PASSIVE_RULES.find((r) => r.from === baseLetters(v.from!).at(-1)) : undefined
+}
+
+export const passiveRuleItemId = (ch: number, r: FutureRule) => `ch${ch}:passive-rule:${r.from}`
+
+/** π + θ → ? */
+export function passiveRuleQuestion(ch: Chapter, r: FutureRule): ChoiceQuestion {
+  const examples = verbsOf(ch).filter((v) => passiveRuleFor(v) === r)
+  return {
+    id: passiveRuleItemId(ch.number, r),
+    prompt: <><span className="greek big">{r.from} + θ</span><p className="muted">What does it become in the aorist passive?</p></>,
+    options: r.options.map((o) => ({ key: o, label: o, greek: true })),
+    answer: r.to,
+    explain: <p>{r.why}{examples.length > 0 && <> {examples.map((v, i) => <span key={v.id}>{i > 0 && ', '}{verbExample(v)}</span>)}.</>}</p>,
+    review: <><span className="greek">{r.from} + θ → {r.to}</span></>,
   }
 }

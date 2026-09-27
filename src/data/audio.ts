@@ -284,4 +284,22 @@ export const RECORDINGS: Record<string, Recording> = {
   'προσέρχομαι': { mounce: B + 'chpt22/words/proser.mp3', modern: B + 'chpt22/modern/proser.mp3' },
   'προσεύχομαι': { mounce: B + 'chpt22/words/proseu.mp3', modern: B + 'chpt22/modern/proseu.mp3' },
   'πῦρ': { mounce: B + 'chpt22/words/pur.mp3', modern: B + 'chpt22/modern/pur.mp3' },
+  // Chapter 23. Mounce's page lists ἄρχομαι (its heading misspells it ἄρχωμαι); the recording is named for ἄρχω.
+  'ἀπέρχομαι': { mounce: B + 'chpt23/words/aperco.mp3', modern: B + 'chpt23/modern/aperco.mp3' },
+  'ἄρχομαι': { mounce: B + 'chpt23/words/arcw.mp3', modern: B + 'chpt23/modern/arcw.mp3' },
+  'γράφω': { mounce: B + 'chpt23/words/grafw.mp3', modern: B + 'chpt23/modern/grafw.mp3' },
+  'διό': { mounce: B + 'chpt23/words/dio.mp3', modern: B + 'chpt23/modern/dio.mp3' },
+  'δοξάζω': { mounce: B + 'chpt23/words/doxazw.mp3', modern: B + 'chpt23/modern/doxazw.mp3' },
+  'δύναμις': { mounce: B + 'chpt23/words/dunami.mp3', modern: B + 'chpt23/modern/dunami.mp3' },
+  'κηρύσσω': { mounce: B + 'chpt23/words/khruss.mp3', modern: B + 'chpt23/modern/khruss.mp3' },
+  'πίνω': { mounce: B + 'chpt23/words/pinw.mp3', modern: B + 'chpt23/modern/pinw.mp3' },
+  // Chapter 24
+  'ἄγω': { mounce: B + 'chpt24/words/agw.mp3', modern: B + 'chpt24/modern/agw.mp3' },
+  'αἷμα': { mounce: B + 'chpt24/words/haima.mp3', modern: B + 'chpt24/modern/haima.mp3' },
+  'ἕκαστος': { mounce: B + 'chpt24/words/hekast.mp3', modern: B + 'chpt24/modern/hekast.mp3' },
+  'ἱμάτιον': { mounce: B + 'chpt24/words/himati.mp3', modern: B + 'chpt24/modern/himati.mp3' },
+  'ὄρος': { mounce: B + 'chpt24/words/oros.mp3', modern: B + 'chpt24/modern/oros.mp3' },
+  'ὑπάγω': { mounce: B + 'chpt24/words/hupagw.mp3', modern: B + 'chpt24/modern/hupagw.mp3' },
+  'φοβέομαι': { mounce: B + 'chpt24/words/fobeom.mp3', modern: B + 'chpt24/modern/fobeom.mp3' },
+  'χαίρω': { mounce: B + 'chpt24/words/cairw.mp3', modern: B + 'chpt24/modern/cairw.mp3' },
 }

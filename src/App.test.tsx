@@ -439,6 +439,40 @@ it('chapter 22: second aorist lesson, aorist chart, and every quiz tab works', (
   }
 })
 
+it('chapter 23: first aorist lesson, σα chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(23)
+  nav('First aorist')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('ἐλυσάμην')
+  tab('Fill the chart')
+  expect(screen.getByText('e)/lusa')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('ἐλύσαμεν')
+  for (const t of ['Parse & translate', 'Forming the aorist', 'Imperfect or aorist?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
+it('chapter 24: passive lesson, θη chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(24)
+  nav('Passive')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λυθήσομαι')
+  tab('Fill the chart')
+  expect(screen.getByText('e)lu/qhn')).toBeTruthy()
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('ἐλύθησαν')
+  for (const t of ['Parse & translate', 'Forming the passive', 'Aorist or future?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('preposition reference: hidden meanings can be shown and hidden again, one at a time or all at once', () => {
   render(<App />)
   pickChapter(8)
