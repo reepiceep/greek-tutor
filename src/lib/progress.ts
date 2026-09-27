@@ -236,12 +236,16 @@ export function shuffle<T>(xs: T[]): T[] {
 
 /** Choose `n` items, favouring low boxes and items not seen recently, then shuffle. */
 export function pickWeakest<T>(items: T[], idOf: (t: T) => string, n: number): T[] {
-  const ranked = shuffle(items).sort((a, b) => {
+  return shuffle(rankWeakest(items, idOf).slice(0, n))
+}
+
+/** Every item, least known first (lowest box, then longest unseen); items that tie come in random order. */
+export function rankWeakest<T>(items: T[], idOf: (t: T) => string): T[] {
+  return shuffle(items).sort((a, b) => {
     const sa = stats(idOf(a))
     const sb = stats(idOf(b))
     return sa.box - sb.box || sa.lastSeen - sb.lastSeen
   })
-  return shuffle(ranked.slice(0, n))
 }
 
 /** Fraction (0–1) of the given ids that are learned. */

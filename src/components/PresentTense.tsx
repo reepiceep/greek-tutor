@@ -453,12 +453,19 @@ function Chart({ chapter, onRestart }: QuizProps) {
   const [verb, setVerb] = useState<PresentVerb | undefined>(verbs[0])
   const [round, setRound] = useState(0)
   if (!verb) return null
+  const label = (v: PresentVerb) => `${v.lemma}${v.voice === 'passive' && verbs.some((o) => o !== v && o.lemma === v.lemma) ? ' (m/p)' : ''}`
   return (
     <>
-      <div className="seg small-seg" role="group" aria-label="Verb">
+      <label className={`verb-select ${verbs.length > 8 ? 'many' : ''}`}>
+        <span className="muted small">Verb</span>
+        <select className="greek" value={verb.id} onChange={(e) => { setVerb(verbs.find((v) => v.id === e.target.value)); setRound((r) => r + 1) }}>
+          {verbs.map((v) => <option key={v.id} value={v.id}>{label(v)}</option>)}
+        </select>
+      </label>
+      <div className={`seg small-seg ${verbs.length > 8 ? 'verb-chips' : ''}`} role="group" aria-label="Verb">
         {verbs.map((v) => (
           <button key={v.id} className={`greek ${v === verb ? 'on' : ''}`} onClick={() => { setVerb(v); setRound((r) => r + 1) }}>
-            {v.lemma}{v.voice === 'passive' && verbs.some((o) => o !== v && o.lemma === v.lemma) ? ' (m/p)' : ''}
+            {label(v)}
           </button>
         ))}
       </div>

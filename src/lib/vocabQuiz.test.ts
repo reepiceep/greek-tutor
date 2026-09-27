@@ -30,3 +30,13 @@ describe('vocab quiz over a range of chapters', () => {
     expect(qs.every((q) => q.chapter === 9)).toBe(true)
   })
 })
+
+describe('the “All” quiz length', () => {
+  it('asks every word in the range once', async () => {
+    const { CHAPTERS } = await import('../data/chapters')
+    const chapters = CHAPTERS.filter((c) => c.number >= 8 && c.number <= 12)
+    const qs = buildQuiz(chapters, 'g2e', Infinity)
+    expect(qs).toHaveLength(vocabPool(chapters).length)
+    expect(new Set(qs.map((q) => `${q.chapter}:${q.word.id}`)).size).toBe(qs.length)
+  })
+})

@@ -171,6 +171,7 @@ nav button, .seg button { padding: 6px 12px; }
 .meter span { display: block; height: 100%; background: var(--good); }
 .pct { text-align: right; font-variant-numeric: tabular-nums; }
 .check { display: flex; gap: 8px; align-items: center; }
+.check input[type='checkbox'] { flex-shrink: 0; }
 .help { margin-top: 20px; }
 .help summary { cursor: pointer; font-weight: 600; }
 .translit td { padding: 2px 16px 2px 0; }
@@ -489,4 +490,55 @@ header nav .badge {
   .skill { grid-template-columns: 1fr 3.5em; }
   .meter { grid-column: 1 / -1; grid-row: 2; }
   .greek.big { font-size: 2.1rem; }
+}
+
+/* Chart cells: the English gloss as a caption under each box */
+.cell-gloss { margin-top: 3px; line-height: 1.25; }
+
+/* Chart verb picker: chips on wide screens, a dropdown on phones when there are many verbs */
+.verb-select { display: none; align-items: center; gap: 8px; margin-bottom: 12px; }
+.verb-select select {
+  flex: 1; min-width: 0; font-size: 1.15rem; color: inherit;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px;
+}
+
+/* Phones: a compact header, smaller tabs, a shorter card with pinned grade buttons, and a numbers-only chapter map */
+@media (max-width: 560px) {
+  header { padding-top: 10px; margin-bottom: 16px; }
+  .header-top { flex-wrap: nowrap; gap: 8px; }
+  .brand-text { display: none; }
+  .brand-mark { width: 38px; height: 38px; font-size: 2rem; }
+  .header-tools { flex: 1; min-width: 0; justify-content: flex-end; }
+  .chapter-pick { flex: 1; min-width: 0; }
+  .chapter-pick select { width: 100%; max-width: none; }
+  header nav { margin-top: 8px; }
+  header nav button { padding: 7px 8px; font-size: 0.92rem; }
+
+  .toolbar { gap: 8px; margin-bottom: 12px; }
+  .seg button { padding: 5px 10px; font-size: 0.88rem; }
+
+  .verb-select.many { display: flex; }
+  .verb-chips { display: none; }
+
+  .flashcard { min-height: 170px; padding: 16px; }
+  .grade-bar {
+    position: sticky; bottom: 0; z-index: 2; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg); border-top: 1px solid var(--border);
+  }
+  .grade-bar button { flex: 1; }
+
+  .course-map { gap: 10px; }
+  .course-map ol { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+  .stop button { padding: 6px 2px 5px; gap: 4px; }
+  .stop-title, .stop-status { display: none; }
+  .stop-num { width: 28px; height: 28px; font-size: 0.85rem; }
+  .stop-meter { width: 70%; height: 3px; }
+}
+
+/* Touch screens: no keyboard, so drop keyboard hints */
+.touch-only { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .touch-only { display: inline; }
+  .pointer-only { display: none; }
+  button kbd, .option kbd { display: none; }
 }

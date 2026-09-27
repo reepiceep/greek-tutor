@@ -63,8 +63,10 @@ export function VocabQuiz({ chapter }: { chapter: Chapter }) {
           </label>
           <label>Questions
             <div className="seg">
-              {[10, 20, 50].map((n) => (
-                <button key={n} className={length === n ? 'on' : ''} onClick={() => setLength(n)}>{n}</button>
+              {[10, 20, 50, Infinity].map((n) => (
+                <button key={n} className={length === n ? 'on' : ''} onClick={() => setLength(n)}>
+                  {n === Infinity ? `${vocabPool(inRange).length} (all)` : n}
+                </button>
               ))}
             </div>
           </label>

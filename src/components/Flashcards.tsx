@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Chapter, VocabWord } from '../data/types'
 import { type Direction, displayForm, prepItemId, vocabItemId } from '../lib/items'
-import { pickWeakest, record, updateSettings, useProgress } from '../lib/progress'
+import { rankWeakest, record, updateSettings, useProgress } from '../lib/progress'
 import { type CaseUse, caseUses, firstLetterHint } from '../lib/prepositions'
 import { caseUseLabel } from '../lib/prepGames'
 import { CaseTag } from './CaseTag'
@@ -33,9 +33,7 @@ function cardId(c: Card): string {
     : vocabItemId(c.chapter, c.word, c.dir)
 }
 
-/** Cards in one session when studying several chapters: the weakest first. */
-const RANGE_DECK = 30
-
+/** Every card in the chosen chapters, the ones you know least first. */
 function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean): Card[] {
   const uses = chapters.flatMap(caseUses)
   const cards = vocabPool(chapters).flatMap(({ word, chapter }) => {
@@ -45,8 +43,7 @@ function buildDeck(chapters: Chapter[], choice: DirChoice, split: boolean): Card
       ? wordUses.flatMap((use) => dirs.map((dir) => ({ word, chapter, dir, use })))
       : dirs.map((dir) => ({ word, chapter, dir }))
   })
-  const size = chapters.length > 1 ? RANGE_DECK : choice === 'mixed' ? 20 : cards.length
-  return pickWeakest(cards, cardId, size)
+  return rankWeakest(cards, cardId)
 }
 
 /** The back of a single preposition + case card: that case's meaning, with the other cases for comparison. */
@@ -141,7 +138,7 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
         <span className="muted small">Chapters</span>
         <ChapterRange chapter={chapter} range={range} onChange={(r) => restart(choice, split, r)} />
         <span className="muted small">
-          {vocabPool(chapters).length} words{multiChapter && ` · ${RANGE_DECK} cards a round, the ones you know least first`}
+          {vocabPool(chapters).length} words · {deck.length + known} cards{multiChapter && ', the ones you know least first'}
         </span>
       </div>
       {hasPrepositions && (
@@ -150,7 +147,7 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
             updateSettings({ splitPrepositions: e.target.checked })
             restart(choice, e.target.checked)
           }} />
-          Prepositions: one card per case (<span className="greek">μετά</span> + gen, <span className="greek">μετά</span> + acc)
+          <span>Prepositions: one card per case (<span className="greek">μετά</span> + gen, <span className="greek">μετά</span> + acc)</span>
         </label>
       )}
 
@@ -190,12 +187,15 @@ export function Flashcards({ chapter }: { chapter: Chapter }) {
             </div>
           )}
           {flipped ? (
-            <div className="actions">
+            <div className="actions grade-bar">
               <button className="bad" onClick={() => grade(false)}>Missed it <kbd>←</kbd></button>
               <button className="good" onClick={() => grade(true)}>Got it <kbd>→</kbd></button>
             </div>
           ) : (
-            <p className="muted center">Click the card or press <kbd>space</kbd> to flip</p>
+            <p className="muted center">
+              <span className="pointer-only">Click the card or press <kbd>space</kbd> to flip</span>
+              <span className="touch-only">Tap the card to flip</span>
+            </p>
           )}
         </>
       ) : (

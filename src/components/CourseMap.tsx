@@ -40,6 +40,7 @@ export function CourseMap({ current }: { current: Chapter }) {
                     onClick={() => updateSettings({ chapter: ch.number })}
                     aria-current={ch.number === current.number ? 'step' : undefined}
                     title={`Chapter ${ch.number}: ${ch.title} · ${status}`}
+                    aria-label={`Chapter ${ch.number}: ${ch.title}, ${status}`}
                   >
                     <span className="stop-num">{ready ? '✓' : ch.number}</span>
                     {/* Allow a line break after a slash (Middle/passive). */}

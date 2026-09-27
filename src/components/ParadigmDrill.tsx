@@ -151,9 +151,10 @@ export function ChartDrill({ chapter, paradigm, onRestart, example = ['ei)mi/', 
 
   const cell = (r: ParadigmRow) => (
     <td key={r.key} className={checked ? (isRight(r) ? 'right' : 'wrong') : ''}>
-      <GreekInput compact value={values[r.key] ?? ''} disabled={checked}
-        placeholder={r.gloss}
+      <GreekInput compact value={values[r.key] ?? ''} disabled={checked} placeholder=""
         onChange={(v) => setValues((vs) => ({ ...vs, [r.key]: v }))} />
+      {/* A caption rather than a placeholder, so a long gloss wraps instead of being cut off on a phone. */}
+      <div className="cell-gloss muted small">{r.gloss}</div>
       {checked && !isRight(r) && <div className="greek correction">{r.display ?? r.forms[0]}</div>}
       {checked && isRight(r) && !checkGreek(values[r.key] ?? '', r.forms, true) && (
         <div className="greek muted">accented: {r.display ?? r.forms[0]}</div>
