@@ -3,11 +3,13 @@ import type { View } from '../App'
 import type { Chapter } from '../data/types'
 import { formatTime, hasTest } from '../lib/chapterTest'
 import {
-  type ItemStats, currentStreak, exportProgress, importProgress, learnedFraction, resetProgress, updateSettings, useProgress,
+  type ItemStats, currentStreak, importProgress, learnedFraction, resetProgress, updateSettings, useProgress,
 } from '../lib/progress'
 import { type Skill, chapterSkills, weakestItems } from '../lib/skills'
 import { nextStep } from '../lib/nextStep'
 import { AreaBars } from './ChapterTest'
+import { BackupReminder } from './BackupReminder'
+import { downloadBackup, requestPersistence } from '../lib/backup'
 import { reviewPlan, whenDue } from '../lib/review'
 import { useNow } from '../lib/useNow'
 
@@ -18,6 +20,7 @@ export function Dashboard({ chapter, go }: { chapter: Chapter; go: (v: View) => 
 
   return (
     <section className="dashboard">
+      <BackupReminder />
       <Continue chapter={chapter} go={go} />
 
       <div className="dash-grid">
@@ -94,15 +97,18 @@ function Continue({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) 
         <span className="next-arrow" aria-hidden="true">→</span>
       </button>
       <div className="continue-tiles">
-        <button className="tile" onClick={() => go('today')}>
-          <strong>Today’s review</strong>
-          <span className="muted">
-            {plan.totalDue ? `${plan.totalDue} due` : 'Nothing due'}
-            {fresh > 0 && ` · ${fresh} new`}
-            {streak > 0 && ` · ★ ${streak}-day streak`}
-            {!plan.totalDue && !fresh && plan.nextDue && ` · next ${whenDue(plan.nextDue, now)}`}
-          </span>
-        </button>
+        <div className="tile">
+          <div>
+            <strong>Today’s review</strong>
+            <div className="muted">
+              {plan.totalDue ? `${plan.totalDue} due` : 'Nothing due'}
+              {fresh > 0 && ` · ${fresh} new`}
+              {streak > 0 && ` · ★ ${streak}-day streak`}
+              {!plan.totalDue && !fresh && plan.nextDue && ` · next ${whenDue(plan.nextDue, now)}`}
+            </div>
+          </div>
+          <button onClick={() => go('today')}>{plan.totalDue || fresh ? 'Start review' : 'Open'}</button>
+        </div>
         {hasTest(chapter.number) && (
           <div className={`readiness ${latest?.ready ? 'good' : ''}`}>
             <div className="readiness-head">
@@ -114,7 +120,7 @@ function Continue({ chapter, go }: { chapter: Chapter; go: (v: View) => void }) 
                       Last test {latest.correct}/{latest.total} in {formatTime(latest.seconds)}, {new Date(latest.date).toLocaleDateString()}
                       {chapterTests.length > 1 && <> · best {Math.round(best * 100)}% · {chapterTests.length} tests</>}
                     </>
-                  ) : <>30 questions. Score 90% in every area to be ready for chapter {chapter.number + 1}.</>}
+                  ) : <>30 questions · 90% in every area to pass</>}
                 </div>
               </div>
               <button onClick={() => go('test')}>{latest ? 'Take the test again' : 'Take the test'}</button>
@@ -223,12 +229,8 @@ function Backup() {
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
 
   const download = () => {
-    const blob = new Blob([exportProgress()], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `greek-tutor-progress-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
+    downloadBackup()
+    requestPersistence()
     setMessage({ ok: true, text: 'Progress exported.' })
   }
 

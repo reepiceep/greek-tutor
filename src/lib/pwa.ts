@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { isInstalled, requestPersistence } from './backup'
 
 // The service worker (pwa/sw.js) makes the app installable and usable offline. A new version installs in the
 // background and waits; the page offers to switch to it (UpdateBanner) rather than swapping files mid-session.
@@ -30,6 +31,8 @@ export function applyUpdate() {
 }
 
 export function registerServiceWorker() {
+  // The installed app keeps its storage: Chrome grants this without asking there, and Safari exempts Home Screen apps.
+  if (isInstalled()) requestPersistence()
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
   window.addEventListener('load', async () => {
     let registration: ServiceWorkerRegistration

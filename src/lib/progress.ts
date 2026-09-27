@@ -42,6 +42,10 @@ export interface Settings {
   seenLessons?: string[]
   /** Chapter being studied; the latest built chapter when unset. */
   chapter?: number
+  /** When progress was last exported (ms since epoch), for the backup reminder. */
+  lastBackup?: number
+  /** The backup reminder stays hidden until this time ("Not now"). */
+  backupSnoozedUntil?: number
 }
 
 export interface AreaScore {

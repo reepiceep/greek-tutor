@@ -980,3 +980,47 @@ it('vocab quiz, typed: a wrong answer can be overruled, and the results list wha
   fireEvent.click(screen.getByText('Change settings'))
   expect(screen.getByText('Start')).toBeTruthy()
 })
+
+it('the chapter sheet keeps Tab inside it', () => {
+  render(<App />)
+  document.querySelector<HTMLElement>('.chapter-pick')!.focus()
+  fireEvent.click(document.querySelector('.chapter-pick')!)
+  const sheet = document.querySelector<HTMLElement>('.sheet')!
+  const reachable = [...sheet.querySelectorAll<HTMLElement>('button')].filter((b) => !b.closest('[inert]'))
+  const first = reachable[0]
+  const last = reachable[reachable.length - 1]
+  last.focus()
+  fireEvent.keyDown(document, { key: 'Tab' })
+  expect(document.activeElement).toBe(first)
+  fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+  expect(document.activeElement).toBe(last)
+  // Closing gives focus back to the chapter button.
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(document.activeElement).toBe(document.querySelector('.chapter-pick'))
+})
+
+it('Home reminds you to back up once there is progress, until you do or say not now', async () => {
+  const { record, updateSettings } = await import('./lib/progress')
+  updateSettings({ lastBackup: undefined, backupSnoozedUntil: undefined })
+  for (let i = 0; i < 12; i++) record(`test:backup:${i}`, true)
+  render(<App />)
+  nav('Home')
+  expect(screen.getByText('Keep your progress safe')).toBeTruthy()
+  fireEvent.click(screen.getByText('Not now'))
+  expect(screen.queryByText('Keep your progress safe')).toBeNull()
+
+  act(() => updateSettings({ backupSnoozedUntil: undefined }))
+  expect(screen.getByText('Keep your progress safe')).toBeTruthy()
+  const created: Blob[] = []
+  URL.createObjectURL = (b: Blob) => { created.push(b); return 'blob:backup' }
+  URL.revokeObjectURL = () => {}
+  const click = HTMLAnchorElement.prototype.click
+  HTMLAnchorElement.prototype.click = () => {}
+  try {
+    fireEvent.click(screen.getByText('Back up now'))
+  } finally {
+    HTMLAnchorElement.prototype.click = click
+  }
+  expect(created).toHaveLength(1)
+  expect(screen.queryByText('Keep your progress safe')).toBeNull()
+})

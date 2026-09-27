@@ -6,13 +6,36 @@ import { CourseMap } from './CourseMap'
  * The chapter picker: the course map in a panel over the page (a sheet from the bottom on phones). Picking a chapter,
  * Escape, the close button or a click outside all close it; focus goes back to the button that opened it.
  */
+// Everything Tab can reach inside the sheet (a collapsed part of the map is inert, so its chapters aren't included).
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+/** Tab and Shift+Tab wrap around inside the sheet instead of escaping to the page behind it. */
+function keepFocusIn(panel: HTMLElement | null, e: KeyboardEvent) {
+  if (!panel) return
+  const all = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => !el.closest('[inert]'))
+  if (!all.length) return
+  const first = all[0]
+  const last = all[all.length - 1]
+  const at = document.activeElement
+  if (e.shiftKey && (at === first || at === panel)) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && (at === last || !panel.contains(at))) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
 export function ChapterSheet({ current, onClose }: { current: Chapter; onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
     panel.current?.focus()
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      else if (e.key === 'Tab') keepFocusIn(panel.current, e)
+    }
     document.addEventListener('keydown', onKey)
     // The page behind shouldn't scroll along with the sheet.
     const overflow = document.body.style.overflow

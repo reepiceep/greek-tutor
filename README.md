@@ -69,6 +69,8 @@ Theophilus can be installed as an app (from the browser's install or “Add to H
 
 The first screen loads the chapter data and question builders (which the daily review and chapter map need) plus React, about 250 kB gzipped; every other screen is a small file fetched on first use, and in the background shortly after the page opens.
 
+Progress is kept in the browser's storage, which Safari clears after 7 days away from a site (Home Screen apps are exempt). Home shows a backup reminder once there is progress to protect, unless the browser has promised to keep the storage, you backed up in the last two weeks, or you chose “Not now”. Backing up also asks the browser to keep the storage, and the installed app asks by itself.
+
 The service worker is `pwa/sw.js`. It is a template: the build (`vite.config.ts`) fills in the list of files to cache and a version, and emits it as `dist/sw.js`. It only runs in production builds (`npm run build && npm run preview`), not under `npm run dev`.
 
 ## Pronunciation
