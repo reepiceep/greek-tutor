@@ -1,5 +1,5 @@
 import type { ChoiceQuestion } from '../components/ChoiceQuiz'
-import type { Chapter, ContractVowel, Paradigm, PersonSlot, PresentVerb, PresentVerse } from '../data/types'
+import type { Chapter, ContractVowel, Paradigm, PersonSlot, PresentVerb, PresentVerse, RootItem } from '../data/types'
 import { shuffle } from './progress'
 
 // Questions for chapters 16–19: the present and future indicative. Every form is generated from the verb's stem,
@@ -142,6 +142,9 @@ export const presentVerb = (ch: Chapter, id: string) => verbsOf(ch).find((v) => 
 /** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου), or for a future βλεπ + σ + ω (π + σ → ψ). */
 const breakdown = (v: PresentVerb, slot: PersonSlot) => {
   if (v.irregular?.[slot]) return <>irregular, with no connecting vowel</>
+  if (v.liquid) {
+    return <><span className="greek">{v.stem} + (ε)σ + {plainEndingsOf(v)[slot]}</span> (a liquid future: the σ drops out and the ε contracts)</>
+  }
   if (v.tense === 'future') {
     const rule = ruleFor(v)
     return (
@@ -164,7 +167,7 @@ function explainForm(v: PresentVerb, slot: PersonSlot) {
   return (
     <p>
       <span className="greek">{presentDisplay(v, slot)}</span> = {breakdown(v, slot)}: {SLOT_NAME[slot]}{v.tense && ` ${v.tense}`}{v.voice && ` ${voiceName(v)}`} of{' '}
-      <span className="greek">{v.lemma}</span>, “{presentEnglish(v, slot)}.”
+      <span className="greek">{v.lemma}</span>, “{presentEnglish(v, slot)}.”{v.change && <> {v.change}</>}
     </p>
   )
 }
@@ -476,20 +479,51 @@ function swapRuleLetter(stem: string, vowel: boolean, letter: string) {
   return (d.slice(0, i) + letter + d.slice(i + 1)).normalize('NFC')
 }
 
-/** βλέπω → βλέψω, among βλέξω, βλέσω, βλέπσω. Only for verbs whose future stem shows a rule. */
+const LIQUID = 'Liquid stems (λ, μ, ν, ρ) take εσ: the σ drops out between vowels and the ε contracts with the ending, so the future looks like ποιέω: μενῶ, μενεῖς.'
+
+/** Is there a future to form from the rules? Stops, contract vowels, and liquids. */
+export const hasFutureForm = (v: PresentVerb) => !!v.liquid || !!ruleFor(v)
+
+/**
+ * βλέπω → βλέψω, among βλέξω, βλέσω, βλέπσω; μένω → μενῶ, among μένσω, μενήσω, μένω. Only for verbs whose future stem
+ * shows a rule.
+ */
 export function futureFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion {
-  const r = ruleFor(v)!
-  const vowel = r.to.length === 2
-  const ending = plainEndingsOf(v)['1s']
-  const wrong = r.options.filter((o) => o !== r.to).map((o) => (vowel ? swapRuleLetter(v.stem, true, o[0]) : `${v.stem.slice(0, -1)}${o}`) + ending)
-  const forms = [...new Set([presentDisplay(v, '1s'), ...wrong, ...(vowel ? [v.lemma] : [])])]
+  const answer = presentDisplay(v, '1s')
+  let forms: string[]
+  let why: string
+  if (v.liquid) {
+    forms = [answer, `${accentLastVowel(v.stem)}σω`, `${unaccented(v.stem)}ήσω`, v.lemma]
+    why = LIQUID
+  } else {
+    const r = ruleFor(v)!
+    const vowel = r.to.length === 2
+    const ending = plainEndingsOf(v)['1s']
+    const wrong = r.options.filter((o) => o !== r.to).map((o) => (vowel ? swapRuleLetter(v.stem, true, o[0]) : `${v.stem.slice(0, -1)}${o}`) + ending)
+    forms = [answer, ...wrong, ...(vowel ? [v.lemma] : [])]
+    why = r.why
+  }
   return {
     id: futureFormItemId(ch.number, v),
     prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Future, 1st singular?</p></>,
-    options: shuffle(forms).map((f) => ({ key: f, label: f, greek: true })),
-    answer: presentDisplay(v, '1s'),
-    explain: <><p>{r.why}</p>{explainForm(v, '1s')}</>,
+    options: shuffle([...new Set(forms)]).map((f) => ({ key: f, label: f, greek: true })),
+    answer,
+    explain: <><p>{why}</p>{explainForm(v, '1s')}</>,
     review: <>{verbExample(v)}</>,
+  }
+}
+
+export const rootItemId = (ch: number, r: RootItem) => `ch${ch}:root:${r.lemma}`
+
+/** ἀποστέλλω → *στελ. */
+export function rootQuestion(ch: Chapter, r: RootItem): ChoiceQuestion {
+  return {
+    id: rootItemId(ch.number, r),
+    prompt: <><span className="greek big">{r.lemma}</span><p className="muted">{r.ask ?? 'What is its verbal root?'}</p></>,
+    options: shuffle(r.options).map((o) => ({ key: o, label: `*${o}`, greek: true })),
+    answer: r.options[0],
+    explain: <p>{r.how}</p>,
+    review: <><span className="greek">{r.lemma}: *{r.options[0]}</span></>,
   }
 }
 
@@ -511,7 +545,10 @@ const TENSES = ['present', 'future'] as const
 
 /** The same verb in the present or the future. */
 export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
-  tense === 'future' ? v : { ...v, tense: undefined, from: undefined, irregular: undefined, stem: v.present!.stem, contract: v.present!.contract }
+  tense === 'future' ? v : {
+    ...v, tense: undefined, from: undefined, irregular: undefined, liquid: undefined, change: undefined,
+    stem: v.present!.stem, contract: v.present!.contract, voice: v.present!.voice,
+  }
 
 export const tenseItemId = (ch: number, v: PresentVerb, slot: PersonSlot, tense: TenseKey) => `ch${ch}:future-tense:${v.id}:${slot}:${tense}`
 

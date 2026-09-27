@@ -5,17 +5,17 @@ import {
   ACTIVE_VOWELS, CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, MP_ENDINGS, MP_PRIMARY, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
   contractTypeQuestion, contractionItemId, contractionPairs, contractionQuestion, endingFormQuestion, endingItemId, endingPersonQuestion,
   FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
-  inTense, inVoice, presentDisplay, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
+  hasFutureForm, inTense, inVoice, presentDisplay, rootItemId, rootQuestion, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
   presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { ChartDrill } from './ParadigmDrill'
 
-type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'forming' | 'tense' | 'contractions' | 'verses'
+type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'roots' | 'forming' | 'tense' | 'contractions' | 'verses'
 
-/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive; 19: the future. */
-type Mode = 'active' | 'contract' | 'middle' | 'future'
+/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive; 19: the future; 20: roots and other futures. */
+type Mode = 'active' | 'contract' | 'middle' | 'future' | 'roots'
 
 const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
@@ -24,17 +24,18 @@ const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'endings', label: 'Endings', modes: ['active', 'middle'] },
   { tab: 'voice', label: 'Active or passive?', modes: ['middle'] },
   { tab: 'contractions', label: 'Contractions', modes: ['contract'] },
-  { tab: 'forming', label: 'Forming the future', modes: ['future'] },
-  { tab: 'tense', label: 'Present or future?', modes: ['future'] },
+  { tab: 'roots', label: 'Verbal roots', modes: ['roots'] },
+  { tab: 'forming', label: 'Forming the future', modes: ['future', 'roots'] },
+  { tab: 'tense', label: 'Present or future?', modes: ['future', 'roots'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
 const modeOf = (ch: Chapter): Mode => {
   const verbs = ch.present?.verbs ?? []
-  return verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+  return verbs.some((v) => v.liquid) ? 'roots' : verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
 }
 
-const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative' }
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative', roots: 'Verbal roots and other futures' }
 
 /** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
@@ -54,11 +55,12 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'roots' ? <RootsLesson chapter={chapter} /> : mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'voice' && <Voice key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'roots' && <Roots key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forming' && <Forming key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'tense' && <Tense key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'contractions' && <Contractions key={key} chapter={chapter} onRestart={restart} />}
@@ -175,6 +177,66 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
         Each cell: stem + contract vowel + ending, e.g. <span className="greek">ἀγαπα + {ENDINGS['1p']}</span>{' '}
         (<span className="greek">α + {ENDING_VOWEL['1p']} → {CONTRACTIONS.α[ENDING_VOWEL['1p']]}</span>) = <span className="greek">ἀγαπῶμεν</span>.
       </p>
+    </>
+  )
+}
+
+function RootsLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const liquids = verbs.filter((v) => v.liquid)
+  const changed = verbs.filter((v) => v.change)
+  const model = liquids[0]
+  if (!model) return null
+  return (
+    <>
+      <Lesson title="Verbal roots and other forms of the future">
+        <p>
+          Every verb has a <strong>root</strong>, its most basic form. The present tense stem often adds to or changes the root, but the other tenses
+          are usually built on the root itself. That is why a future can look different from the present: <span className="greek">ἀποστέλλω</span>{' '}
+          (root <span className="greek">*στελ</span>) has the future <span className="greek">ἀποστελῶ</span>.
+        </p>
+        <ul>
+          <li>Common changes in the present: a doubled λ (<span className="greek">*βαλ → βάλλω</span>), ε or α lengthened to ει or αι (<span className="greek">*κτεν → ἀποκτείνω, *ἀρ → αἴρω</span>), δ becoming ζ (<span className="greek">*βαπτιδ → βαπτίζω</span>), and σκ added (<span className="greek">*γνω → γινώσκω</span>).</li>
+          <li>
+            <strong>Liquid futures.</strong> When the root ends in λ, μ, ν or ρ, the future adds εσ instead of σ. The σ drops out between the vowels and
+            the ε contracts with the ending, so the future is conjugated like <span className="greek">ποιέω</span>, with a circumflex:{' '}
+            <span className="greek">{SLOTS.map((s) => presentDisplay(model, s)).join(', ')}</span>.
+          </li>
+          <li>Watch the accent: <span className="greek">μένει</span> is present, “he remains”; <span className="greek">μενεῖ</span> is future, “he will remain.” With <span className="greek">κρίνω</span> and <span className="greek">μένω</span> the accent is the only difference.</li>
+          <li>
+            Some futures come from another root or a changed stem, and must be learned:{' '}
+            {changed.map((v, i) => <span key={v.id}>{i > 0 && '; '}<span className="greek">{v.lemma} → {presentDisplay(v, '1s')}</span></span>)}.
+          </li>
+          <li><span className="greek">γινώσκω, ὁράω</span> and <span className="greek">ἔρχομαι</span> have middle futures with active meanings: <span className="greek">γνώσομαι</span>, “I will know.”</li>
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th className="greek">{model.lemma}</th><th>Future</th><th /><th className="muted">cf. ποιέω</th></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek muted">{presentDisplay(inTense(model, 'present'), s)}</td>
+              <td className="greek">{presentDisplay(model, s)}</td>
+              <td className="muted">{presentEnglish(model, s)}</td>
+              <td className="greek muted">{presentDisplay({ ...model, tense: undefined, stem: 'ποι' }, s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table className="reference future-table">
+        <caption>This chapter’s futures</caption>
+        <thead><tr><th>Present</th><th>Future</th><th /></tr></thead>
+        <tbody>
+          {verbs.map((v) => (
+            <tr key={v.id}>
+              <td className="greek">{v.lemma}</td>
+              <td className="greek">{presentDisplay(v, '1s')}</td>
+              <td className="muted small">{v.liquid ? 'liquid' : v.change ?? ruleFor(v)?.why}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   )
 }
@@ -322,7 +384,7 @@ interface QuizProps {
   onRestart: () => void
 }
 
-const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'] }
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'], roots: ['menw=', 'μενῶ'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -380,7 +442,7 @@ function Forming({ chapter, onRestart }: QuizProps) {
     const verbs = chapter.present?.verbs ?? []
     const pool = [
       ...FUTURE_RULES.map((r) => ({ id: futureRuleItemId(chapter.number, r), make: () => futureRuleQuestion(chapter, r) })),
-      ...verbs.filter((v) => ruleFor(v)).map((v) => ({ id: futureFormItemId(chapter.number, v), make: () => futureFormQuestion(chapter, v) })),
+      ...verbs.filter(hasFutureForm).map((v) => ({ id: futureFormItemId(chapter.number, v), make: () => futureFormQuestion(chapter, v) })),
       ...verbs.flatMap((v) => SLOTS.map((s) => ({ id: futureLexicalItemId(chapter.number, v, s), make: () => futureLexicalQuestion(chapter, v, s) }))),
     ]
     return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
@@ -388,6 +450,20 @@ function Forming({ chapter, onRestart }: QuizProps) {
   return (
     <>
       <p className="muted">What the σ does to a stem (Square of Stops, lengthened vowels), which future a verb has, and which verb a future comes from.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
+}
+
+/** ἀποστέλλω → *στελ. */
+function Roots({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = (chapter.present?.roots ?? []).map((r) => ({ id: rootItemId(chapter.number, r), make: () => rootQuestion(chapter, r) }))
+    return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">The root is the basic form of a verb; the present stem often changes it. The future is usually built on the root.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
     </>
   )

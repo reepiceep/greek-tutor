@@ -21,7 +21,7 @@ const VERBS: PresentVerb[] = [
   { id: 'gennao', lemma: 'γεννάω', tense: 'future', stem: 'γεννήσ', from: 'γεννα', present: { stem: 'γενν', contract: 'α' }, en: 'give birth to', en3: 'gives birth to' },
   // ζάω's present contracts irregularly (ζῇ, not ζᾷ), so it is left out of "present or future".
   { id: 'zao', lemma: 'ζάω', tense: 'future', stem: 'ζήσ', from: 'ζα', en: 'live', en3: 'lives' },
-  { id: 'poreuomai', lemma: 'πορεύομαι', tense: 'future', voice: 'middle', stem: 'πορεύσ', from: 'πορευ', present: { stem: 'πορεύ' }, en: 'go', en3: 'goes' },
+  { id: 'poreuomai', lemma: 'πορεύομαι', tense: 'future', voice: 'middle', stem: 'πορεύσ', from: 'πορευ', present: { stem: 'πορεύ', voice: 'middle' }, en: 'go', en3: 'goes' },
   {
     id: 'eimi', lemma: 'εἰμί', tense: 'future', voice: 'middle', stem: 'ἔσ', irregular: { '3s': 'ἔσται' },
     en: 'be', en3: 'is', lexicalGloss: 'I am',

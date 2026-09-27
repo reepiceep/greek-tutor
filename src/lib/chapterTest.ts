@@ -18,7 +18,7 @@ import { shuffle, type AreaScore, type TestResult } from './progress'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
-  ruleFor, tensePairs, tenseQuestion,
+  hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
 import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
@@ -409,7 +409,7 @@ const SPECS: Record<number, TestSpec> = {
       const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 8)
       const rules = take([
         ...FUTURE_RULES.map((r) => () => futureRuleQuestion(ch, r)),
-        ...pr.verbs.filter((v) => ruleFor(v)).map((v) => () => futureFormQuestion(ch, v)),
+        ...pr.verbs.filter(hasFutureForm).map((v) => () => futureFormQuestion(ch, v)),
       ], 2)
       const lexical = take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 3)
       const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
@@ -417,6 +417,32 @@ const SPECS: Record<number, TestSpec> = {
         ...vocabArea(ch),
         ...tag('Future forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
         ...tag('Forming the future', [...rules.map((make) => make()), ...lexical.map(({ v, s }) => futureLexicalQuestion(ch, v, s))]),
+        ...tag('Present or future', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
+        ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
+      ]
+    },
+  },
+  20: {
+    areas: [
+      { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
+      { name: 'Future forms', count: 8, covers: 'parsing, translating and choosing liquid and other futures' },
+      { name: 'Roots & futures', count: 5, covers: 'verbal roots, forming the future, and finding the lexical form' },
+      { name: 'Present or future', count: 3, covers: 'μένει or μενεῖ, αἴρει or ἀρεῖ' },
+      { name: 'Verses', count: 4, covers: 'these futures in the New Testament' },
+    ],
+    build: (ch) => {
+      const pr = ch.present!
+      const forms = take(pr.verbs.flatMap((v) => SLOTS.flatMap((s) => FORM_SKILLS.map((skill) => ({ v, s, skill })))), 8)
+      const lexical = take(pr.verbs.flatMap((v) => SLOTS.map((s) => ({ v, s }))), 2)
+      const verses = take(pr.verses.flatMap((v) => [verseParseQuestion, verseLexicalQuestion].map((f) => ({ v, f }))), 4)
+      return [
+        ...vocabArea(ch),
+        ...tag('Future forms', forms.map(({ v, s, skill }) => presentFormQuestion(ch, v, s, skill))),
+        ...tag('Roots & futures', [
+          ...take(pr.roots ?? [], 2).map((r) => rootQuestion(ch, r)),
+          ...take(pr.verbs.filter(hasFutureForm), 1).map((v) => futureFormQuestion(ch, v)),
+          ...lexical.map(({ v, s }) => futureLexicalQuestion(ch, v, s)),
+        ]),
         ...tag('Present or future', take(tensePairs(ch), 3).map(({ v, slot, tense }) => tenseQuestion(ch, v, slot, tense))),
         ...tag('Verses', verses.map(({ v, f }) => f(ch, v))),
       ]

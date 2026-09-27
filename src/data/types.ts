@@ -443,7 +443,14 @@ export interface PresentVerb {
   /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
   from?: string
   /** The present stem, for telling present from future (λύει, λύσει). Absent when the present is irregular (ζάω, εἰμί). */
-  present?: { stem: string; contract?: ContractVowel }
+  present?: { stem: string; contract?: ContractVowel; voice?: 'middle' }
+  /**
+   * Chapter 20: a liquid future. The stem (μεν) takes εσ; the σ drops out and the ε contracts with the ending, so it is
+   * conjugated like a present ε-contract verb and has `contract: 'ε'` (μενῶ, μενεῖς).
+   */
+  liquid?: boolean
+  /** How the future stem departs from the present, for stems that change (ὁράω → ὄψομαι). */
+  change?: string
   /** How the lexical form is glossed when it isn't "I " + `en` (εἰμί: "I am"). */
   lexicalGloss?: string
   /** Forms that break the pattern, e.g. ἔσται (not ἔσεται). */
@@ -467,15 +474,26 @@ export interface PresentVerse {
   note?: string
 }
 
+/** A verb and its verbal root, e.g. ἀποστέλλω, *στελ (chapter 20). */
+export interface RootItem {
+  lemma: string
+  /** The root first, then wrong options; shown with an asterisk. */
+  options: string[]
+  how: string
+  /** Asked instead of "What is its root?", e.g. for the root of an irregular future. */
+  ask?: string
+}
+
 export interface PresentSection {
   /** The first is the model verb (λύω); every verb's chart is built from its stem. */
   verbs: PresentVerb[]
   verses: PresentVerse[]
+  roots?: RootItem[]
 }
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'cases'
 
 export interface Chapter {
   number: number

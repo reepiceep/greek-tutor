@@ -385,6 +385,25 @@ it('chapter 19: future lesson, λύσω chart, and every quiz tab works', () => 
   }
 })
 
+it('chapter 20: roots lesson, liquid-future chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(20)
+  nav('Other futures')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('μενοῦσι(ν)')
+  expect(document.querySelector('.future-table')!.textContent).toContain('ὄψομαι')
+  tab('Fill the chart')
+  expect(screen.getByText('menw=')).toBeTruthy()
+  tab('ὁράω')
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('ὀψόμεθα')
+  for (const t of ['Parse & translate', 'Verbal roots', 'Forming the future', 'Present or future?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('flashcards can span a chapter range, and each card counts toward its own chapter', () => {
   localStorage.clear()
   render(<App />)
