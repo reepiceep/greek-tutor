@@ -2,8 +2,9 @@ import type { ChoiceQuestion } from '../components/ChoiceQuiz'
 import type { Chapter, ContractVowel, Paradigm, PersonSlot, PresentVerb, PresentVerse } from '../data/types'
 import { shuffle } from './progress'
 
-// Questions for chapters 16–18: the present indicative. Every form is generated from the verb's stem,
-// so λύω's endings carry over to ἀκούω, βλέπω and the rest; chapter 17 contracts them, chapter 18 adds the middle/passive.
+// Questions for chapters 16–19: the present and future indicative. Every form is generated from the verb's stem,
+// so λύω's endings carry over to ἀκούω, βλέπω and the rest; chapter 17 contracts them, chapter 18 adds the middle/passive,
+// and chapter 19 puts the same endings on the future stem (λύσ-).
 
 export const SLOTS: PersonSlot[] = ['1s', '2s', '3s', '1p', '2p', '3p']
 
@@ -49,7 +50,10 @@ export const CONTRACT_MP_ENDINGS: Record<ContractVowel, Record<PersonSlot, strin
   ο: { '1s': 'οῦμαι', '2s': 'οῖ', '3s': 'οῦται', '1p': 'ούμεθα', '2p': 'οῦσθε', '3p': 'οῦνται' },
 }
 
-export const voiceName = (v: PresentVerb) => (v.voice ? 'middle/passive' : 'active')
+/** The future has a separate passive (chapter 24), so a future with middle/passive endings is simply middle. */
+export const voiceName = (v: PresentVerb) => (!v.voice ? 'active' : v.tense === 'future' ? 'middle' : 'middle/passive')
+export const tenseName = (v: PresentVerb) => v.tense ?? 'present'
+const lexicalGloss = (v: PresentVerb) => v.lexicalGloss ?? `I ${v.en}`
 
 /** The ending as memorised, before any contraction: ω, εις… or ομαι, ῃ… (μαι, σαι… for δύναμαι). */
 export const plainEndingsOf = (v: PresentVerb) => (!v.voice ? ENDINGS : v.athematic ? MP_PRIMARY : MP_ENDINGS)
@@ -75,6 +79,8 @@ function accentLastVowel(w: string) {
  * syllables, so the accent moves forward onto the ο (λυόμεθα), or onto δύναμαι's α (δυνάμεθα).
  */
 function formParts(v: PresentVerb, slot: PersonSlot): [string, string] {
+  const odd = v.irregular?.[slot]
+  if (odd) return [odd, '']
   const e = endingsOf(v)[slot]
   if (v.voice && !v.contract && slot === '1p') return v.athematic ? [accentLastVowel(v.stem), e] : [unaccented(v.stem), `ό${e.slice(1)}`]
   return [v.stem, e]
@@ -107,13 +113,14 @@ export const presentDisplay = (v: PresentVerb, slot: PersonSlot) => formParts(v,
 const BE: Record<PersonSlot, string> = { '1s': 'am', '2s': 'are', '3s': 'is', '1p': 'are', '2p': 'are', '3p': 'are' }
 
 export const presentEnglish = (v: PresentVerb, slot: PersonSlot) =>
-  v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
+  v.tense === 'future' ? `${PRONOUN[slot]} will ${v.en}`
+    : v.voice === 'passive' ? `${PRONOUN[slot]} ${BE[slot]} ${v.pp}` : `${PRONOUN[slot]} ${slot === '3s' ? v.en3 : v.en}`
 
 /** The verb's present chart, in the shape the chart drill expects. */
 export function presentParadigm(v: PresentVerb): Paradigm {
   return {
     id: `present-${v.id}`,
-    title: `${v.lemma}: present ${voiceName(v)} indicative`,
+    title: `${v.lemma}: ${tenseName(v)} ${voiceName(v)} indicative`,
     rows: SLOTS.map((s) => ({
       key: s, label: SLOT_LABEL[s], forms: presentForms(v, s), gloss: presentEnglish(v, s),
       ...(s === '3p' ? { display: presentDisplay(v, s) } : {}),
@@ -132,8 +139,18 @@ export const presentVerseId = (ch: number, v: PresentVerse, skill: VerseSkill) =
 const verbsOf = (ch: Chapter) => ch.present?.verbs ?? []
 export const presentVerb = (ch: Chapter, id: string) => verbsOf(ch).find((v) => v.id === id)!
 
-/** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου). */
+/** λύ + ομεν, or for a contract verb ποιε + ομεν (ε + ο → ου), or for a future βλεπ + σ + ω (π + σ → ψ). */
 const breakdown = (v: PresentVerb, slot: PersonSlot) => {
+  if (v.irregular?.[slot]) return <>irregular, with no connecting vowel</>
+  if (v.tense === 'future') {
+    const rule = ruleFor(v)
+    return (
+      <>
+        <span className="greek">{v.from ?? v.stem} {v.from && '+ σ '}+ {plainEndingsOf(v)[slot]}</span>
+        {rule && <> (<span className="greek">{rule.from} + σ → {rule.to}</span>)</>}
+      </>
+    )
+  }
   const vowel = endingVowelOf(v)[slot]
   return (
     <>
@@ -146,7 +163,7 @@ const breakdown = (v: PresentVerb, slot: PersonSlot) => {
 function explainForm(v: PresentVerb, slot: PersonSlot) {
   return (
     <p>
-      <span className="greek">{presentDisplay(v, slot)}</span> = {breakdown(v, slot)}: {SLOT_NAME[slot]}{v.voice && ' middle/passive'} of{' '}
+      <span className="greek">{presentDisplay(v, slot)}</span> = {breakdown(v, slot)}: {SLOT_NAME[slot]}{v.tense && ` ${v.tense}`}{v.voice && ` ${voiceName(v)}`} of{' '}
       <span className="greek">{v.lemma}</span>, “{presentEnglish(v, slot)}.”
     </p>
   )
@@ -245,9 +262,11 @@ function explainVerse(ch: Chapter, v: PresentVerse) {
   return (
     <>
       <p>
-        <span className="greek">{v.word}</span> = {breakdown(verb, v.slot)}: {SLOT_NAME[v.slot]}, present {voiceName(verb)} indicative
+        <span className="greek">{v.word}</span> = {breakdown(verb, v.slot)}: {SLOT_NAME[v.slot]}, {tenseName(verb)} {voiceName(verb)} indicative
         of <span className="greek">{verb.lemma}</span>.
-        {verb.voice === 'middle' && <> <span className="greek">{verb.lemma}</span> is middle-only: middle/passive endings, active meaning.</>}
+        {verb.voice === 'middle' && (verb.tense === 'future'
+          ? <> Its future is middle in form but active in meaning.</>
+          : <> <span className="greek">{verb.lemma}</span> is middle-only: middle/passive endings, active meaning.</>)}
       </p>
       <p className="english">“{v.translation}”</p>
       {v.note && <p>{v.note}</p>}
@@ -272,7 +291,7 @@ export function verseLexicalQuestion(ch: Chapter, v: PresentVerse): ChoiceQuesti
   return {
     id: presentVerseId(ch.number, v, 'lexical'),
     prompt: <>{highlighted(v)}<p className="muted">What is the lexical form of the highlighted verb?</p></>,
-    options: shuffle([verb, ...others]).map((o) => ({ key: o.id, label: <><span className="greek">{o.lemma}</span> <span className="muted">“I {o.en}”</span></> })),
+    options: shuffle([verb, ...others]).map((o) => ({ key: o.id, label: <><span className="greek">{o.lemma}</span> <span className="muted">“{lexicalGloss(o)}”</span></> })),
     answer: verb.id,
     explain: explainVerse(ch, v),
     review: <><span className="greek">{v.word}</span> ({v.ref}) is from <span className="greek">{verb.lemma}</span></>,
@@ -343,34 +362,171 @@ export const inVoice = (v: PresentVerb, voice: VoiceKey): PresentVerb => (voice 
 export const voiceItemId = (ch: number, v: PresentVerb, slot: PersonSlot, voice: VoiceKey) => `ch${ch}:present-voice:${v.id}:${slot}:${voice}`
 
 /** Only a verb with an active (not ἔρχομαι), and only a form with one parse: ἀγαπᾷ is active 3rd sg and middle/passive 2nd sg. */
-export function askVoice(v: PresentVerb, slot: PersonSlot, voice: VoiceKey): boolean {
-  if (v.voice !== 'passive') return false
-  const form = presentDisplay(inVoice(v, voice), slot)
-  return (['active', 'mp'] as const).every((vo) => SLOTS.every((s) => (vo === voice && s === slot) || presentDisplay(inVoice(v, vo), s) !== form))
-}
+export const askVoice = (v: PresentVerb, slot: PersonSlot, voice: VoiceKey) =>
+  v.voice === 'passive' && oneParse((k) => inVoice(v, k), ['active', 'mp'] as const, slot, voice)
 
 export const voicePairs = (ch: Chapter) =>
   verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => (['active', 'mp'] as const).filter((voice) => askVoice(v, slot, voice)).map((voice) => ({ v, slot, voice }))))
 
-/** λύῃ → middle/passive 2nd sg, with λύει (active 3rd sg) among the options: the trap in this chapter. */
-export function voiceQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, voice: VoiceKey): ChoiceQuestion {
-  const other: VoiceKey = voice === 'active' ? 'mp' : 'active'
+interface Side {
+  key: string
+  label: string
+  v: PresentVerb
+}
+
+/**
+ * The same form in two tenses or voices: the right parse, the other one in the same person, and both in a person that
+ * is easy to confuse (2nd and 3rd singular: λύῃ / λύει).
+ */
+function contrastQuestion(id: string, shown: Side, other: Side, slot: PersonSlot, ask: string): ChoiceQuestion {
   const alt: PersonSlot = slot === '2s' ? '3s' : slot === '3s' ? '2s' : shuffle(SLOTS.filter((s) => s !== slot))[0]
-  const options = shuffle([{ voice, slot }, { voice: other, slot }, { voice, slot: alt }, { voice: other, slot: alt }])
-  const shown = inVoice(v, voice)
+  const options = shuffle([{ side: shown, slot }, { side: other, slot }, { side: shown, slot: alt }, { side: other, slot: alt }])
   return {
-    id: voiceItemId(ch.number, v, slot, voice),
-    prompt: <><span className="greek big">{presentForms(shown, slot).at(-1)}</span><p className="muted">Active or middle/passive, and which person?</p></>,
-    options: options.map((o) => ({ key: `${o.voice}:${o.slot}`, label: `${VOICE_LABEL[o.voice]} · ${SLOT_LABEL[o.slot]}` })),
-    answer: `${voice}:${slot}`,
+    id,
+    prompt: <><span className="greek big">{presentForms(shown.v, slot).at(-1)}</span><p className="muted">{ask}</p></>,
+    options: options.map((o) => ({ key: `${o.side.key}:${o.slot}`, label: `${o.side.label} · ${SLOT_LABEL[o.slot]}` })),
+    answer: `${shown.key}:${slot}`,
     explain: (
       <>
-        {explainForm(shown, slot)}
+        {explainForm(shown.v, slot)}
         <p className="muted">
-          The {VOICE_LABEL[other]} is <span className="greek">{presentDisplay(inVoice(v, other), slot)}</span>, “{presentEnglish(inVoice(v, other), slot)}.”
+          The {other.label} is <span className="greek">{presentDisplay(other.v, slot)}</span>, “{presentEnglish(other.v, slot)}.”
         </p>
       </>
     ),
-    review: <><span className="greek">{presentDisplay(shown, slot)}</span> = {VOICE_LABEL[voice]} {SLOT_LABEL[slot]}, “{presentEnglish(shown, slot)}”</>,
+    review: <><span className="greek">{presentDisplay(shown.v, slot)}</span> = {shown.label} {SLOT_LABEL[slot]}, “{presentEnglish(shown.v, slot)}”</>,
   }
+}
+
+/** Does the form have only one parse among both tenses or voices? (ἀγαπᾷ is active 3rd sg and middle/passive 2nd sg.) */
+function oneParse<K extends string>(make: (k: K) => PresentVerb, keys: readonly K[], slot: PersonSlot, key: K) {
+  const form = presentDisplay(make(key), slot)
+  return keys.every((k) => SLOTS.every((s) => (k === key && s === slot) || presentDisplay(make(k), s) !== form))
+}
+
+/** λύῃ → middle/passive 2nd sg, with λύει (active 3rd sg) among the options: the trap in this chapter. */
+export function voiceQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, voice: VoiceKey): ChoiceQuestion {
+  const other: VoiceKey = voice === 'active' ? 'mp' : 'active'
+  return contrastQuestion(
+    voiceItemId(ch.number, v, slot, voice),
+    { key: voice, label: VOICE_LABEL[voice], v: inVoice(v, voice) },
+    { key: other, label: VOICE_LABEL[other], v: inVoice(v, other) },
+    slot, 'Active or middle/passive, and which person?',
+  )
+}
+
+// --- Future (chapter 19) ---
+
+export interface FutureRule {
+  /** The last letter of the stem, before the σ. */
+  from: string
+  /** What stem letter + σ becomes. */
+  to: string
+  /** Every result on offer for this kind of letter. */
+  options: string[]
+  why: string
+}
+
+const LABIAL = 'Labials (π, β, φ) + σ → ψ.'
+const VELAR = 'Velars (κ, γ, χ) + σ → ξ.'
+const DENTAL = 'Dentals (τ, δ, θ) and ζ drop out before σ.'
+const LENGTHEN = 'A contract vowel lengthens before the σ: α and ε → η, ο → ω.'
+
+/** Square of Stops, and contract vowels lengthening, when the future's σ is added. */
+export const FUTURE_RULES: FutureRule[] = [
+  ...['π', 'β', 'φ'].map((from) => ({ from, to: 'ψ', options: ['ψ', 'ξ', 'σ', `${from}σ`], why: LABIAL })),
+  ...['κ', 'γ', 'χ'].map((from) => ({ from, to: 'ξ', options: ['ξ', 'ψ', 'σ', `${from}σ`], why: VELAR })),
+  ...['τ', 'δ', 'θ', 'ζ'].map((from) => ({ from, to: 'σ', options: ['σ', 'ψ', 'ξ', `${from}σ`], why: DENTAL })),
+  { from: 'α', to: 'ησ', options: ['ησ', 'ωσ', 'ασ'], why: LENGTHEN },
+  { from: 'ε', to: 'ησ', options: ['ησ', 'ωσ', 'εσ'], why: LENGTHEN },
+  { from: 'ο', to: 'ωσ', options: ['ωσ', 'ησ', 'οσ'], why: LENGTHEN },
+]
+
+const baseLetters = (w: string) => w.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+/** The rule that made this verb's future stem (βλεπ + σ → βλεψ), if any: λύσω just adds σ. */
+export function ruleFor(v: PresentVerb): FutureRule | undefined {
+  return v.from ? FUTURE_RULES.find((r) => r.from === baseLetters(v.from!).at(-1)) : undefined
+}
+
+export const futureRuleItemId = (ch: number, r: FutureRule) => `ch${ch}:future-rule:${r.from}`
+export const futureFormItemId = (ch: number, v: PresentVerb) => `ch${ch}:future-form:${v.id}`
+export const futureLexicalItemId = (ch: number, v: PresentVerb, slot: PersonSlot) => `ch${ch}:future-lexical:${v.id}:${slot}`
+
+const verbExample = (v: PresentVerb) => <><span className="greek">{v.lemma} → {presentDisplay(v, '1s')}</span></>
+
+/** π + σ → ? */
+export function futureRuleQuestion(ch: Chapter, r: FutureRule): ChoiceQuestion {
+  const examples = verbsOf(ch).filter((v) => ruleFor(v) === r)
+  return {
+    id: futureRuleItemId(ch.number, r),
+    prompt: <><span className="greek big">{r.from} + σ</span><p className="muted">What does it become in the future?</p></>,
+    options: r.options.map((o) => ({ key: o, label: o, greek: true })),
+    answer: r.to,
+    explain: <p>{r.why}{examples.length > 0 && <> {examples.map((v, i) => <span key={v.id}>{i > 0 && ', '}{verbExample(v)}</span>)}.</>}</p>,
+    review: <><span className="greek">{r.from} + σ → {r.to}</span></>,
+  }
+}
+
+/** Replace the letter a rule produced (ψ in βλεψ, η in ἀγαπησ), keeping its accent. */
+function swapRuleLetter(stem: string, vowel: boolean, letter: string) {
+  const d = stem.normalize('NFD')
+  let i = d.length - (vowel ? 2 : 1)
+  while (i > 0 && /[\u0300-\u036f]/.test(d[i])) i--
+  return (d.slice(0, i) + letter + d.slice(i + 1)).normalize('NFC')
+}
+
+/** βλέπω → βλέψω, among βλέξω, βλέσω, βλέπσω. Only for verbs whose future stem shows a rule. */
+export function futureFormQuestion(ch: Chapter, v: PresentVerb): ChoiceQuestion {
+  const r = ruleFor(v)!
+  const vowel = r.to.length === 2
+  const ending = plainEndingsOf(v)['1s']
+  const wrong = r.options.filter((o) => o !== r.to).map((o) => (vowel ? swapRuleLetter(v.stem, true, o[0]) : `${v.stem.slice(0, -1)}${o}`) + ending)
+  const forms = [...new Set([presentDisplay(v, '1s'), ...wrong, ...(vowel ? [v.lemma] : [])])]
+  return {
+    id: futureFormItemId(ch.number, v),
+    prompt: <><span className="greek big">{v.lemma}</span><p className="muted">Future, 1st singular?</p></>,
+    options: shuffle(forms).map((f) => ({ key: f, label: f, greek: true })),
+    answer: presentDisplay(v, '1s'),
+    explain: <><p>{r.why}</p>{explainForm(v, '1s')}</>,
+    review: <>{verbExample(v)}</>,
+  }
+}
+
+/** λύσουσιν → λύω: undo the σ to find the lexical form. */
+export function futureLexicalQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot): ChoiceQuestion {
+  const others = shuffle(verbsOf(ch).filter((o) => o !== v)).slice(0, 3)
+  return {
+    id: futureLexicalItemId(ch.number, v, slot),
+    prompt: <><span className="greek big">{presentForms(v, slot).at(-1)}</span><p className="muted">What is its lexical form?</p></>,
+    options: shuffle([v, ...others]).map((o) => ({ key: o.id, label: <><span className="greek">{o.lemma}</span> <span className="muted">“{lexicalGloss(o)}”</span></> })),
+    answer: v.id,
+    explain: explainForm(v, slot),
+    review: <><span className="greek">{presentDisplay(v, slot)}</span> is from <span className="greek">{v.lemma}</span></>,
+  }
+}
+
+export type TenseKey = 'present' | 'future'
+const TENSES = ['present', 'future'] as const
+
+/** The same verb in the present or the future. */
+export const inTense = (v: PresentVerb, tense: TenseKey): PresentVerb =>
+  tense === 'future' ? v : { ...v, tense: undefined, from: undefined, irregular: undefined, stem: v.present!.stem, contract: v.present!.contract }
+
+export const tenseItemId = (ch: number, v: PresentVerb, slot: PersonSlot, tense: TenseKey) => `ch${ch}:future-tense:${v.id}:${slot}:${tense}`
+
+export const askTense = (v: PresentVerb, slot: PersonSlot, tense: TenseKey) => !!v.present && oneParse((t) => inTense(v, t), TENSES, slot, tense)
+
+export const tensePairs = (ch: Chapter) =>
+  verbsOf(ch).flatMap((v) => SLOTS.flatMap((slot) => TENSES.filter((tense) => askTense(v, slot, tense)).map((tense) => ({ v, slot, tense }))))
+
+/** λύει or λύσει? */
+export function tenseQuestion(ch: Chapter, v: PresentVerb, slot: PersonSlot, tense: TenseKey): ChoiceQuestion {
+  const other: TenseKey = tense === 'present' ? 'future' : 'present'
+  return contrastQuestion(
+    tenseItemId(ch.number, v, slot, tense),
+    { key: tense, label: tense, v: inTense(v, tense) },
+    { key: other, label: other, v: inTense(v, other) },
+    slot, 'Present or future, and which person?',
+  )
 }

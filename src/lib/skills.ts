@@ -35,7 +35,8 @@ import {
 import {
   CONTRACTIONS, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId, contractTypeQuestion, contractionItemId, contractionPairs,
   contractionQuestion, inVoice, tellsContractType, endingFormQuestion, endingItemId, endingPersonQuestion, presentDisplay, presentEnglish,
-  plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
+  FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
+  inTense, ruleFor, tenseItemId, tensePairs, tenseQuestion, plainEndingsOf, presentIdentifyQuestion, presentItemId, presentProduceQuestion, presentTranslateQuestion, presentVerseId, verseLexicalQuestion,
   verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from './presentQuestions'
 import { usageItemId } from './usageQuestions'
@@ -285,9 +286,11 @@ function presentSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const pres = ch.present
   if (!pres) return []
-  const middle = pres.verbs.some((v) => v.voice)
-  const contract = !middle && pres.verbs.some((v) => v.contract)
-  const [topic, view]: [string, View] = middle ? ['Middle/passive', 'middle'] : contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
+  const future = pres.verbs.some((v) => v.tense)
+  const middle = !future && pres.verbs.some((v) => v.voice)
+  const contract = !future && !middle && pres.verbs.some((v) => v.contract)
+  const [topic, view]: [string, View] = future ? ['Future', 'future'] : middle ? ['Middle/passive', 'middle']
+    : contract ? ['Contract verbs', 'contract'] : ['Present tense', 'present']
   const endings = plainEndingsOf(pres.verbs[0])
   const forms: Skill = {
     label: `${topic}: forms`, view,
@@ -329,6 +332,27 @@ function presentSkills(ch: Chapter): Skill[] {
       { id: presentVerseId(n, v, 'parse'), name: `${v.word} in ${v.ref} (person)`, make: () => verseParseQuestion(ch, v) },
       { id: presentVerseId(n, v, 'lexical'), name: `${v.word} in ${v.ref} (lexical form)`, make: () => verseLexicalQuestion(ch, v) },
     ]),
+  }
+  if (future) {
+    const forming: Skill = {
+      label: `${topic}: forming the future`, view,
+      items: [
+        ...FUTURE_RULES.map((r) => ({ id: futureRuleItemId(n, r), name: `${r.from} + σ → ${r.to}`, make: () => futureRuleQuestion(ch, r) })),
+        ...pres.verbs.filter((v) => ruleFor(v)).map((v) => ({
+          id: futureFormItemId(n, v), name: `${v.lemma} → ${presentDisplay(v, '1s')}`, make: () => futureFormQuestion(ch, v),
+        })),
+        ...pres.verbs.flatMap((v) => SLOTS.map((s) => ({
+          id: futureLexicalItemId(n, v, s), name: `${presentDisplay(v, s)}: from ${v.lemma}`, make: () => futureLexicalQuestion(ch, v, s),
+        }))),
+      ],
+    }
+    const tense: Skill = {
+      label: `${topic}: present or future`, view,
+      items: tensePairs(ch).map(({ v, slot, tense: t }) => ({
+        id: tenseItemId(n, v, slot, t), name: `${presentDisplay(inTense(v, t), slot)}: ${t} ${SLOT_LABEL[slot]}`, make: () => tenseQuestion(ch, v, slot, t),
+      })),
+    }
+    return [forms, forming, tense, verses]
   }
   return [forms, extra, ...(middle ? [voice] : []), verses]
 }

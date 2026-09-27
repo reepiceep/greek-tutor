@@ -231,4 +231,15 @@ export const RECORDINGS: Record<string, Recording> = {
   'συνάγω': { mounce: B + 'chpt18/words/sunagw.mp3', modern: B + 'chpt18/modern/sunagw.mp3' },
   'τόπος': { mounce: B + 'chpt18/words/topos.mp3', modern: B + 'chpt18/modern/topos.mp3' },
   'ὡς': { mounce: B + 'chpt18/words/hws.mp3', modern: B + 'chpt18/modern/hws.mp3' },
+  // Chapter 19. Ἰουδαῖος's page links ioudaios.mp3, which is missing (403); iouda2.mp3 sits next to Ἰουδαία's iouda1.mp3.
+  'βασιλεύς': { mounce: B + 'chpt19/words/basile.mp3', modern: B + 'chpt19/modern/basile.mp3' },
+  'γεννάω': { mounce: B + 'chpt19/words/gennaw.mp3', modern: B + 'chpt19/modern/gennaw.mp3' },
+  'ζάω': { mounce: B + 'chpt19/words/zaw.mp3', modern: B + 'chpt19/modern/zaw.mp3' },
+  'Ἰουδαία': { mounce: B + 'chpt19/words/iouda1.mp3', modern: B + 'chpt19/modern/iouda1.mp3' },
+  'Ἰουδαῖος': { mounce: B + 'chpt19/words/iouda2.mp3', modern: B + 'chpt19/modern/iouda2.mp3' },
+  'Ἰσραήλ': { mounce: B + 'chpt19/words/israhl.mp3', modern: B + 'chpt19/modern/israhl.mp3' },
+  'καρπός': { mounce: B + 'chpt19/words/karpos.mp3', modern: B + 'chpt19/modern/karpos.mp3' },
+  'μείζων': { mounce: B + 'chpt19/words/meizwn.mp3', modern: B + 'chpt19/modern/meizwn.mp3' },
+  'ὅλος': { mounce: B + 'chpt19/words/holos.mp3', modern: B + 'chpt19/modern/holos.mp3' },
+  'προσκυνέω': { mounce: B + 'chpt19/words/prosku.mp3', modern: B + 'chpt19/modern/prosku.mp3' },
 }

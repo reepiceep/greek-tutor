@@ -438,12 +438,22 @@ export interface PresentVerb {
   pp?: string
   /** δύναμαι: the endings μαι, σαι, ται... go straight onto the stem, with no connecting vowel. */
   athematic?: boolean
+  /** Chapter 19: the verb is drilled in the future, and `stem` is the future stem with its σ (λύσ, βλέψ, ἀγαπήσ). */
+  tense?: 'future'
+  /** The stem the future's σ is added to (λυ, βλεπ, ἀγαπα). Absent when there is no σ to add (ἔσομαι). */
+  from?: string
+  /** The present stem, for telling present from future (λύει, λύσει). Absent when the present is irregular (ζάω, εἰμί). */
+  present?: { stem: string; contract?: ContractVowel }
+  /** How the lexical form is glossed when it isn't "I " + `en` (εἰμί: "I am"). */
+  lexicalGloss?: string
+  /** Forms that break the pattern, e.g. ἔσται (not ἔσεται). */
+  irregular?: Partial<Record<PersonSlot, string>>
   /** English: base form and 3rd singular ("hear", "hears"); for a passive verb, its active meaning. */
   en: string
   en3: string
 }
 
-/** A present indicative verb in a verse (active, or middle/passive in chapter 18). */
+/** A present (or, in chapter 19, future) indicative verb in a verse. */
 export interface PresentVerse {
   id: string
   ref: string
@@ -465,7 +475,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'present' | 'contract' | 'middle' | 'future' | 'cases'
 
 export interface Chapter {
   number: number

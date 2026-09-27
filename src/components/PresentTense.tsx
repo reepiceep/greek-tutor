@@ -4,17 +4,18 @@ import { pickWeakest, shuffle } from '../lib/progress'
 import {
   ACTIVE_VOWELS, CONTRACTIONS, CONTRACT_VOWELS, ENDINGS, ENDING_VOWEL, MP_ENDINGS, MP_PRIMARY, PRONOUN, SLOTS, SLOT_LABEL, contractTypeItemId,
   contractTypeQuestion, contractionItemId, contractionPairs, contractionQuestion, endingFormQuestion, endingItemId, endingPersonQuestion,
-  inVoice, presentDisplay, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
+  FUTURE_RULES, futureFormItemId, futureFormQuestion, futureLexicalItemId, futureLexicalQuestion, futureRuleItemId, futureRuleQuestion,
+  inTense, inVoice, presentDisplay, ruleFor, tenseItemId, tensePairs, tenseQuestion, presentEnglish, presentIdentifyQuestion, presentItemId, presentParadigm, presentProduceQuestion,
   presentTranslateQuestion, presentVerseId, tellsContractType, verseLexicalQuestion, verseParseQuestion, voiceItemId, voicePairs, voiceQuestion,
 } from '../lib/presentQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { ChartDrill } from './ParadigmDrill'
 
-type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'contractions' | 'verses'
+type Tab = 'lesson' | 'chart' | 'forms' | 'endings' | 'voice' | 'forming' | 'tense' | 'contractions' | 'verses'
 
-/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive. */
-type Mode = 'active' | 'contract' | 'middle'
+/** Chapter 16: the present active; 17: contract verbs; 18: the middle/passive; 19: the future. */
+type Mode = 'active' | 'contract' | 'middle' | 'future'
 
 const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'lesson', label: 'Lesson' },
@@ -23,15 +24,17 @@ const TABS: { tab: Tab; label: string; modes?: Mode[] }[] = [
   { tab: 'endings', label: 'Endings', modes: ['active', 'middle'] },
   { tab: 'voice', label: 'Active or passive?', modes: ['middle'] },
   { tab: 'contractions', label: 'Contractions', modes: ['contract'] },
+  { tab: 'forming', label: 'Forming the future', modes: ['future'] },
+  { tab: 'tense', label: 'Present or future?', modes: ['future'] },
   { tab: 'verses', label: 'In verses' },
 ]
 
 const modeOf = (ch: Chapter): Mode => {
   const verbs = ch.present?.verbs ?? []
-  return verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
+  return verbs.some((v) => v.tense) ? 'future' : verbs.some((v) => v.voice) ? 'middle' : verbs.some((v) => v.contract) ? 'contract' : 'active'
 }
 
-const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative' }
+const HEADINGS: Record<Mode, string> = { active: 'Present active indicative', contract: 'Contract verbs', middle: 'Present middle/passive indicative', future: 'Future active/middle indicative' }
 
 /** The present indicative: chapter 16 (λύω), chapter 17 (contract verbs) and chapter 18 (the middle/passive). */
 export function PresentTense({ chapter }: { chapter: Chapter }) {
@@ -51,11 +54,13 @@ export function PresentTense({ chapter }: { chapter: Chapter }) {
           ))}
         </div>
       </div>
-      {tab === 'lesson' && (mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
+      {tab === 'lesson' && (mode === 'future' ? <FutureLesson chapter={chapter} /> : mode === 'middle' ? <MiddleLesson chapter={chapter} /> : mode === 'contract' ? <ContractLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'chart' && <Chart key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'forms' && <Forms key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'endings' && <Endings key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'voice' && <Voice key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'forming' && <Forming key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'tense' && <Tense key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'contractions' && <Contractions key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} />}
     </section>
@@ -174,6 +179,76 @@ function ContractLesson({ chapter }: { chapter: Chapter }) {
   )
 }
 
+function FutureLesson({ chapter }: { chapter: Chapter }) {
+  const verbs = chapter.present?.verbs ?? []
+  const luo = verbs[0]
+  const eimi = verbs.find((v) => v.irregular)
+  const middles = verbs.filter((v) => v.voice && !v.irregular)
+  const stops = verbs.filter((v) => ruleFor(v) && ruleFor(v)!.to.length === 1)
+  const contracts = verbs.filter((v) => ruleFor(v) && ruleFor(v)!.to.length === 2)
+  if (!luo) return null
+  const middle = { ...luo, voice: 'middle' as const, en: luo.en }
+  return (
+    <>
+      <Lesson title="The future indicative">
+        <p>
+          The future tells you the action will happen: <span className="greek">λύσω</span>, “I will loose.” It is built on the
+          <strong> future stem</strong>, which is usually the present stem + <span className="greek">σ</span>, with the endings you
+          already know: <strong>future stem + connecting vowel + personal ending</strong>. <span className="greek">λύ-σ-ο-μεν</span>, “we will loose.”
+        </p>
+        <ul>
+          <li>The <strong>future active</strong> uses the present active endings: <span className="greek">λύσω, λύσεις, λύσει, λύσομεν, λύσετε, λύσουσι(ν)</span>.</li>
+          <li>The <strong>future middle</strong> uses the middle/passive endings: <span className="greek">λύσομαι, λύσῃ, λύσεται…</span> (The future passive is different; it comes in chapter 24.)</li>
+          <li>
+            When σ meets a stop, they combine (the <strong>Square of Stops</strong> from chapter 10): π, β, φ + σ → ψ (<span className="greek">βλέπω → βλέψω</span>);
+            κ, γ, χ + σ → ξ (<span className="greek">συνάγω → συνάξω</span>); τ, δ, θ, ζ drop out before σ.
+          </li>
+          <li>Contract verbs <strong>lengthen</strong> their contract vowel before the σ: α and ε → η, ο → ω. <span className="greek">ἀγαπάω → ἀγαπήσω, ποιέω → ποιήσω, πληρόω → πληρώσω</span>. Nothing contracts, because σ now stands between the vowels.</li>
+          <li>
+            Some verbs have a <strong>middle future with an active meaning</strong>:{' '}
+            {middles.map((v, i) => <span key={v.id}>{i > 0 && ', '}<span className="greek">{presentDisplay(v, '1s')}</span> “I will {v.en}”</span>)}.
+          </li>
+          {eimi && (
+            <li>
+              The future of <span className="greek">εἰμί</span> is middle: <span className="greek">{SLOTS.map((s) => presentDisplay(eimi, s)).join(', ')}</span>. Note{' '}
+              <span className="greek">ἔσται</span>, with no connecting vowel.
+            </li>
+          )}
+          <li>
+            To find the lexical form, undo the σ: <span className="greek">ζήσει</span> → <span className="greek">ζη</span> → <span className="greek">ζάω</span>. A ψ could come from π, β or φ,
+            so you need to know the verb: <span className="greek">βλέψω</span> is from <span className="greek">βλέπω</span>.
+          </li>
+          <li>Watch the σ: <span className="greek">λύει</span> is present, “he looses”; <span className="greek">λύσει</span> is future, “he will loose.”</li>
+        </ul>
+      </Lesson>
+      <table className="reference endings-table">
+        <thead><tr><th /><th className="greek">{luo.lemma}</th><th>Future active</th><th /><th>Future middle</th></tr></thead>
+        <tbody>
+          {SLOTS.map((s) => (
+            <tr key={s}>
+              <th>{SLOT_LABEL[s]}</th>
+              <td className="greek muted">{presentDisplay(inTense(luo, 'present'), s)}</td>
+              <td className="greek">{presentDisplay(luo, s)}</td>
+              <td className="muted">{presentEnglish(luo, s)}</td>
+              <td className="greek">{presentDisplay(middle, s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table className="reference future-table">
+        <caption>What the σ does</caption>
+        <thead><tr><th>Stem ends in</th><th>+ σ</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td className="greek">π β φ</td><td className="greek">ψ</td><td className="greek">{stops.filter((v) => ruleFor(v)!.to === 'ψ').map((v) => `${v.lemma} → ${presentDisplay(v, '1s')}`).join(', ') || '—'}</td></tr>
+          <tr><td className="greek">κ γ χ</td><td className="greek">ξ</td><td className="greek">{stops.filter((v) => ruleFor(v)!.to === 'ξ').map((v) => `${v.lemma} → ${presentDisplay(v, '1s')}`).join(', ') || '—'}</td></tr>
+          <tr><td className="greek">τ δ θ ζ</td><td className="greek">σ</td><td className="muted">(the dental drops out)</td></tr>
+          <tr><td className="greek">α ε ο</td><td className="greek">ησ ησ ωσ</td><td className="greek">{contracts.map((v) => `${v.lemma} → ${presentDisplay(v, '1s')}`).join(', ')}</td></tr>
+        </tbody>
+      </table>
+    </>
+  )
+}
+
 function MiddleLesson({ chapter }: { chapter: Chapter }) {
   const verbs = chapter.present?.verbs ?? []
   const luo = verbs[0]
@@ -247,7 +322,7 @@ interface QuizProps {
   onRestart: () => void
 }
 
-const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'] }
+const EXAMPLES: Record<Mode, [string, string]> = { active: ['lu/w', 'λύω'], contract: ['poiw=', 'ποιῶ'], middle: ['lu/omai', 'λύομαι'], future: ['lu/sw', 'λύσω'] }
 
 /** Type the whole chart for one verb: λύω first, then any of the others. */
 function Chart({ chapter, onRestart }: QuizProps) {
@@ -297,6 +372,41 @@ function Endings({ chapter, onRestart }: QuizProps) {
     return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
   })
   return <ChoiceQuiz questions={questions} onRestart={onRestart} layout="paradigm" />
+}
+
+/** The rules for adding σ, choosing a future form, and working back to the lexical form. */
+function Forming({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const verbs = chapter.present?.verbs ?? []
+    const pool = [
+      ...FUTURE_RULES.map((r) => ({ id: futureRuleItemId(chapter.number, r), make: () => futureRuleQuestion(chapter, r) })),
+      ...verbs.filter((v) => ruleFor(v)).map((v) => ({ id: futureFormItemId(chapter.number, v), make: () => futureFormQuestion(chapter, v) })),
+      ...verbs.flatMap((v) => SLOTS.map((s) => ({ id: futureLexicalItemId(chapter.number, v, s), make: () => futureLexicalQuestion(chapter, v, s) }))),
+    ]
+    return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">What the σ does to a stem (Square of Stops, lengthened vowels), which future a verb has, and which verb a future comes from.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
+}
+
+/** λύει or λύσει? The present next to the future. */
+function Tense({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = tensePairs(chapter).map(({ v, slot, tense }) => ({
+      id: tenseItemId(chapter.number, v, slot, tense), make: () => tenseQuestion(chapter, v, slot, tense),
+    }))
+    return shuffle(pickWeakest(pool, (x) => x.id, 12)).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">Present and future forms side by side. Look for the σ (or ψ, ξ, or a lengthened vowel) before the ending: <span className="greek">λύει</span> / <span className="greek">λύσει</span>, <span className="greek">βλέπεις</span> / <span className="greek">βλέψεις</span>.</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
+    </>
+  )
 }
 
 /** λύει or λύῃ? The active next to the middle/passive, for the verbs that have both. */

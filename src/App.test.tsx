@@ -366,6 +366,25 @@ it('chapter 18: middle/passive lesson, λύομαι chart, and every quiz tab wo
   }
 })
 
+it('chapter 19: future lesson, λύσω chart, and every quiz tab works', () => {
+  render(<App />)
+  pickChapter(19)
+  nav('Future')
+  expect(document.querySelector('.endings-table')!.textContent).toContain('λύσουσι(ν)')
+  expect(document.querySelector('.future-table')!.textContent).toContain('βλέψω')
+  tab('Fill the chart')
+  expect(screen.getByText('lu/sw')).toBeTruthy()
+  tab('εἰμί')
+  fireEvent.click(screen.getByText('Check'))
+  expect([...document.querySelectorAll('.correction')].map((c) => c.textContent)).toContain('ἔσται')
+  for (const t of ['Parse & translate', 'Forming the future', 'Present or future?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+})
+
 it('flashcards can span a chapter range, and each card counts toward its own chapter', () => {
   localStorage.clear()
   render(<App />)
