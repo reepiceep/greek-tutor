@@ -215,9 +215,41 @@ it('the course map lists every chapter and switches chapter on click', () => {
   nav('Home')
   const stops = document.querySelectorAll('.course-map .stop')
   expect(stops.length).toBeGreaterThanOrEqual(7)
+  const nouns = screen.getByText('Introduction and nouns').closest('button')!
+  if (nouns.getAttribute('aria-expanded') === 'false') fireEvent.click(nouns)
   fireEvent.click(screen.getByText('Adjectives', { selector: '.stop-title' }))
   expect(screen.getByText('Chapter 9', { selector: '.eyebrow' })).toBeTruthy()
   expect(document.querySelector('.stop.current .stop-title')!.textContent).toBe('Adjectives')
+})
+
+it('course map parts collapse and expand, remember it, and the current chapter’s part opens by itself', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(29)
+  nav('Home')
+  const head = (title: string) => screen.getByText(title, { selector: '.part-title' }).closest('button')!
+  const isOpen = (title: string) => head(title).getAttribute('aria-expanded') === 'true'
+  expect(isOpen('Participles')).toBe(true)
+  expect(isOpen('Indicative verbs')).toBe(false)
+  // A closed part is inert: its chapters stay in the page (for the animation) but can't be reached.
+  expect(document.getElementById(head('Indicative verbs').getAttribute('aria-controls')!)!.hasAttribute('inert')).toBe(true)
+  expect(head('Participles').textContent).toContain('ch. 26–29')
+  expect(head('Participles').querySelectorAll('.pip')).toHaveLength(4)
+  fireEvent.click(head('Indicative verbs'))
+  expect(isOpen('Indicative verbs')).toBe(true)
+  fireEvent.click(head('Participles'))
+  expect(isOpen('Participles')).toBe(false)
+  const saved: string[] = JSON.parse(localStorage.getItem('greek-tutor:course-map-open')!)
+  expect(saved).toContain('Indicative verbs')
+  expect(saved).not.toContain('Participles')
+  fireEvent.click(screen.getByText('Expand all'))
+  expect(isOpen('Participles') && isOpen('Introduction and nouns')).toBe(true)
+  fireEvent.click(screen.getByText('Collapse all'))
+  expect(isOpen('Indicative verbs')).toBe(false)
+  // Picking a chapter in a closed part opens that part.
+  pickChapter(9)
+  nav('Home')
+  expect(isOpen('Introduction and nouns')).toBe(true)
 })
 
 it('daily review: new items for a fresh start, and finishing starts a streak', () => {
@@ -520,6 +552,41 @@ it('chapter 27: present participle lesson, charts, every quiz tab, and the test'
   expect(charts.some((t) => t!.includes('λυομένης'))).toBe(true)
   expect(charts.some((t) => t!.includes('οὔσῃ'))).toBe(true)
   for (const t of ['Parse', 'Build the form', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
+it('chapter 28: aorist participle lesson, charts, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(28)
+  nav('Aorist participles')
+  const charts = [...document.querySelectorAll('.adj-table')].map((t) => t.textContent)
+  for (const form of ['λυσασῶν', 'λαβοῦσα', 'λυθεῖσα', 'λυσαμένης']) expect(charts.some((t) => t!.includes(form)), form).toBe(true)
+  for (const t of ['Parse', 'Build the form', 'Present or aorist?', 'In verses']) {
+    tab(t)
+    expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
+    fireEvent.click(document.querySelector('.option')!)
+    expect(document.querySelector('.feedback')).toBeTruthy()
+  }
+  nav('Test')
+  fireEvent.click(screen.getByText('Start the test'))
+  expect(screen.getByText(/Question 1 of 30/)).toBeTruthy()
+})
+
+it('chapter 29: adjectival participle lesson, every quiz tab, and the test', () => {
+  localStorage.clear()
+  render(<App />)
+  pickChapter(29)
+  nav('Adjectival participles')
+  expect(document.querySelector('.terms-table')!.textContent).toContain('ὁ πατὴρ ὁ πέμψας με')
+  for (const t of ['How is it used?', 'Translate', 'Parse']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

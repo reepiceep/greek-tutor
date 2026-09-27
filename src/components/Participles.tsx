@@ -1,49 +1,54 @@
 import { useState } from 'react'
-import type { Chapter } from '../data/types'
+import type { Chapter, TopicView } from '../data/types'
 import { distinctForms, slotsOf } from '../lib/declensionQuestions'
 import {
   participleBuildId, participleBuildQuestion, participleCharts, participleParadigm, participleParseId, participleParseQuestion,
-  participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion,
+  participleTenseId, participleTenseQuestion, participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion, tenseChoices,
 } from '../lib/participleQuestions'
 import { pickWeakest } from '../lib/progress'
+import { TOPIC_META } from '../lib/views'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { DeclensionTable } from './DeclensionTable'
 import { Lesson } from './Lesson'
 
-type Tab = 'lesson' | 'parse' | 'build' | 'verses'
+type Tab = 'lesson' | 'parse' | 'build' | 'tense' | 'verses'
 
-const TABS: { tab: Tab; label: string }[] = [
+const TABS: { tab: Tab; label: string; aoristOnly?: boolean }[] = [
   { tab: 'lesson', label: 'Lesson' },
   { tab: 'parse', label: 'Parse' },
   { tab: 'build', label: 'Build the form' },
+  { tab: 'tense', label: 'Present or aorist?', aoristOnly: true },
   { tab: 'verses', label: 'In verses' },
 ]
 
-export function PresentParticiple({ chapter }: { chapter: Chapter }) {
+/** Chapters 27 (present) and 28 (aorist) adverbial participles: the same drills on different charts. */
+export function Participles({ chapter, view }: { chapter: Chapter; view: TopicView }) {
   const [tab, setTab] = useState<Tab>('lesson')
   const [round, setRound] = useState(0)
   const restart = () => setRound((r) => r + 1)
   const key = `${tab}-${round}`
+  const aorist = view === 'ptcAorist'
 
   return (
     <section>
       <div className="toolbar">
-        <h2>Present participles</h2>
+        <h2>{TOPIC_META[view].nav}</h2>
         <div className="seg">
-          {TABS.map((t) => (
+          {TABS.filter((t) => aorist || !t.aoristOnly).map((t) => (
             <button key={t.tab} className={tab === t.tab ? 'on' : ''} onClick={() => { setTab(t.tab); restart() }}>{t.label}</button>
           ))}
         </div>
       </div>
-      {tab === 'lesson' && <ParticipleLesson chapter={chapter} />}
+      {tab === 'lesson' && (aorist ? <AoristLesson chapter={chapter} /> : <PresentLesson chapter={chapter} />)}
       {tab === 'parse' && <Parse key={key} chapter={chapter} onRestart={restart} />}
       {tab === 'build' && <Build key={key} chapter={chapter} onRestart={restart} />}
-      {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'tense' && <Tense key={key} chapter={chapter} onRestart={restart} />}
+      {tab === 'verses' && <Verses key={key} chapter={chapter} onRestart={restart} aorist={aorist} />}
     </section>
   )
 }
 
-function ParticipleLesson({ chapter }: { chapter: Chapter }) {
+function PresentLesson({ chapter }: { chapter: Chapter }) {
   const pt = chapter.participles
   if (!pt) return null
   const lyo = pt.verbs.find((v) => v.id === 'lyo')!
@@ -89,7 +94,54 @@ function ParticipleLesson({ chapter }: { chapter: Chapter }) {
       <div className="adj-tables">
         <DeclensionTable p={participleParadigm(lyo, 'active')} />
         <DeclensionTable p={participleParadigm(lyo, 'middle/passive')} />
-        <DeclensionTable p={pt.eimi} />
+        {pt.eimi && <DeclensionTable p={pt.eimi} />}
+      </div>
+    </>
+  )
+}
+
+function AoristLesson({ chapter }: { chapter: Chapter }) {
+  const pt = chapter.participles
+  if (!pt) return null
+  const verb = (id: string) => pt.verbs.find((v) => v.id === id)!
+  return (
+    <>
+      <Lesson title="The aorist adverbial participle">
+        <p>
+          The aorist participle has undefined aspect: it views the action as a whole. As an adverbial participle it usually happened
+          <strong> before</strong> the main verb: <span className="greek">ἀκούσας δὲ ὁ βασιλεὺς ἐταράχθη</span>, “<em>after</em> the king heard (<em>when</em> he heard),
+          he was troubled.” “Having heard” is literal; often a second main verb reads best: “he called them <em>and</em> asked.”
+        </p>
+        <ul>
+          <li>There is <strong>no augment</strong>: the augment belongs to the indicative. <span className="greek">ἔλυσα</span> but <span className="greek">λύσας</span>.</li>
+          <li>
+            <strong>First aorist active:</strong> <span className="greek">σα + ντ</span> + endings: <span className="greek">λύσας, λύσαντος · λύσασα, λυσάσης · λῦσαν, λύσαντος</span>.
+            Liquid aorists have no σ: <span className="greek">σπείρας, ἀποστείλας</span>. <strong>Middle:</strong> <span className="greek">σα + μενο/η</span>, <span className="greek">λυσάμενος</span>.
+          </li>
+          <li>
+            <strong>Second aorist:</strong> the present’s endings on the aorist stem, accented on the ending:
+            <span className="greek"> λαβών, λαβοῦσα, λαβόν</span>; <span className="greek">ἐλθών, εἰπών, ἰδών, γενόμενος</span>. Only the stem tells
+            <span className="greek"> λαβών</span> from <span className="greek">λαμβάνων</span>.
+          </li>
+          <li>
+            <strong>Aorist passive:</strong> <span className="greek">θε + ντ</span>: <span className="greek">λυθείς, λυθέντος · λυθεῖσα, λυθείσης · λυθέν, λυθέντος</span>.
+            Deponents like <span className="greek">ἀποκριθείς</span> have an active meaning: “answering.”
+          </li>
+        </ul>
+      </Lesson>
+      <table className="reference terms-table">
+        <thead><tr><th /><th>Active</th><th>Middle</th><th>Passive</th></tr></thead>
+        <tbody>
+          <tr><th>Present</th><td className="greek">ο + ντ · λύων</td><td className="greek" colSpan={2}>ο + μενο/η · λυόμενος</td></tr>
+          <tr><th>1st aorist</th><td className="greek">σα + ντ · λύσας</td><td className="greek">σα + μενο/η · λυσάμενος</td><td className="greek" rowSpan={2}>θε + ντ · λυθείς</td></tr>
+          <tr><th>2nd aorist</th><td className="greek">ο + ντ · λαβών</td><td className="greek">ο + μενο/η · γενόμενος</td></tr>
+        </tbody>
+      </table>
+      <div className="adj-tables">
+        <DeclensionTable p={participleParadigm(verb('lyo'), 'active')} />
+        <DeclensionTable p={participleParadigm(verb('lambano'), 'active')} />
+        <DeclensionTable p={participleParadigm(verb('lyo'), 'passive')} />
+        <DeclensionTable p={participleParadigm(verb('lyo'), 'middle')} />
       </div>
     </>
   )
@@ -120,7 +172,22 @@ function Build({ chapter, onRestart }: QuizProps) {
   return <ChoiceQuiz questions={questions} onRestart={onRestart} layout="grid" />
 }
 
-function Verses({ chapter, onRestart }: QuizProps) {
+function Tense({ chapter, onRestart }: QuizProps) {
+  const [questions] = useState(() => {
+    const pool = tenseChoices(chapter).map(({ c, form }) => ({
+      id: participleTenseId(chapter.number, c, form), make: () => participleTenseQuestion(chapter, c, form),
+    }))
+    return pickWeakest(pool, (x) => x.id, 12).map((x) => x.make())
+  })
+  return (
+    <>
+      <p className="muted">A present participle uses the present stem (<span className="greek">λαμβάνων</span>); an aorist uses the aorist stem, with σα or θε, and no augment (<span className="greek">λαβών, λύσας, λυθείς</span>).</p>
+      <ChoiceQuiz questions={questions} onRestart={onRestart} />
+    </>
+  )
+}
+
+function Verses({ chapter, onRestart, aorist }: QuizProps & { aorist: boolean }) {
   const [questions] = useState(() => {
     const pool = (chapter.participles?.verses ?? []).flatMap((v) => [
       { id: participleVerseId(chapter.number, v, 'parse'), make: () => participleVerseParseQuestion(chapter, v) },
@@ -130,7 +197,7 @@ function Verses({ chapter, onRestart }: QuizProps) {
   })
   return (
     <>
-      <p className="muted">Find the word the participle agrees with (same case, number and gender); that is who is doing it. Then translate it with “while.”</p>
+      <p className="muted">Find the word the participle agrees with (same case, number and gender); that is who is doing it. Then translate it: {aorist ? '“after …,” “having …”' : '“while …”'}.</p>
       <ChoiceQuiz questions={questions} onRestart={onRestart} />
     </>
   )

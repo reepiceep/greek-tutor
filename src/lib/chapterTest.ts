@@ -17,9 +17,10 @@ import { caseUses, elidedForms } from './prepositions'
 import { shuffle, type AreaScore, type TestResult } from './progress'
 import { PARTICIPLE_AREAS, participleQuestion } from './participleIntroQuestions'
 import {
-  participleBuildQuestion, participleCharts, participleParseQuestion, participleVerseParseQuestion, participleVerseTranslateQuestion,
-  translatableVerses,
+  participleBuildQuestion, participleCharts, participleParseQuestion, participleTenseQuestion, participleVerseParseQuestion,
+  participleVerseTranslateQuestion, tenseChoices, translatableVerses,
 } from './participleQuestions'
+import { participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
   FORM_SKILLS, SLOTS, contractTypeQuestion, contractionPairs, contractionQuestion, endingFormQuestion, endingPersonQuestion,
   presentFormQuestion, tellsContractType, verseLexicalQuestion, verseParseQuestion, voicePairs, voiceQuestion, FUTURE_RULES, futureFormQuestion, futureLexicalQuestion, futureRuleQuestion,
@@ -596,6 +597,45 @@ const SPECS: Record<number, TestSpec> = {
         ]),
         ...tag('Verses', take(verses, 6).map((v) => participleVerseParseQuestion(ch, v))),
         ...tag('Translation', take(translatableVerses(ch), 4).map((v) => participleVerseTranslateQuestion(ch, v))),
+      ]
+    },
+  },
+  28: {
+    areas: [
+      { name: 'Vocabulary', count: 8, covers: 'the chapter’s eight words, both directions' },
+      { name: 'Participle forms', count: 8, covers: 'parsing aorist participles, and choosing the form for a parsing' },
+      { name: 'Present or aorist', count: 4, covers: 'telling λύων from λύσας and λαμβάνων from λαβών' },
+      { name: 'Verses', count: 6, covers: 'parsing aorist participles in the New Testament' },
+      { name: 'Translation', count: 4, covers: 'what the participle agrees with, and translating it with “after”' },
+    ],
+    build: (ch) => {
+      const charts = participleCharts(ch)
+      return [
+        ...vocabArea(ch),
+        ...tag('Participle forms', [
+          ...take(charts.flatMap((c) => distinctForms(c.p).map((form) => ({ c, form }))), 5).map(({ c, form }) => participleParseQuestion(ch, c, form)),
+          ...take(charts.flatMap((c) => slotsOf(c.p).map((s) => ({ c, s }))), 3).map(({ c, s }) => participleBuildQuestion(ch, c, s)),
+        ]),
+        ...tag('Present or aorist', take(tenseChoices(ch), 4).map(({ c, form }) => participleTenseQuestion(ch, c, form))),
+        ...tag('Verses', take(ch.participles!.verses, 6).map((v) => participleVerseParseQuestion(ch, v))),
+        ...tag('Translation', take(translatableVerses(ch), 4).map((v) => participleVerseTranslateQuestion(ch, v))),
+      ]
+    },
+  },
+  29: {
+    areas: [
+      { name: 'Vocabulary', count: 5, covers: 'the chapter’s five words, both directions' },
+      { name: 'Use', count: 10, covers: 'adverbial, attributive or substantival' },
+      { name: 'Translation', count: 8, covers: '“the one who …,” “the Father who …,” “while …”' },
+      { name: 'Parsing', count: 7, covers: 'present and aorist participles in the New Testament' },
+    ],
+    build: (ch) => {
+      const items = shuffle(ch.participleUses!)
+      return [
+        ...vocabArea(ch),
+        ...tag('Use', items.slice(0, 10).map((u) => participleUseQuestion(ch, u))),
+        ...tag('Translation', items.slice(10, 18).map((u) => participleUseTranslateQuestion(ch, u))),
+        ...tag('Parsing', items.slice(18, 25).map((u) => participleVerseParseQuestion(ch, u))),
       ]
     },
   },

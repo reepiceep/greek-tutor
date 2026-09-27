@@ -246,11 +246,43 @@ nav button, .seg button { padding: 6px 12px; }
 .rules { margin-bottom: 16px; }
 .rules summary { cursor: pointer; font-weight: 600; }
 
-/* Course map: the built chapters, grouped by part of the book; each part wraps instead of scrolling sideways */
-.course-map { margin: 0 0 24px; display: grid; gap: 14px; }
-.course-part h3 { margin: 0 0 8px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-.course-part h3 .muted { font-weight: 500; letter-spacing: 0; text-transform: none; margin-left: 4px; }
-.course-map ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+/* Course map: the built chapters, grouped by part of the book. Each part collapses to one line with a pip per chapter;
+   open, its chapters wrap instead of scrolling sideways. */
+.course-map { margin: 0 0 24px; display: grid; gap: 8px; }
+.course-map-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.course-map-head h2 { margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.course-map-head .link { font-size: 0.85rem; text-decoration: none; }
+.course-map-head .link:hover { text-decoration: underline; }
+.course-part { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.course-part.has-current { border-color: var(--accent); }
+.part-head {
+  width: 100%; display: grid; grid-template-columns: auto auto 1fr auto; grid-template-areas: 'chev title pips summary' 'chev range meter meter';
+  align-items: center; column-gap: 10px; row-gap: 6px; padding: 10px 14px; text-align: left;
+  background: none; border: none; border-radius: 0; color: inherit; font: inherit; cursor: pointer;
+}
+.part-head:hover { background: var(--surface-2); }
+.part-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.part-chevron { grid-area: chev; width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s ease; }
+.course-part.open .part-chevron { transform: rotate(90deg); }
+.part-title { grid-area: title; font-weight: 700; }
+.part-range { grid-area: range; font-size: 0.8rem; color: var(--muted); }
+.part-summary { grid-area: summary; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.part-pips { grid-area: pips; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.pip { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.pip.started { background: var(--surface); box-shadow: inset 0 0 0 2px var(--good); }
+.pip.ready { background: var(--good); }
+.pip.current { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.part-meter { grid-area: meter; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.part-meter span { display: block; height: 100%; background: var(--good); }
+/* The body animates its height via grid rows; collapsed, it is inert so nothing inside can be focused. */
+.part-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
+.course-part.open .part-body { grid-template-rows: 1fr; }
+.part-body > ol { min-height: 0; overflow: hidden; }
+.course-part.open .part-body > ol { padding: 4px 14px 14px; }
+.course-map ol { list-style: none; margin: 0; padding: 0 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .part-body, .part-chevron { transition: none; }
+}
 .stop { position: relative; }
 .stop button {
   width: 100%; height: 100%; display: grid; justify-items: center; align-content: start; gap: 3px; padding: 8px 6px 6px; text-align: center;
@@ -532,8 +564,10 @@ header nav .badge {
   }
   .grade-bar button { flex: 1; }
 
-  .course-map { gap: 10px; }
   .course-map ol { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+  .part-head { grid-template-columns: auto 1fr auto; grid-template-areas: 'chev title summary' 'chev range range' 'chev pips pips' 'chev meter meter'; padding: 10px 12px; }
+  .part-pips { justify-content: flex-start; }
+  .course-part.open .part-body > ol { padding: 4px 12px 12px; }
   .stop button { padding: 6px 2px 5px; gap: 4px; }
   .stop-title, .stop-status { display: none; }
   .stop-num { width: 28px; height: 28px; font-size: 0.85rem; }

@@ -44,9 +44,10 @@ import { ruleItemId, ruleItemQuestion, tisItemId, tisQuestion } from './thirdDec
 import { TOPIC_META } from './views'
 import { PARTICIPLE_AREAS, participleItemId, participleQuestion } from './participleIntroQuestions'
 import {
-  parsingLabel, participleBuildId, participleBuildQuestion, participleCharts, participleParseId, participleParseQuestion, participleVerseId,
-  participleVerseParseQuestion, participleVerseTranslateQuestion,
+  parsingLabel, participleBuildId, participleBuildQuestion, participleCharts, participleParseId, participleParseQuestion, participleTenseId,
+  participleTenseQuestion, participleVerseId, participleVerseParseQuestion, participleVerseTranslateQuestion, tenseChoices,
 } from './participleQuestions'
+import { participleUseId, participleUseQuestion, participleUseTranslateQuestion } from './adjectivalParticipleQuestions'
 import {
   PROPERTY_NAMES, type VerbPart, askableProperties, englishItemId, englishVerbQuestion, partsItemId, termDefineQuestion, termItemId,
   termNameQuestion, verbPartQuestion,
@@ -68,8 +69,18 @@ export interface Skill {
   items: SkillItem[]
 }
 
+// Building every chapter's items takes tens of milliseconds, and the daily review needs all of them on every render;
+// they depend only on the chapter's data, so each chapter's list is built once.
+const skillCache = new WeakMap<Chapter, Skill[]>()
+
 /** All progress items for a chapter, grouped the way the dashboard shows them. */
 export function chapterSkills(ch: Chapter): Skill[] {
+  let skills = skillCache.get(ch)
+  if (!skills) skillCache.set(ch, (skills = buildSkills(ch)))
+  return skills
+}
+
+function buildSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const p = ch.paradigms.at(0)
   const pForm = (r: ParadigmRow) => r.display ?? r.forms[0]
@@ -259,6 +270,7 @@ export function chapterSkills(ch: Chapter): Skill[] {
     ...casesSkills(ch),
     ...presentSkills(ch),
     ...participleSkills(ch),
+    ...participleUseSkills(ch),
   ]
   // Chapters 10–14 have prepositions in their vocabulary but no Prepositions screen. Flashcards can split those into
   // one card per case; track that here so it shows on the dashboard and in the daily review.
@@ -293,31 +305,63 @@ export function weakestItems(skills: Skill[], items: Record<string, ItemStats>, 
     .slice(0, n)
 }
 
-/** Chapter 27: present participle forms, both ways, and participles in verses. */
+/** Chapters 27–28: participle forms, both ways, present or aorist (28), and participles in verses. */
 function participleSkills(ch: Chapter): Skill[] {
   const n = ch.number
   const charts = participleCharts(ch)
+  if (!charts.length) return []
+  const aorist = charts.some((c) => c.tense === 'aorist')
+  const [topic, view]: [string, View] = aorist ? ['Aorist participles', 'ptcAorist'] : ['Present participles', 'ptcPresent']
   const verses = ch.participles?.verses ?? []
   return [
     {
-      label: 'Present participles: forms', view: 'ptcPresent',
+      label: `${topic}: forms`, view,
       items: charts.flatMap((c) => [
         ...distinctForms(c.p).map((form) => ({
           id: participleParseId(n, c, form), name: `${form}: parse`, make: () => participleParseQuestion(ch, c, form),
         })),
         ...slotsOf(c.p).map((s) => ({
-          id: participleBuildId(n, c, s), name: `${parsingLabel(c.voice, s)} of ${c.v.lemma}`, make: () => participleBuildQuestion(ch, c, s),
+          id: participleBuildId(n, c, s), name: `${parsingLabel(c.tense, c.voice, s)} of ${c.v.lemma}`, make: () => participleBuildQuestion(ch, c, s),
         })),
       ]),
     },
     {
-      label: 'Present participles: verses', view: 'ptcPresent',
+      label: `${topic}: present or aorist`, view,
+      items: aorist
+        ? tenseChoices(ch).map(({ c, form }) => ({
+            id: participleTenseId(n, c, form), name: `${form}: ${c.tense}`, make: () => participleTenseQuestion(ch, c, form),
+          }))
+        : [],
+    },
+    {
+      label: `${topic}: verses`, view,
       items: verses.flatMap((v) => [
         { id: participleVerseId(n, v, 'parse'), name: `${v.word} (${v.ref})`, make: () => participleVerseParseQuestion(ch, v) },
         ...(v.wrong?.length
           ? [{ id: participleVerseId(n, v, 'translate'), name: `${v.word} (${v.ref}): translate`, make: () => participleVerseTranslateQuestion(ch, v) }]
           : []),
       ]),
+    },
+  ]
+}
+
+/** Chapter 29: adverbial, attributive or substantival; translation; parsing. */
+function participleUseSkills(ch: Chapter): Skill[] {
+  const n = ch.number
+  const items = ch.participleUses ?? []
+  const view: View = 'ptcAdjectival'
+  return [
+    {
+      label: 'Adjectival participles: use', view,
+      items: items.map((u) => ({ id: participleUseId(n, u, 'use'), name: `${u.word} (${u.ref}): ${u.use}`, make: () => participleUseQuestion(ch, u) })),
+    },
+    {
+      label: 'Adjectival participles: translation', view,
+      items: items.map((u) => ({ id: participleUseId(n, u, 'translate'), name: `${u.word} = “${u.english}”`, make: () => participleUseTranslateQuestion(ch, u) })),
+    },
+    {
+      label: 'Adjectival participles: parsing', view,
+      items: items.map((u) => ({ id: participleVerseId(n, u, 'parse'), name: `${u.word} (${u.ref}): parse`, make: () => participleVerseParseQuestion(ch, u) })),
     },
   ]
 }

@@ -6,7 +6,7 @@ import {
   participleBuildQuestion, participleCharts, participleParadigm, participleParseQuestion, participleVerseParseQuestion, translatableVerses,
 } from '../lib/participleQuestions'
 import { chapterSkills } from '../lib/skills'
-import { CHAPTERS, LATEST_CHAPTER } from './chapters'
+import { CHAPTERS } from './chapters'
 import { chapter27 as ch } from './chapter27'
 import type { ParticipleVoice } from './types'
 
@@ -14,9 +14,8 @@ const pt = ch.participles!
 const chart = (id: string, voice: ParticipleVoice = 'active') => participleParadigm(pt.verbs.find((v) => v.id === id)!, voice).forms
 
 describe('chapter 27 data', () => {
-  it('is the latest chapter, with the 14 vocabulary words, each with audio', () => {
-    expect(LATEST_CHAPTER).toBe(27)
-    expect(CHAPTERS.at(-1)).toBe(ch)
+  it('is in the chapter list, with the 14 vocabulary words, each with audio', () => {
+    expect(CHAPTERS).toContain(ch)
     expect(ch.vocab).toHaveLength(14)
     for (const w of ch.vocab) expect(recordingFor(w.lemma), w.lemma).toBeTruthy()
   })
@@ -76,7 +75,7 @@ describe('chapter 27 data', () => {
     for (const c of participleCharts(ch)) {
       for (const form of distinctForms(c.p)) {
         const q = participleParseQuestion(ch, c, form)
-        const valid = new Set(parsingsOf(c.p, form).map((s) => `${c.voice}:${s.case}-${s.number}-${s.gender}`))
+        const valid = new Set(parsingsOf(c.p, form).map((s) => `${c.tense}:${c.voice}:${s.case}-${s.number}-${s.gender}`))
         expect(q.options).toHaveLength(4)
         expect(valid.has(q.answer), form).toBe(true)
         expect(q.options.filter((o) => valid.has(o.key)), form).toHaveLength(1)

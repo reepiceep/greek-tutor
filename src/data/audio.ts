@@ -321,4 +321,19 @@ export const RECORDINGS: Record<string, Recording> = {
   'παρακαλέω': { mounce: B + 'chpt27/words/paraka.mp3', modern: B + 'chpt27/modern/paraka.mp3' },
   'πείθω': { mounce: B + 'chpt27/words/peiqw.mp3', modern: B + 'chpt27/modern/peiqw.mp3' },
   'τρεῖς': { mounce: B + 'chpt27/words/treis.mp3', modern: B + 'chpt27/modern/treis.mp3' },
+  // Chapter 28
+  'ἀσπάζομαι': { mounce: B + 'chpt28/words/aspazo.mp3', modern: B + 'chpt28/modern/aspazo.mp3' },
+  'γραμματεύς': { mounce: B + 'chpt28/words/gramma.mp3', modern: B + 'chpt28/modern/gramma.mp3' },
+  'ἔφη': { mounce: B + 'chpt28/words/efh.mp3', modern: B + 'chpt28/modern/efh.mp3' },
+  'ἱερόν': { mounce: B + 'chpt28/words/hieron.mp3', modern: B + 'chpt28/modern/hieron.mp3' },
+  'κράζω': { mounce: B + 'chpt28/words/krazw.mp3', modern: B + 'chpt28/modern/krazw.mp3' },
+  'οὐχί': { mounce: B + 'chpt28/words/ouci.mp3', modern: B + 'chpt28/modern/ouci.mp3' },
+  'παιδίον': { mounce: B + 'chpt28/words/paidio.mp3', modern: B + 'chpt28/modern/paidio.mp3' },
+  'σπείρω': { mounce: B + 'chpt28/words/speirw.mp3', modern: B + 'chpt28/modern/speirw.mp3' },
+  // Chapter 29
+  'δέχομαι': { mounce: B + 'chpt29/words/decoma.mp3', modern: B + 'chpt29/modern/decoma.mp3' },
+  'δοκέω': { mounce: B + 'chpt29/words/dokew.mp3', modern: B + 'chpt29/modern/dokew.mp3' },
+  'ἐσθίω': { mounce: B + 'chpt29/words/esqiw.mp3', modern: B + 'chpt29/modern/esqiw.mp3' },
+  'πέμπω': { mounce: B + 'chpt29/words/pempw.mp3', modern: B + 'chpt29/modern/pempw.mp3' },
+  'φέρω': { mounce: B + 'chpt29/words/ferw.mp3', modern: B + 'chpt29/modern/ferw.mp3' },
 }

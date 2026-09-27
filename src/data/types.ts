@@ -409,55 +409,82 @@ export interface ParticipleIntroSection {
   structure: ParticipleIntroItem[]
 }
 
-// --- Present participles (chapter 27) ---
+// --- Participles (chapters 27–29) ---
 
-export type ParticipleVoice = 'active' | 'middle/passive'
+/** Present participles have one middle/passive form; aorist participles have separate middle and passive forms. */
+export type ParticipleVoice = 'active' | 'middle/passive' | 'middle' | 'passive'
+export type ParticipleTense = 'present' | 'aorist'
 
-/** A verb whose present participles are generated: stem + ο + ντ (3-1-3) or stem + ο + μενο/η (2-1-2). */
+/**
+ * A verb whose participles are generated. Present: stem + ο + ντ (3-1-3) or ο + μενο/η (2-1-2). First aorist:
+ * σα + ντ (λύσας) or σα + μενο/η (λυσάμενος). Second aorist: the present's endings on the aorist stem, accented on the
+ * ending (λαβών). Aorist passive: θε + ντ on `passiveStem` (λυθείς).
+ */
 export interface ParticipleVerb {
   id: string
   lemma: string
-  /** Present stem with the lexical form's accent (λύ, πιστεύ, ἀναβαίν); the active participle keeps it there when it can. */
+  /**
+   * Present or aorist stem with the lexical form's accent (λύ, πιστεύ; aorist λύσ, μείν); the participle keeps the
+   * accent there when it can. A second aorist stem is unaccented (λαβ), since its accent falls on the ending.
+   */
   stem: string
-  /** A long α, ι or υ in the accented syllable, which takes a circumflex before a short ultima (λῦον). */
+  tense?: 'aorist'
+  /** Second aorist (λαβών, γενόμενος) rather than first (λύσας, λυσάμενος). */
+  second?: boolean
+  /** The aorist passive stem, ending in θ (λυθ) or not (γραφ for γραφείς). */
+  passiveStem?: string
+  /** A long α, ι or υ in the accented syllable, which takes a circumflex before a short ultima (λῦον, λῦσαν). */
   long?: boolean
   voices: ParticipleVoice[]
-  /** Middle-only (ἔρχομαι): middle/passive forms, active meaning. */
+  /** Deponent (ἔρχομαι, ἀποκρίνομαι): middle or passive forms, active meaning. */
   middleOnly?: boolean
   /** κάθημαι: μενο/η goes straight onto the stem, with no connecting vowel (καθήμενος). */
   athematic?: boolean
-  /** English: "loosing"; the passive is "being" + `pp`. */
+  /** English: "loosing", or for an aorist "having loosed"; the passive adds "being"/"having been" to `pp`. */
   ing: string
   pp?: string
 }
 
-/** A present participle in a real verse, parsed as in the MorphGNT. */
-export interface ParticipleVerse {
+/** A participle in a real verse, parsed as in the MorphGNT. */
+export interface ParsedParticiple {
   id: string
-  ref: string
+  ref?: string
   text: string
   /** The participle exactly as it appears in `text`. */
   word: string
   lemma: string
+  tense?: 'aorist'
   voice: ParticipleVoice
   case: NounCase
   number: GrammaticalNumber
   gender: Gender
   /** What the participle agrees with: a word in `text`, or the subject inside the main verb. */
-  agrees: string
+  agrees?: string
   translation: string
-  /** Wrong translations; the translation question is only asked when these are given. */
-  wrong?: string[]
   help?: string
   note?: string
+}
+
+export interface ParticipleVerse extends ParsedParticiple {
+  ref: string
+  agrees: string
+  /** Wrong translations; the translation question is only asked when these are given. */
+  wrong?: string[]
 }
 
 export interface ParticipleSection {
   verbs: ParticipleVerb[]
   /** ὤν, οὖσα, ὄν: εἰμί's participle, the active endings with no stem. */
-  eimi: DeclensionParadigm
+  eimi?: DeclensionParadigm
   verses: ParticipleVerse[]
 }
+
+// --- Adjectival participles (chapter 29) ---
+
+export type ParticipleUse = 'adverbial' | 'attributive' | 'substantival'
+
+/** A verse with one participle to classify, translate and parse. */
+export type ParticipleUseItem = UseItem<ParticipleUse> & ParsedParticiple
 
 // --- Genitive and dative (chapter 7) ---
 
@@ -599,7 +626,7 @@ export interface PresentSection {
 
 /** Chapter-specific practice screens; each chapter lists the ones it has. */
 export type TopicView =
-  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
+  | 'paradigm' | 'prepositions' | 'adjectives' | 'declension' | 'pronouns' | 'autos' | 'demonstratives' | 'relative' | 'verbs' | 'participles' | 'ptcPresent' | 'ptcAorist' | 'ptcAdjectival' | 'present' | 'contract' | 'middle' | 'future' | 'roots' | 'imperfect' | 'aorist' | 'aorist1' | 'passive' | 'perfect' | 'cases'
 
 export interface Chapter {
   number: number
@@ -618,6 +645,7 @@ export interface Chapter {
   verbIntro?: VerbIntroSection
   participleIntro?: ParticipleIntroSection
   participles?: ParticipleSection
+  participleUses?: ParticipleUseItem[]
   present?: PresentSection
   cases?: CasesSection
   phrases?: PrepPhrase[]

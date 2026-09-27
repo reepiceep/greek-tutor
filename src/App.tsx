@@ -9,7 +9,8 @@ import { Demonstratives } from './components/Demonstratives'
 import { RelativePronoun } from './components/RelativePronoun'
 import { VerbIntro } from './components/VerbIntro'
 import { ParticipleIntro } from './components/ParticipleIntro'
-import { PresentParticiple } from './components/PresentParticiple'
+import { Participles } from './components/Participles'
+import { AdjectivalParticiple } from './components/AdjectivalParticiple'
 import { Cases } from './components/Cases'
 import { PresentTense } from './components/PresentTense'
 import { ChapterTest } from './components/ChapterTest'
@@ -105,7 +106,8 @@ export default function App() {
         {view === 'relative' && <RelativePronoun chapter={chapter} />}
         {view === 'verbs' && <VerbIntro chapter={chapter} />}
         {view === 'participles' && <ParticipleIntro chapter={chapter} />}
-        {view === 'ptcPresent' && <PresentParticiple chapter={chapter} />}
+        {(view === 'ptcPresent' || view === 'ptcAorist') && <Participles key={view} chapter={chapter} view={view} />}
+        {view === 'ptcAdjectival' && <AdjectivalParticiple chapter={chapter} />}
         {view === 'cases' && <Cases chapter={chapter} />}
         {(view === 'present' || view === 'contract' || view === 'middle' || view === 'future' || view === 'roots' || view === 'imperfect' || view === 'aorist' || view === 'aorist1' || view === 'passive' || view === 'perfect') && <PresentTense key={view} chapter={chapter} />}
         {view === 'review' && <PrepositionReview />}
