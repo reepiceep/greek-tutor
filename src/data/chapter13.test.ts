@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { buildChapterTest } from '../lib/chapterTest'
-import { adjAgreeQuestion, adjParseQuestion, distinctForms, parsingsOf, slotLabel } from '../lib/declensionQuestions'
-import { demonstrativeTranslateQuestion, demonstrativeUseQuestion } from '../lib/demonstrativeQuestions'
+import { adjAgreeQuestion, adjParseQuestion, distinctForms, formAt, parsingsOf, slotLabel } from '../lib/declensionQuestions'
+import {
+  DEMONSTRATIVE_SLOTS, demonstrativeEnglish, demonstrativeProduceQuestion, demonstrativeSentenceQuestion, demonstrativeTranslateQuestion,
+  demonstrativeUseQuestion, lookalikeQuestion, vocativeCaseQuestion, vocativeFormQuestion,
+} from '../lib/demonstrativeQuestions'
 import { recordingFor } from '../lib/audio'
 import { chapter13 as ch } from './chapter13'
 import type { Slot } from '../lib/declensionQuestions'
@@ -30,7 +33,7 @@ describe('chapter 13 data', () => {
   })
 
   it('an item is an adjective exactly when an agreeing article is right next to the demonstrative', () => {
-    for (const d of dm.items) {
+    for (const d of [...dm.items, ...dm.readings]) {
       const tokens = d.text.split(/\s+/).map(norm).filter((t) => t !== 'δέ')
       const i = tokens.indexOf(norm(d.word))
       // Match forms without accents: Οὗτός ἐστιν has an extra accent from the enclitic that follows.
@@ -55,6 +58,57 @@ describe('chapter 13 data', () => {
     }
   })
 
+  it('readings have unique ids, cover both uses, and three wrong whole-sentence translations', () => {
+    const ids = [...dm.items, ...dm.readings].map((d) => d.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(dm.readings.length).toBeGreaterThanOrEqual(16)
+    expect(new Set(dm.readings.map((d) => d.use))).toEqual(new Set(['pronoun', 'adjective']))
+    for (const d of dm.readings) {
+      expect(d.text, d.id).toContain(d.word)
+      expect(d.wrong, d.id).not.toContain(d.english)
+      expect(new Set([d.translation, ...d.sentenceWrong!]).size, d.id).toBe(4)
+      for (const q of [demonstrativeUseQuestion(ch, d), demonstrativeTranslateQuestion(ch, d), demonstrativeSentenceQuestion(ch, d)]) {
+        expect(new Set(q.options.map((o) => o.key)).size, q.id).toBe(4)
+      }
+    }
+  })
+
+  it('English → Greek: a helping word by gender, and only the right form fits', () => {
+    expect(demonstrativeEnglish(HOUTOS, { case: 'dative', number: 'sg', gender: 'feminine' })).toBe('to this woman')
+    expect(demonstrativeEnglish(EKEINOS, { case: 'genitive', number: 'pl', gender: 'neuter' })).toBe('of those things')
+    for (const p of [HOUTOS, EKEINOS]) {
+      for (const s of DEMONSTRATIVE_SLOTS) {
+        const q = demonstrativeProduceQuestion(ch, p, s, 'english')
+        const keys = q.options.map((o) => o.key)
+        expect(new Set(keys).size, q.id).toBe(4)
+        expect(q.answer).toBe(formAt(p, s))
+        expect(keys.filter((k) => k === q.answer)).toHaveLength(1)
+      }
+    }
+  })
+
+  it('look-alikes and vocatives are well-formed', () => {
+    for (const l of dm.lookalikes) {
+      expect(l.text, l.id).toContain(l.word)
+      expect(l.wrong, l.id).not.toContain(l.answer)
+      expect(new Set(lookalikeQuestion(ch, l).options.map((o) => o.key)).size, l.id).toBe(4)
+    }
+    for (const f of dm.vocative.forms) {
+      expect(f.wrong, f.lemma).not.toContain(f.form)
+      expect(new Set(vocativeFormQuestion(ch, f).options.map((o) => o.key)).size, f.lemma).toBe(4)
+    }
+    // Plural vocatives are the same as the nominative plural.
+    const plural: Record<string, string> = { ἀδελφός: 'ἀδελφοί', ἀνήρ: 'ἄνδρες', ἀγαπητός: 'ἀγαπητοί' }
+    for (const f of dm.vocative.forms.filter((x) => x.number === 'pl')) expect(f.form).toBe(plural[f.lemma])
+    const ids = dm.vocative.items.map((v) => v.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const v of dm.vocative.items) {
+      expect(v.text, v.id).toContain(v.word)
+      expect(vocativeCaseQuestion(ch, v).options.map((o) => o.key), v.id).toContain(v.case)
+    }
+    expect(dm.vocative.items.filter((v) => v.case === 'vocative').length).toBeGreaterThan(dm.vocative.items.length / 2)
+  })
+
   it('parse and agreement questions are well-formed', () => {
     for (const p of dm.paradigms) {
       for (const form of distinctForms(p)) {
@@ -72,7 +126,7 @@ describe('chapter 13 data', () => {
       const qs = buildChapterTest(ch)
       expect(qs).toHaveLength(30)
       const count = (x: string) => qs.filter((q) => q.area === x).length
-      expect([count('Vocabulary'), count('Demonstrative forms'), count('Demonstratives in use'), count('Agreement'), count('Review')]).toEqual([10, 6, 8, 3, 3])
+      expect(['Vocabulary', 'Demonstrative forms', 'Demonstratives in use', 'Look-alikes', 'Vocative', 'Agreement', 'Review'].map(count)).toEqual([10, 5, 7, 2, 3, 1, 2])
       expect(new Set(qs.map((q) => q.id)).size).toBe(30)
     }
   })

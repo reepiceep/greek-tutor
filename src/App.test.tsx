@@ -214,8 +214,13 @@ it('chapter 13: every demonstratives tab works and the test runs', () => {
   render(<App />)
   pickChapter(13)
   nav('Demonstratives')
-  expect(document.querySelectorAll('.adj-table')).toHaveLength(6)
-  for (const t of ['Parse', 'Agreement', 'Uses']) {
+  expect(document.querySelectorAll('.adj-table')).toHaveLength(4)
+  // Reference charts for οὗτος and ἐκεῖνος (24 cells each), hiding on their own.
+  expect(document.querySelectorAll('.dem-houtos td')).toHaveLength(24)
+  fireEvent.click(screen.getAllByText('English', { selector: '.reference-tools button' })[1])
+  expect(document.querySelectorAll('.dem-houtos .reveal')).toHaveLength(24)
+  expect(document.querySelectorAll('.dem-ekeinos .reveal')).toHaveLength(0)
+  for (const t of ['Parse', 'English → Greek', 'Agreement', 'Uses', 'Read verses', 'Look-alikes', 'Vocative']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

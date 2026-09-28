@@ -52,6 +52,19 @@ export function graveBeforeWord(word: string): string {
 
 const sharedFeatures = (a: Slot, b: Slot) => Number(a.case === b.case) + Number(a.number === b.number) + Number(a.gender === b.gender)
 
+/** Up to n other forms of the word, from the slots closest to `s`, never the form in `s` itself (for English → Greek). */
+export function nearbyForms(p: DeclensionParadigm, s: Slot, n = 3): string[] {
+  const answer = formAt(p, s)
+  const wrong: string[] = []
+  const others = slotsOf(p).filter((x) => slotKey(x) !== slotKey(s)).sort((a, b) => sharedFeatures(b, s) - sharedFeatures(a, s) || Math.random() - 0.5)
+  for (const o of others) {
+    const f = formAt(p, o)
+    if (f !== answer && !wrong.includes(f)) wrong.push(f)
+    if (wrong.length === n) break
+  }
+  return wrong
+}
+
 export const adjParseItemId = (ch: number, p: DeclensionParadigm, form: string) => `ch${ch}:adj-parse:${p.id}:${form}`
 export const adjAgreeItemId = (ch: number, p: DeclensionParadigm, n: NounPhrase) => `ch${ch}:adj-agree:${p.id}:${slotKey(n)}`
 export const adjUseItemId = (ch: number, u: AdjectiveUseItem, skill: 'use' | 'translate') => `ch${ch}:adj-use:${u.id}:${skill}`

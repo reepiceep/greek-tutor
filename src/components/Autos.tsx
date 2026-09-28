@@ -5,13 +5,14 @@ import {
   AUTOS_SLOTS, AUTOS_USES, autosEnglish, autosItemId, autosProduceId, autosProduceQuestion, autosSentenceQuestion,
   autosTranslateQuestion, autosUseQuestion,
 } from '../lib/autosQuestions'
-import { adjParseItemId, adjParseQuestion, distinctForms, formAt, NOUN_CASES, type Slot } from '../lib/declensionQuestions'
+import { adjParseItemId, adjParseQuestion, distinctForms, formAt, type Slot } from '../lib/declensionQuestions'
+import { numberRows } from '../lib/chartRows'
 import { pickWeakest, shuffle } from '../lib/progress'
 import { slotForms } from '../lib/pronounQuestions'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { DeclensionTable } from './DeclensionTable'
-import { ReferenceChart, type ReferenceCell, type ReferenceRow } from './ReferenceChart'
+import { ReferenceChart, type ReferenceCell } from './ReferenceChart'
 
 type Tab = 'forms' | 'parse' | 'produce' | 'uses' | 'verses'
 
@@ -55,15 +56,6 @@ const GENDER_COLUMNS: { gender: Gender; label: string }[] = [
   { gender: 'feminine', label: 'fem' },
   { gender: 'neuter', label: 'neut' },
 ]
-
-/** Case rows for singular then plural, with a heading row before each number. */
-function numberRows(cells: (s: Omit<Slot, 'gender'>) => ReferenceCell[]): ReferenceRow[] {
-  return (['sg', 'pl'] as const).flatMap((number) => NOUN_CASES.map((c, i) => ({
-    label: c.slice(0, 3),
-    section: i === 0 ? (number === 'sg' ? 'Singular' : 'Plural') : undefined,
-    cells: cells({ case: c, number }),
-  })))
-}
 
 function Forms({ chapter }: { chapter: Chapter }) {
   const a = chapter.autos

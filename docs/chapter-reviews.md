@@ -11,8 +11,9 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
   - chapter 9 (`ddd6d0b`);
   - chapter 10 (`b64ed1a`);
   - chapter 11 (`357ca38`);
-  - chapter 12 (built 2026-09-28, not yet committed).
-- **Not reviewed yet:** chapters 13–36, and chapters 4 and 6 (vocabulary only). Chapters 1–3 (alphabet) still aren't in the app; chapter 5 is skipped by choice.
+  - chapter 12 (`fd48dab`);
+  - chapter 13 (built 2026-09-28, not yet committed).
+- **Not reviewed yet:** chapters 14–36, and chapters 4 and 6 (vocabulary only). Chapters 1–3 (alphabet) still aren't in the app; chapter 5 is skipped by choice.
 - **The routine per chapter:**
   1. Read Mounce's chapter, the workbook exercise, and the relevant part of Merkle & Plummer in Logos (limited view mode).
   2. Compare with the app and list the gaps with their sources.
@@ -28,6 +29,7 @@ We don't copy any book's wording or exercises. Verses come from the SBLGNT (chec
 | 10. Third declension | 2026-09-27 | Gaps built (see below) |
 | 11. First and second person pronouns | 2026-09-27 | Gaps built (see below) |
 | 12. αὐτός | 2026-09-27 | Gaps built (see below) |
+| 13. Demonstratives | 2026-09-28 | Gaps built (see below) |
 
 ## Chapter 8: Prepositions and εἰμί
 
@@ -270,3 +272,50 @@ Details of what shipped (all 6 steps):
 **Left for later:**
 - The workbook's Exercise 12 parsing grid is mostly demonstratives (τούτων, ἐκείνας, αὕτη), which belong to chapter 13 → chapter 13 review.
 - English → Greek sentences (Merkle & Plummer practice E).
+
+## Chapter 13: Demonstrative pronouns and adjectives
+
+**Sources:**
+- Mounce §13.1–13.13 (demonstratives, the vocative, degrees of adjectives, crasis, πολύς) and the vocabulary notes;
+- workbook Exercise 13 (parsing, warm-up α–η, translation 1–10, additional 11–20, summary);
+- Merkle & Plummer ch. 20, "Other Pronouns," the demonstrative parts only (§20.2–20.3 and practice items on demonstratives).
+
+**Already covered before the review:**
+- *Forms*: charts for οὗτος, ἐκεῖνος, μέγας, πολύς, γυνή, πόλις, with a lesson (breathing/τ, αυ/ου, no ν in the neuter, pronoun vs. adjective).
+- *Parse* those charts; *Agreement* of οὗτος/ἐκεῖνος with nouns.
+- *Uses*: 23 items, pronoun or adjective with the reason, and how to translate the highlighted word.
+
+**Gaps found:**
+
+| # | Gap | Source |
+|---|---|---|
+| 1 | No reference chart with English that can hide the Greek or the English, as chapters 8, 11 and 12 now have. As a pronoun the English needs a helping word by natural gender: οὗτος "this man," αὕτη "this woman," τοῦτο "this thing," ταῦτα "these things." | Mounce §13.7; Merkle & Plummer §20.3 |
+| 2 | Look-alikes aren't drilled: αὕτη/αὗται (demonstrative, rough breathing, accent on the first syllable) vs. αὐτή/αὐταί (personal pronoun, smooth breathing, accent on the last); ταῦτα vs. αὐτά; ἤ ("or, than") vs. ἡ (the article); κἀγώ as καί + ἐγώ (crasis, also κἀμέ, κἀμοί). | Mounce §13.6, §13.12, vocabulary notes; Merkle & Plummer §20.3 point 4 |
+| 3 | The **vocative** isn't taught anywhere: the plural is the same as the nominative; first-declension singular is the same as the nominative; second-declension singular usually ends in ε (κύριε, ἄνθρωπε); third-declension singular is usually the bare stem (πάτερ, γύναι). Verses: Matt 7:21, Acts 1:11, Luke 12:19, Luke 5:20, Matt 6:9; workbook warm-up δ and translation 7, 10. | Mounce §13.10; workbook |
+| 4 | No whole-sentence translation, and the workbook's and Merkle & Plummer's verses aren't there (John 10:18, Matt 22:38, John 13:17, John 4:39, John 8:47, John 1:7–8, 1 John 3:3, Mark 11:28, Matt 6:33, John 11:47, Matt 10:2, John 14:20, Mark 13:32; Mark 15:39, Rom 8:9, John 2:21, John 4:42, Matt 13:34, Mark 14:71, John 9:28, Rom 7:24, Acts 9:36, Luke 15:3, Luke 20:18). | Workbook translation and additional; Merkle & Plummer practice C |
+| 5 | No English → Greek: "these things," "to that woman," "of this (masc.)" → the form. | Merkle & Plummer practice B and D |
+| 6 | Lesson points missing: the difference between οὗτος and ἐκεῖνος is often not distance but "just mentioned" vs. "mentioned earlier"; John often uses them where English says "he"; ἐκεῖνος can be disparaging or contrastive ("*that* man," Jas 1:7); διὰ τοῦτο = "for this reason"; the noun with a demonstrative always has the article. | Mounce §13.8–13.9; Merkle & Plummer §20.2–20.3; workbook summary |
+| 7 | Degrees of adjectives aren't mentioned: positive, comparative, superlative (μέγας, μείζων, μέγιστος); in Koine the comparative often does the superlative's job. An adjective can work as an adverb, usually in the neuter accusative (πολύ, πολλά "much, often"; πρῶτον "first"). | Mounce §13.11; workbook summary; Merkle & Plummer ch. 16 (set aside in the chapter 9 review) |
+| 8 | πολύς and μέγας: the exact exceptions aren't stated (πολύς, πολύν, πολύ with one λ and υ; μέγας, μέγαν, μέγα). ἑαυτοῦ is only vocabulary: it has no nominative, declines like αὐτός, and in the plural can be "ourselves, yourselves." | Mounce §13.13, vocabulary notes |
+
+**What was built (2026-09-28):**
+1. **Reference chart** for οὗτος and ἐκεῖνος with English as a pronoun ("this man / this woman / this thing"), hide the Greek or the English, reveal by cell (the shared `ReferenceChart`).
+2. **Look-alikes** drill: αὕτη vs. αὐτή, αὗται vs. αὐταί, ταῦτα vs. αὐτά, ἤ vs. ἡ, κἀγώ/κἀμοί, each in a short phrase or verse: which word is it, and what does it mean?
+3. **Vocative**: a lesson with the four rules, a chart of vocatives for nouns already learned (κύριε, ἄνθρωπε, ἀδελφέ, υἱέ, διδάσκαλε, πάτερ, γύναι, and plural ἄνδρες), and a drill: spot the vocative in a verse, and noun → vocative. Every form checked against MorphGNT.
+4. **Read verses:** about 16 SBLGNT verses from the workbook and Merkle & Plummer, each in three steps: pronoun or adjective, the highlighted word, the whole sentence (the same format as chapter 12).
+5. **English → Greek** for οὗτος and ἐκεῖνος, from English with gender or a description.
+6. **Lesson updates** for gaps 6–8, with ἑαυτοῦ added to the charts.
+7. **Chapter 13 test** updated with the new drills.
+
+Details of what shipped (all 7 steps):
+- **Forms tab:** reference charts for οὗτος and ἐκεῖνος ("this man / of this woman / these things"), each hiding the Greek or the English on its own. Lessons "Translating demonstratives" and "Also in this chapter" (πολύς/μέγας exceptions, adjectives as adverbs, degrees, crasis, ἑαυτοῦ with a genitive/dative/accusative chart). Shared helpers: `numberRows` (src/lib/chartRows.ts) and `nearbyForms` (declensionQuestions), which chapter 12 now uses too.
+- **English → Greek tab:** οὗτος and ἐκεῖνος, 24 slots each, from English with a helping word ("to that woman", "these men (subject)") or a description.
+- **Read verses tab:** 17 SBLGNT verses (John 10:18, Matt 22:38, John 13:17, John 4:39, John 8:47, 1 John 3:3, Mark 11:28, John 11:47, Matt 10:2, John 14:20, Mark 15:39, Rom 8:9, John 2:21, Mark 14:71, John 9:28, Acts 9:36, Rom 7:24) in three steps, like chapter 12. They pass the same test as the Uses items: adjective exactly when an agreeing article is next to the demonstrative.
+- **Look-alikes tab:** 12 items (αὕτη/αὐτή/αὗται, ταῦτα/αὐτά, ἤ "or"/"than"/ἡ, κἀγώ/κἀμοί/κἀμέ) with a short lesson.
+- **Vocative tab:** the four rules, a chart of 14 vocatives (every one found as a vocative in MorphGNT), noun → vocative, and "which case?" in 14 verses (12 vocatives, 2 nominatives as contrast). Some wrong options are made-up forms that follow the wrong rule (ψυχέ, τέκνε, Ἰησέ).
+- **Skills:** English → Greek, read verses, look-alikes, vocative.
+- **Chapter 13 test:** vocab 10, forms 5 (3 parse + 2 English → Greek), in use 7, look-alikes 2, vocative 3, agreement 1, review 2. Still 30 questions.
+
+**Left for later:**
+- Exercise 13's parsing grid is mostly relative pronouns (ἅ, ᾧ, ἥν…), which belong to chapter 14 → chapter 14 review.
+- Merkle & Plummer §20.4–20.8 (reflexive, reciprocal, interrogative/indefinite pronouns, pronominal adjectives) beyond the ἑαυτοῦ note; comparative forms in detail → chapters 17/19 review.

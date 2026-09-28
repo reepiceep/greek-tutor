@@ -45,7 +45,10 @@ import { AUTOS_SLOTS, autosProduceQuestion, autosSentenceQuestion, autosTranslat
 import {
   type VerbPart, askableProperties, englishVerbQuestion, termDefineQuestion, termNameQuestion, verbPartQuestion,
 } from './verbIntroQuestions'
-import { demonstrativeTranslateQuestion, demonstrativeUseQuestion } from './demonstrativeQuestions'
+import {
+  DEMONSTRATIVE_SLOTS, demonstrativeProduceQuestion, demonstrativeSentenceQuestion, demonstrativeTranslateQuestion, demonstrativeUseQuestion,
+  lookalikeQuestion, vocativeCaseQuestion, vocativeFormQuestion,
+} from './demonstrativeQuestions'
 import {
   relativeAntecedentQuestion, relativeCaseQuestion, relativeFormQuestion, relativeTranslateQuestion,
 } from './relativeQuestions'
@@ -307,27 +310,41 @@ const SPECS: Record<number, TestSpec> = {
   13: {
     areas: [
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
-      { name: 'Demonstrative forms', count: 6, covers: 'parsing οὗτος, ἐκεῖνος, μέγας, πολύς, γυνή, πόλις' },
-      { name: 'Demonstratives in use', count: 8, covers: 'pronoun or adjective; translation' },
-      { name: 'Agreement', count: 3, covers: 'οὗτος and ἐκεῖνος with nouns' },
-      { name: 'Review', count: 3, covers: 'αὐτός (ch 12) and pronouns (ch 11)' },
+      { name: 'Demonstrative forms', count: 5, covers: 'parsing οὗτος, ἐκεῖνος, μέγας, πολύς, γυνή, πόλις; English → Greek' },
+      { name: 'Demonstratives in use', count: 7, covers: 'pronoun or adjective; translation; whole verses' },
+      { name: 'Look-alikes', count: 2, covers: 'αὕτη/αὐτή, ταῦτα/αὐτά, ἤ/ἡ, κἀγώ' },
+      { name: 'Vocative', count: 3, covers: 'vocative forms; spotting the vocative in verses' },
+      { name: 'Agreement', count: 1, covers: 'οὗτος and ἐκεῖνος with nouns' },
+      { name: 'Review', count: 2, covers: 'αὐτός (ch 12)' },
     ],
     build: (ch) => {
       const dm = ch.demonstratives!
       const items = shuffle(dm.items)
+      const [reading, other] = take(dm.readings, 2)
+      const [houtos, ekeinos] = dm.agreement.paradigms
+      const [slot1, slot2] = take(DEMONSTRATIVE_SLOTS, 2)
       const au12 = chapter12.autos!
       return [
         ...vocabArea(ch),
-        ...tag('Demonstrative forms', take(dm.paradigms.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 6).map(({ p, f }) => adjParseQuestion(ch, p, f))),
+        ...tag('Demonstrative forms', [
+          ...take(dm.paradigms.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 3).map(({ p, f }) => adjParseQuestion(ch, p, f)),
+          demonstrativeProduceQuestion(ch, houtos, slot1, 'english'),
+          demonstrativeProduceQuestion(ch, ekeinos, slot2, 'desc'),
+        ]),
         ...tag('Demonstratives in use', [
-          ...items.slice(0, 5).map((d) => demonstrativeUseQuestion(ch, d)),
-          ...items.slice(5, 8).map((d) => demonstrativeTranslateQuestion(ch, d)),
+          ...items.slice(0, 3).map((d) => demonstrativeUseQuestion(ch, d)),
+          ...items.slice(3, 4).map((d) => demonstrativeTranslateQuestion(ch, d)),
+          demonstrativeUseQuestion(ch, reading),
+          demonstrativeTranslateQuestion(ch, other),
+          demonstrativeSentenceQuestion(ch, reading),
         ]),
-        ...tag('Agreement', take(dm.agreement.paradigms.flatMap((p) => dm.agreement.nouns.map((n) => ({ p, n }))), 3).map(({ p, n }) => adjAgreeQuestion(ch, p, n))),
-        ...tag('Review', [
-          ...take(au12.items, 2).map((a) => autosUseQuestion(chapter12, a)),
-          ...take(chapter11.pronouns!.verses, 1).map((v) => pronounVerseWhoQuestion(chapter11, v)),
+        ...tag('Look-alikes', take(dm.lookalikes, 2).map((l) => lookalikeQuestion(ch, l))),
+        ...tag('Vocative', [
+          ...take(dm.vocative.forms, 1).map((f) => vocativeFormQuestion(ch, f)),
+          ...take(dm.vocative.items, 2).map((it) => vocativeCaseQuestion(ch, it)),
         ]),
+        ...tag('Agreement', take(dm.agreement.paradigms.flatMap((p) => dm.agreement.nouns.map((n) => ({ p, n }))), 1).map(({ p, n }) => adjAgreeQuestion(ch, p, n))),
+        ...tag('Review', take(au12.items, 2).map((a) => autosUseQuestion(chapter12, a))),
       ]
     },
   },

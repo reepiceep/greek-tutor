@@ -409,6 +409,55 @@ export interface DemonstrativeSection {
   /** Demonstratives practised for agreement, and the noun phrases they agree with. */
   agreement: { paradigms: DeclensionParadigm[]; nouns: NounPhrase[] }
   items: DemonstrativeItem[]
+  /** Longer verses read step by step: the use, the highlighted word, then the whole sentence. */
+  readings: DemonstrativeItem[]
+  lookalikes: LookalikeItem[]
+  vocative: VocativeSection
+}
+
+/** A word that looks like another (αὕτη / αὐτή, ἤ / ἡ): which word is it, and what does it mean here? */
+export interface LookalikeItem {
+  id: string
+  ref?: string
+  text: string
+  /** The word exactly as in `text` (first occurrence is highlighted). */
+  word: string
+  /** The right identification, e.g. "οὗτος: “this”". */
+  answer: string
+  /** Its look-alikes, identified the same way. */
+  wrong: string[]
+  note: string
+}
+
+export type CaseOrVocative = NounCase | 'vocative'
+
+/** A noun's vocative, singular or plural. */
+export interface VocativeForm {
+  lemma: string
+  gloss: string
+  declension: 1 | 2 | 3
+  number: GrammaticalNumber
+  form: string
+  /** Other forms of the same word offered as wrong answers. */
+  wrong: string[]
+  note?: string
+}
+
+/** A verse with one noun highlighted: which case is it? */
+export interface VocativeItem {
+  id: string
+  ref: string
+  text: string
+  word: string
+  case: CaseOrVocative
+  translation: string
+  help?: string
+  note?: string
+}
+
+export interface VocativeSection {
+  forms: VocativeForm[]
+  items: VocativeItem[]
 }
 
 // --- Relative pronoun (chapter 14) ---

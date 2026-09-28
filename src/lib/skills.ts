@@ -13,7 +13,11 @@ import {
   CASES_USE, caseUseQuestion, caseUseTranslateQuestion, phraseEnglish, phraseGreek, casePhraseItemId, phraseParseQuestion, phraseSlots,
   phraseTranslateQuestion,
 } from './caseQuestions'
-import { demonstrativeItemId, demonstrativeTranslateQuestion, demonstrativeUseQuestion } from './demonstrativeQuestions'
+import {
+  DEMONSTRATIVE_SLOTS, demonstrativeItemId, demonstrativeProduceId, demonstrativeProduceQuestion, demonstrativeSentenceQuestion,
+  demonstrativeTranslateQuestion, demonstrativeUseQuestion, lookalikeId, lookalikeQuestion, vocativeCaseQuestion, vocativeFormId,
+  vocativeFormQuestion, vocativeItemId,
+} from './demonstrativeQuestions'
 import {
   encliticAccentQuestion, encliticFormQuestion, encliticRuleQuestion, predicateSubjectQuestion, predicateTranslateQuestion,
 } from './eimiQuestions'
@@ -327,6 +331,32 @@ function buildSkills(ch: Chapter): Skill[] {
         { id: demonstrativeItemId(n, it, 'use'), name: `${it.text}: how is ${it.word} used?`, make: () => demonstrativeUseQuestion(ch, it) },
         { id: demonstrativeItemId(n, it, 'translate'), name: `${it.word} in ${it.ref ?? it.text}`, make: () => demonstrativeTranslateQuestion(ch, it) },
       ]),
+    },
+    {
+      label: 'Demonstratives: English → Greek', view: 'demonstratives',
+      items: (dm?.agreement.paradigms ?? []).flatMap((dp) => DEMONSTRATIVE_SLOTS.flatMap((sl) => (['english', 'desc'] as const).map((kind) => ({
+        id: demonstrativeProduceId(n, dp, sl, kind), name: `${dp.lemma}: ${kind === 'desc' ? 'description' : 'English'} → Greek`,
+        make: () => demonstrativeProduceQuestion(ch, dp, sl, kind),
+      })))),
+    },
+    {
+      label: 'Demonstratives: read verses', view: 'demonstratives',
+      items: (dm?.readings ?? []).flatMap((it) => [
+        { id: demonstrativeItemId(n, it, 'use'), name: `${it.word} in ${it.ref}: which use?`, make: () => demonstrativeUseQuestion(ch, it) },
+        { id: demonstrativeItemId(n, it, 'translate'), name: `${it.word} in ${it.ref}: translate`, make: () => demonstrativeTranslateQuestion(ch, it) },
+        { id: demonstrativeItemId(n, it, 'sentence'), name: `${it.ref}: the whole sentence`, make: () => demonstrativeSentenceQuestion(ch, it) },
+      ]),
+    },
+    {
+      label: 'Demonstratives: look-alikes (αὕτη/αὐτή, ἤ/ἡ, κἀγώ)', view: 'demonstratives',
+      items: (dm?.lookalikes ?? []).map((l) => ({ id: lookalikeId(n, l), name: `${l.word} in ${l.ref ?? l.text}`, make: () => lookalikeQuestion(ch, l) })),
+    },
+    {
+      label: 'Vocative: forms and verses', view: 'demonstratives',
+      items: dm ? [
+        ...dm.vocative.forms.map((f) => ({ id: vocativeFormId(n, f), name: `${f.lemma}: vocative ${f.number}`, make: () => vocativeFormQuestion(ch, f) })),
+        ...dm.vocative.items.map((it) => ({ id: vocativeItemId(n, it), name: `${it.word} in ${it.ref}: case?`, make: () => vocativeCaseQuestion(ch, it) })),
+      ] : [],
     },
     {
       label: 'Relative pronoun: forms', view: 'relative',

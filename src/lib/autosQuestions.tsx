@@ -1,6 +1,6 @@
 import type { ChoiceQuestion } from '../components/ChoiceQuiz'
 import type { AutosItem, AutosUse, Chapter, DeclensionParadigm, Gender } from '../data/types'
-import { formAt, GENDERS, NOUN_CASES, NUMBERS, type Slot } from './declensionQuestions'
+import { formAt, GENDERS, nearbyForms, NOUN_CASES, NUMBERS, type Slot } from './declensionQuestions'
 import { shuffle } from './progress'
 import { type UsageConfig, usageItemId, usageQuestion, usageSentenceQuestion, usageTranslateQuestion } from './usageQuestions'
 
@@ -63,7 +63,6 @@ export const AUTOS_SLOTS: Slot[] = GENDERS.flatMap((gender) => NUMBERS.flatMap((
 
 const slotKey = (s: Slot) => `${s.gender}-${s.number}-${s.case}`
 export const autosSlotLabel = (s: Slot) => `3rd person ${s.gender} ${s.case} ${s.number === 'sg' ? 'singular' : 'plural'}`
-const closeness = (a: Slot, b: Slot) => Number(a.gender === b.gender) + Number(a.number === b.number) + Number(a.case === b.case)
 
 export type AutosProduceKind = 'english' | 'desc'
 export const autosProduceId = (ch: number, s: Slot, kind: AutosProduceKind) => `ch${ch}:autos-produce:${slotKey(s)}:${kind}`
@@ -71,13 +70,7 @@ export const autosProduceId = (ch: number, s: Slot, kind: AutosProduceKind) => `
 /** From English (“to them (feminine)”) or a description (“3rd person feminine dative plural”) to the form of αὐτός. */
 export function autosProduceQuestion(ch: Chapter, p: DeclensionParadigm, s: Slot, kind: AutosProduceKind): ChoiceQuestion {
   const answer = formAt(p, s)
-  const wrong: string[] = []
-  const others = AUTOS_SLOTS.filter((x) => slotKey(x) !== slotKey(s)).sort((a, b) => closeness(b, s) - closeness(a, s) || Math.random() - 0.5)
-  for (const o of others) {
-    const f = formAt(p, o)
-    if (f !== answer && !wrong.includes(f)) wrong.push(f)
-    if (wrong.length === 3) break
-  }
+  const wrong = nearbyForms(p, s)
   const english = autosPrompt(s)
   return {
     id: autosProduceId(ch.number, s, kind),

@@ -708,7 +708,7 @@ button.all-practice:hover { text-decoration: underline; }
 .paradigm th, .paradigm td { padding: 6px; border-bottom: 1px solid var(--border); }
 .paradigm th { text-align: left; color: var(--muted); font-weight: 600; }
 /* Pronoun chart */
-.pronoun-table td, .autos-table td, .all-pronouns-table td { vertical-align: top; }
+.pronoun-table td, .autos-table td, .all-pronouns-table td, .dem-table td, .heautou-table td { vertical-align: top; }
 .paradigm tr.section-row th { padding-top: 14px; color: var(--text); text-transform: none; }
 .chart-wrap { overflow-x: auto; }
 .cell-gloss { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--muted); }
