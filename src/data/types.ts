@@ -381,6 +381,8 @@ export interface UseItem<U extends string> {
   /** Wrong renderings of the highlighted form. */
   wrong: string[]
   translation: string
+  /** Wrong translations of the whole text; when given, the text is also asked as a translation. */
+  sentenceWrong?: string[]
   help?: string
   note?: string
 }
@@ -390,7 +392,9 @@ export type AutosItem = UseItem<AutosUse>
 export interface AutosSection {
   paradigm: DeclensionParadigm
   items: AutosItem[]
-  /** New third-declension nouns in the chapter's vocabulary. */
+  /** Longer verses read step by step: the use, the highlighted word, then the whole sentence. */
+  readings: AutosItem[]
+  /** New third-declension nouns in the chapter's vocabulary, plus μηδείς. */
   nouns: DeclensionParadigm[]
 }
 

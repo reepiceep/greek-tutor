@@ -14,7 +14,7 @@ export interface UsageConfig<U extends string> {
   traps: { key: string; label: string }[]
 }
 
-export const usageItemId = (ch: number, prefix: string, item: { id: string }, skill: 'use' | 'translate') =>
+export const usageItemId = (ch: number, prefix: string, item: { id: string }, skill: 'use' | 'translate' | 'sentence') =>
   `ch${ch}:${prefix}:${item.id}:${skill}`
 
 function highlighted<U extends string>(item: UseItem<U>) {
@@ -57,5 +57,17 @@ export function usageTranslateQuestion<U extends string>(ch: Chapter, cfg: Usage
     answer: item.english,
     explain: explain(cfg, item),
     review: <><span className="greek">{item.word}</span> ({item.ref ?? item.text}) = “{item.english}”</>,
+  }
+}
+
+/** The whole text in English (only for items with `sentenceWrong`). */
+export function usageSentenceQuestion<U extends string>(ch: Chapter, cfg: UsageConfig<U>, item: UseItem<U>): ChoiceQuestion {
+  return {
+    id: usageItemId(ch.number, cfg.prefix, item, 'sentence'),
+    prompt: <>{highlighted(item)}<p className="muted">Translate the whole sentence.</p></>,
+    options: shuffle([item.translation, ...(item.sentenceWrong ?? []).slice(0, 3)]).map((t) => ({ key: t, label: t })),
+    answer: item.translation,
+    explain: explain(cfg, item),
+    review: <><span className="greek">{item.text}</span> = “{item.translation}”</>,
   }
 }

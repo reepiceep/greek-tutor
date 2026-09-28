@@ -41,7 +41,7 @@ import {
   redupQuestion, PASSIVE_RULES, passiveRuleQuestion, aoristFormQuestion, augmentQuestion, hasFutureForm, rootQuestion, tensePairs, tenseQuestion,
 } from './presentQuestions'
 import { ruleItemQuestion, tisQuestion } from './thirdDeclensionQuestions'
-import { autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
+import { AUTOS_SLOTS, autosProduceQuestion, autosSentenceQuestion, autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
 import {
   type VerbPart, askableProperties, englishVerbQuestion, termDefineQuestion, termNameQuestion, verbPartQuestion,
 } from './verbIntroQuestions'
@@ -270,21 +270,30 @@ const SPECS: Record<number, TestSpec> = {
   12: {
     areas: [
       { name: 'Vocabulary', count: 10, covers: 'the chapter’s words, both directions' },
-      { name: 'αὐτός forms', count: 6, covers: 'parsing αὐτός' },
-      { name: 'αὐτός uses', count: 8, covers: 'he/she/it, -self, the same; translation' },
-      { name: 'New nouns', count: 2, covers: 'αἰών, πούς' },
+      { name: 'αὐτός forms', count: 6, covers: 'parsing αὐτός; English → Greek' },
+      { name: 'αὐτός uses', count: 8, covers: 'he/she/it, -self, the same; translation; whole verses' },
+      { name: 'New nouns', count: 2, covers: 'αἰών, πούς, μηδείς' },
       { name: 'Review', count: 4, covers: 'pronouns (ch 11), τίς/τις (ch 10), adjectives (ch 9)' },
     ],
     build: (ch) => {
       const au = ch.autos!
       const items = shuffle(au.items)
+      const [reading, long] = take(au.readings, 2)
+      const [slot1, slot2] = take(AUTOS_SLOTS, 2)
       const pr11 = chapter11.pronouns!
       return [
         ...vocabArea(ch),
-        ...tag('αὐτός forms', take(distinctForms(au.paradigm), 6).map((f) => adjParseQuestion(ch, au.paradigm, f))),
+        ...tag('αὐτός forms', [
+          ...take(distinctForms(au.paradigm), 4).map((f) => adjParseQuestion(ch, au.paradigm, f)),
+          autosProduceQuestion(ch, au.paradigm, slot1, 'english'),
+          autosProduceQuestion(ch, au.paradigm, slot2, 'desc'),
+        ]),
         ...tag('αὐτός uses', [
-          ...items.slice(0, 5).map((a) => autosUseQuestion(ch, a)),
-          ...items.slice(5, 8).map((a) => autosTranslateQuestion(ch, a)),
+          ...items.slice(0, 3).map((a) => autosUseQuestion(ch, a)),
+          ...items.slice(3, 5).map((a) => autosTranslateQuestion(ch, a)),
+          autosUseQuestion(ch, reading),
+          autosTranslateQuestion(ch, long),
+          autosSentenceQuestion(ch, reading),
         ]),
         ...tag('New nouns', take(au.nouns.flatMap((p) => distinctForms(p).map((f) => ({ p, f }))), 2).map(({ p, f }) => adjParseQuestion(ch, p, f))),
         ...tag('Review', [

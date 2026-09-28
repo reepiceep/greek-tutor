@@ -190,7 +190,15 @@ it('chapter 12: every αὐτός tab works and the test runs', () => {
   pickChapter(12)
   nav('αὐτός')
   expect(document.querySelectorAll('.adj-table')).toHaveLength(3)
-  for (const t of ['Parse', 'Uses']) {
+  // Reference charts: αὐτός (24 cells) and all the personal pronouns (40 cells), each hiding on its own.
+  expect(document.querySelectorAll('.autos-table td')).toHaveLength(24)
+  expect(document.querySelectorAll('.all-pronouns-table td')).toHaveLength(40)
+  fireEvent.click(screen.getAllByText('English', { selector: '.reference-tools button' })[0])
+  expect(document.querySelectorAll('.autos-table .reveal')).toHaveLength(24)
+  expect(document.querySelectorAll('.all-pronouns-table .reveal')).toHaveLength(0)
+  fireEvent.click(document.querySelector('.autos-table .reveal')!)
+  expect(document.querySelectorAll('.autos-table .revealed')).toHaveLength(1)
+  for (const t of ['Parse', 'English → Greek', 'Uses', 'Read verses']) {
     tab(t)
     expect(screen.getByText(/^1 of \d+$/)).toBeTruthy()
     fireEvent.click(document.querySelector('.option')!)

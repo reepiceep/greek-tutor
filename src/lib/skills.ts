@@ -2,7 +2,9 @@ import type { View } from '../App'
 import type { ChoiceQuestion } from '../components/ChoiceQuiz'
 import { ENCLITIC_FORMS } from '../data/chapter08Eimi'
 import type { Chapter, DeclensionParadigm, ParadigmRow, TopicView } from '../data/types'
-import { autosItemId, autosTranslateQuestion, autosUseQuestion } from './autosQuestions'
+import {
+  AUTOS_SLOTS, autosItemId, autosProduceId, autosProduceQuestion, autosSentenceQuestion, autosSlotLabel, autosTranslateQuestion, autosUseQuestion,
+} from './autosQuestions'
 import {
   adjAgreeItemId, adjAgreeQuestion, adjParseItemId, adjParseQuestion, adjTranslateQuestion, adjUseItemId, adjUseQuestion, distinctForms, slotsOf,
   translatable,
@@ -296,6 +298,20 @@ function buildSkills(ch: Chapter): Skill[] {
       items: (au?.items ?? []).flatMap((it) => [
         { id: autosItemId(n, it, 'use'), name: `${it.text}: how is ${it.word} used?`, make: () => autosUseQuestion(ch, it) },
         { id: autosItemId(n, it, 'translate'), name: `${it.word} in ${it.ref ?? it.text}`, make: () => autosTranslateQuestion(ch, it) },
+      ]),
+    },
+    {
+      label: 'αὐτός: English → Greek', view: 'autos',
+      items: au ? AUTOS_SLOTS.flatMap((sl) => (['english', 'desc'] as const).map((kind) => ({
+        id: autosProduceId(n, sl, kind), name: `${kind === 'desc' ? autosSlotLabel(sl) : 'English'} → Greek`, make: () => autosProduceQuestion(ch, au.paradigm, sl, kind),
+      }))) : [],
+    },
+    {
+      label: 'αὐτός: read verses', view: 'autos',
+      items: (au?.readings ?? []).flatMap((it) => [
+        { id: autosItemId(n, it, 'use'), name: `${it.word} in ${it.ref}: which use?`, make: () => autosUseQuestion(ch, it) },
+        { id: autosItemId(n, it, 'translate'), name: `${it.word} in ${it.ref}: translate`, make: () => autosTranslateQuestion(ch, it) },
+        { id: autosItemId(n, it, 'sentence'), name: `${it.ref}: the whole sentence`, make: () => autosSentenceQuestion(ch, it) },
       ]),
     },
     { label: 'Demonstratives: parsing', view: 'demonstratives', items: parseItems(dm?.paradigms ?? []) },

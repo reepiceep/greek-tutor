@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 import type { Chapter, PronounForm } from '../data/types'
 import { adjParseItemId, adjParseQuestion, distinctForms, NOUN_CASES } from '../lib/declensionQuestions'
 import { pickWeakest, record, shuffle, useProgress } from '../lib/progress'
@@ -12,6 +12,7 @@ import { GreekInput } from './GreekInput'
 import { ChoiceQuiz } from './ChoiceQuiz'
 import { Lesson } from './Lesson'
 import { DeclensionTable } from './DeclensionTable'
+import { ReferenceChart } from './ReferenceChart'
 
 type Tab = 'forms' | 'chart' | 'parse' | 'meaning' | 'produce' | 'verses' | 'nouns'
 
@@ -61,74 +62,30 @@ const COLUMNS = [
   { person: 2, number: 'pl', label: '2nd pl' },
 ] as const
 
-type Hide = 'none' | 'greek' | 'english'
-
 /** The forms in one slot: the emphatic (or only) form, and the unemphatic enclitic if there is one. */
 function slot(forms: PronounForm[], person: 1 | 2, number: 'sg' | 'pl', c: (typeof NOUN_CASES)[number]) {
   const fs = forms.filter((f) => f.person === person && f.number === number && f.case === c)
   return { main: fs.find((f) => f.emphatic !== false)!, enclitic: fs.find((f) => f.emphatic === false) }
 }
 
+/** A chart cell: the form, with the enclitic in brackets where there is one. */
+function pronounCell(forms: PronounForm[], person: 1 | 2, number: 'sg' | 'pl', c: (typeof NOUN_CASES)[number]) {
+  const { main, enclitic } = slot(forms, person, number, c)
+  return {
+    greek: <span className="greek">{main.form}{enclitic && <span className="muted"> ({enclitic.form})</span>}</span>,
+    english: main.english,
+  }
+}
+
 /** The paradigm as a reference chart. Hide the Greek or the English to test yourself, then click a cell to check it. */
 function PronounChart({ forms }: { forms: PronounForm[] }) {
-  const [hide, setHide] = useState<Hide>('none')
-  const [shown, setShown] = useState<Set<string>>(new Set())
-  const keys = NOUN_CASES.flatMap((c) => COLUMNS.map((col) => `${c}:${col.label}`))
-  const toggle = (k: string) => setShown((s) => {
-    const next = new Set(s)
-    if (next.has(k)) next.delete(k)
-    else next.add(k)
-    return next
-  })
-  const choose = (h: Hide) => { setHide(h); setShown(new Set()) }
-  const reveal = (k: string, content: ReactNode, hidden: boolean) =>
-    !hidden ? content
-      : shown.has(k)
-        ? <button className="revealed" onClick={() => toggle(k)} title="Hide again">{content}</button>
-        : <button className="reveal" onClick={() => toggle(k)}>show</button>
-
   return (
-    <>
-      <div className="reference-tools">
-        <div className="hide-choice" role="group" aria-label="Hide">
-          <span className="muted small">Hide</span>
-          <div className="seg small-seg">
-            <button className={hide === 'none' ? 'on' : ''} onClick={() => choose('none')}>Nothing</button>
-            <button className={hide === 'greek' ? 'on' : ''} onClick={() => choose('greek')}>Greek</button>
-            <button className={hide === 'english' ? 'on' : ''} onClick={() => choose('english')}>English</button>
-          </div>
-        </div>
-        {hide !== 'none' && (
-          <div className="seg small-seg">
-            <button onClick={() => setShown(new Set(keys))} disabled={shown.size === keys.length}>Show all</button>
-            <button onClick={() => setShown(new Set())} disabled={shown.size === 0}>Hide all</button>
-          </div>
-        )}
-      </div>
-      {hide !== 'none' && (
-        <p className="muted small">Say the hidden {hide === 'greek' ? 'Greek (both forms where there are two)' : 'meaning'}, then click to check it.</p>
-      )}
-      <table className="paradigm compact pronoun-table">
-        <thead><tr><th />{COLUMNS.map((c) => <th key={c.label}>{c.label}</th>)}</tr></thead>
-        <tbody>
-          {NOUN_CASES.map((c) => (
-            <tr key={c}>
-              <th>{c.slice(0, 3)}</th>
-              {COLUMNS.map((col) => {
-                const k = `${c}:${col.label}`
-                const { main, enclitic } = slot(forms, col.person, col.number, c)
-                return (
-                  <td key={col.label}>
-                    {reveal(k, <span className="greek">{main.form}{enclitic && <span className="muted"> ({enclitic.form})</span>}</span>, hide === 'greek')}
-                    <div className="cell-gloss">{reveal(k, main.english, hide === 'english')}</div>
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+    <ReferenceChart
+      className="pronoun-table"
+      greekHint="Greek (both forms where there are two)"
+      columns={COLUMNS.map((c) => c.label)}
+      rows={NOUN_CASES.map((c) => ({ label: c.slice(0, 3), cells: COLUMNS.map((col) => pronounCell(forms, col.person, col.number, c)) }))}
+    />
   )
 }
 

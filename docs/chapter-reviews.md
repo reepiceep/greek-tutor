@@ -4,12 +4,30 @@ Each chapter is checked against three sources: Mounce's *Basics of Biblical Gree
 
 We don't copy any book's wording or exercises. Verses come from the SBLGNT (checked against MorphGNT), and the drills are our own.
 
+## Where we are (2026-09-27)
+
+- **Built, committed and pushed:**
+  - chapter 8 (`1856a83`, plus the εἰμί reference and flashcards in `ddd6d0b` and `edb08c7`);
+  - chapter 9 (`ddd6d0b`);
+  - chapter 10 (`b64ed1a`);
+  - chapter 11 (`357ca38`);
+  - chapter 12 (built 2026-09-28, not yet committed).
+- **Not reviewed yet:** chapters 13–36, and chapters 4 and 6 (vocabulary only). Chapters 1–3 (alphabet) still aren't in the app; chapter 5 is skipped by choice.
+- **The routine per chapter:**
+  1. Read Mounce's chapter, the workbook exercise, and the relevant part of Merkle & Plummer in Logos (limited view mode).
+  2. Compare with the app and list the gaps with their sources.
+  3. Write a plan; build once the user says yes (verses checked against MorphGNT; tests, lint, build, a browser check).
+  4. Update this file, the README and the memory notes.
+  5. Commit and push to main.
+- **Waiting for later reviews:** notes under each chapter's "Left for later" (for example, Merkle & Plummer's relative pronouns → chapter 14; comparatives → chapters 17/19).
+
 | Chapter | Reviewed | Status |
 |---|---|---|
 | 8. Prepositions and εἰμί | 2026-09-27 | Gaps built (see below) |
 | 9. Adjectives | 2026-09-27 | Gaps built (see below) |
 | 10. Third declension | 2026-09-27 | Gaps built (see below) |
 | 11. First and second person pronouns | 2026-09-27 | Gaps built (see below) |
+| 12. αὐτός | 2026-09-27 | Gaps built (see below) |
 
 ## Chapter 8: Prepositions and εἰμί
 
@@ -204,3 +222,51 @@ Details of what shipped (all 7 steps):
 - **Chapter 11 test:** forms 3 parse + 3 meaning + 2 produce; verses 4 who/case + 1 emphasis + 1 translation. Still 30 questions.
 
 **Left for later:** Merkle & Plummer §9.7–9.9 (relative pronouns) → chapter 14 review; intensive and identical αὐτός → chapter 12 review. The workbook summary's μή/οὐ questions and the subject inside a participial phrase belong to later chapters.
+
+## Chapter 12: αὐτός
+
+**Sources:**
+- Mounce §12.1–12.12;
+- workbook Exercise 12 (parsing, warm-up α–η, translation 1–10, additional 11–20, English → Greek 1–10, summary);
+- Merkle & Plummer ch. 9, third-person parts (§9.3–9.4 chart, §9.5, emphatic, intensive and identical uses).
+
+**Already covered before the review:**
+- *Forms*: the αὐτός chart (plus αἰών, πούς), with a lesson on the three uses.
+- *Parse*: those charts.
+- *Uses*: about 25 items (11 personal pronoun, 7 intensive, 7+ identical) asking the use with its reason and how to translate the highlighted αὐτός.
+
+**Gaps found:**
+
+| # | Gap | Source |
+|---|---|---|
+| 1 | No reference chart with English (he/his/him, she/her, it/its, they/their/them) that can hide the Greek or the English, as chapters 8 and 11 now have. There is also no single chart of all the personal pronouns, 1st, 2nd and 3rd person. | Mounce §12.1, §12.4; Merkle & Plummer §9.4 |
+| 2 | No English → Greek for the third person: "him," "its," "to them," "their," "her (possessive)"… | Workbook English → Greek 1–10 |
+| 3 | No whole-sentence translation, and the workbook's and Merkle & Plummer's verses aren't there (Mk 9:20 αὐτὸν πρὸς αὐτόν, Jn 4:2, Jn 14:11, 1 Cor 1:10, Mt 17:8, Jn 2:24, Lk 6:23, Acts 2:36; Acts 20:35, Phil 2:24, Acts 10:26, Rom 2:1). | Workbook translation and additional; Merkle & Plummer practice D |
+| 4 | Gender in translation isn't drilled: with a personal antecedent follow natural gender ("her"); with a thing follow English sense ("it"), even for a masculine or feminine form (αὐτήν = the gate, Mt 7:14). | Mounce §12.7, §12.9 |
+| 5 | After a preposition the genitive is not possessive: πρὸ αὐτῶν is "before them," not "before their." | Mounce §12.9 |
+| 6 | Intensive rules not fully taught: αὐτός has no article while its noun usually does; it can intensify ἐγώ/σύ or a subject that is only in the verb (καὶ ἐγὼ αὐτὸς ἄνθρωπός εἰμι, Acts 10:26; καὶ αὐτὸς … ἐλεύσομαι, Phil 2:24); αὐτός alone in the nominative adds emphasis ("he himself," Acts 20:35). | Mounce §12.10–12.11; Merkle & Plummer, intensive and emphatic use |
+| 7 | Identical rule not stated as a test: the article directly before αὐτός means "same" (Merkle & Plummer); usually attributive but not always (Ἐν αὐτῇ τῇ ὥρᾳ, "in that very hour," Lk 13:31); αὐτός alone as a noun (ὁ αὐτός, τὸ αὐτό). | Mounce §12.12; Merkle & Plummer, identical use |
+| 8 | Workbook points: the dative tells *when* (τῇ τρίτῃ ἡμέρᾳ), the accusative *how long* (πάσας τὰς ἡμέρας, Mt 28:20); μέν … δέ; μόνον used as an adverb; μηδείς declines like οὐδείς; πούς is like ἐλπίς but lengthens ο to ου (dative ποσί). | Workbook summary; Mounce vocabulary notes |
+
+**What was built (2026-09-28):**
+1. **Reference charts:**
+   - αὐτός with English, hide the Greek or the English, reveal by cell;
+   - an **all personal pronouns** reference (1st, 2nd, 3rd person) on the same screen, with the same hiding.
+2. **English → Greek** for αὐτός, from an English pronoun (with its gender) or a description ("3rd person feminine genitive singular").
+3. **Read verses:** about 14 SBLGNT verses taken apart: which use (pronoun, intensive, identical); how to translate αὐτός here ("him," "it," "himself," "the same"); the whole sentence. Includes the gender, preposition, 1st-person intensive, emphatic αὐτός, predicate-position "same" and time-expression cases.
+4. **Lesson updates** for gaps 4–8.
+5. **Nouns:** add μηδείς to the charts; note the ποσί pattern.
+6. **Chapter 12 test** updated with the new drills.
+
+Details of what shipped (all 6 steps):
+- **Forms tab:** an αὐτός reference chart (gender columns, singular and plural) and an *All the personal pronouns* chart (1st, 2nd, 3rd masc/fem/neut). Each hides the Greek or the English on its own, cell by cell. Both use a new shared `ReferenceChart` component, which the chapter 11 pronoun chart now uses too.
+- **English → Greek tab:** 24 slots, from English ("her (possessive)", "to them (feminine)") or a description ("3rd person feminine dative plural"). Only forms other than the answer are offered as wrong.
+- **Read verses tab:** 16 SBLGNT verses (Mk 9:20, Mt 7:14, Jn 10:4 twice, Acts 2:36, Acts 20:35, Jn 4:2, Jn 2:24, Jn 14:11, Mt 17:8, Phil 2:24, Acts 10:26, 1 Cor 1:10, Lk 6:23, Rom 2:1, Lk 13:31), each asked in three steps: use, the highlighted word, the whole sentence. All checked word for word against MorphGNT. Lk 13:31 is the one allowed exception to the test that "identical" means an article right before αὐτός.
+- **Lessons:** "Translating αὐτός well" (gender in English, the genitive after a preposition, intensive with ἐγώ/σύ or a verb's subject, emphatic nominative, identical alone and Luke's "that very") and "Also in this chapter" (time expressions, μέν … δέ, μόνον, μηδείς, πούς). The rule labels now say that with a 1st/2nd-person verb αὐτός is "myself," and that a nominative αὐτός with a 3rd-person verb is emphatic "he himself."
+- **Nouns:** μηδείς added to the charts and parsing.
+- **Skills:** "αὐτός: English → Greek" and "αὐτός: read verses".
+- **Chapter 12 test:** forms 4 parse + 2 English → Greek; uses 3 use + 2 translate + 1 verse use + 1 verse word + 1 whole sentence. Still 30 questions.
+
+**Left for later:**
+- The workbook's Exercise 12 parsing grid is mostly demonstratives (τούτων, ἐκείνας, αὕτη), which belong to chapter 13 → chapter 13 review.
+- English → Greek sentences (Merkle & Plummer practice E).
